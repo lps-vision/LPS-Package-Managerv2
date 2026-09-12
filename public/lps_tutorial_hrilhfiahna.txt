@@ -1,0 +1,70 @@
+================================================================================
+           LPS SUBSCRIBER DATA CONVERTER & PACKAGE MANAGER - TUTORIAL
+================================================================================
+
+He application hi LPS Cable TV Subscriber raw data (Excel / CSV) atanga LPS Operator Portal a upload theih Bulk Package Renew (12-column format) leh LCO Hlawh/Sen chhutna fel fai taka siam chhuah nana buatsaih a ni.
+
+--------------------------------------------------------------------------------
+1. EXCEL FILE UPLOAD DAN:
+--------------------------------------------------------------------------------
+- Dashboard-ah "Upload Subscriber Excel" box-ah khian i LPS Subscriber Raw Data (Excel file .xls / .xlsx / .csv) kha thlang la emaw mouse-in rawn hnuk lut (drag and drop) rawh.
+- File i upload rualin subscriber hming, STB No, VC No, Subscriber Code leh channels te chu chiang takin a lo in-load nghal vek ang.
+- Browser i khar (close) hnu pawhin "Clear Data / Remove files" button i hmeh loh chuan i data khawih lai a bo lo ang (Auto-persisted).
+
+--------------------------------------------------------------------------------
+2. PLAN PRESETS & MUTUAL REPLACEMENT (300 vs 350, 60 vs 100):
+--------------------------------------------------------------------------------
+Customer tinte hian plan hran hran an nei thei a, Quick Plan Presets hmangin awlsam takin i thlak thei:
+
+A. 1-Click Combo Buttons:
+   * "🌟 Rs. 450 Plan (350 HD + 100 Sports HD)":
+     - He button hi i hmeh rualin 300 SD Pack channel te leh Rs. 60 Sports SD Addon te chu a nuaibo (remove) nghal vek ang.
+     - 350 HD Pack (BST + LPS Locals + SS Select HD-1 & 2 + Star Sports HD-1 + Cartoon Network) leh 100 Sports HD Addon (SONY SPORTS TEN 1 HD & 2 HD) chauh a lut ang.
+     - Bill pawh Rs. 450-ah a set nghal ang a, AUTO-SAVED a ni nghal ang.
+   
+   * "⚡ Rs. 360 Plan (300 SD + 60 Sports SD)":
+     - 350 HD Pack leh 100 HD Addon te a paih fai vek ang a, 300 SD Pack leh 60 Sports SD Addon chauh a dah ang.
+     - Bill pawh Rs. 360-ah a set nghal bawk ang.
+
+B. Modular Presets Replacement:
+   * Rs. 300 Pack (SD) i thlan laiin Rs. 350 Pack (HD) i hmet a nih chuan, 300 SD channel te kha a bo nghal vek ang a, 350 HD channel te chauh a awm tawh ang.
+   * Rs. 60 Sports (SD) i thlan laiin Rs. 100 Sports (HD) i hmet a nih chuan, Rs. 60 SD channel (Sony Sports Ten 1 & 2 SD) kha a bo nghal ang a, Rs. 100 HD channel (Sony Sports Ten 1 HD & 2 HD) chauh a awm tawh ang.
+   * Chutiang chiahin Rs. 100 atanga Rs. 60 a thlak pawhin a thlak thleng (replace) nghal vek ang.
+
+--------------------------------------------------------------------------------
+3. EXCEL EXPORT & DATA PERSISTENCE (SAVE THAR CHAUH A LUT DAN):
+--------------------------------------------------------------------------------
+- I plan thlak (entirnan 300 leh 60 atanga 350 leh 100 a i thlak) apiang khan system-ah a save nghal (Instant Auto-Save).
+- Excel i download hunah:
+  * Customer Summary Excel (Final_Export_LCO_Share.xlsx) leh
+  * LPS Bulk Package Renew (12-Column format) Excel-ah khan:
+  * Channel hlui (300 leh 60 man) kha a tel tawh LO ang.
+  * I save thar ber (350 leh 100 man emaw i thlan thar) CHAUH kha a lut tawh ang.
+
+--------------------------------------------------------------------------------
+4. START DATE LEH END DATE (CALENDAR) FORMAT & HMAN DAN:
+--------------------------------------------------------------------------------
+- Dashboard chung lama Calendar picker-ah khian Start Date leh End Date te chu chhiar awlsam takin "DD/MM/YYYY" format-in a lang.
+- Calendar pop-up atangin i duh duh ni i thlang thei a:
+  * Thlakhat chhung (e.g. 19/09/2026 to 19/10/2026) a nih chuan Subscription Type chu "Month", Subscription Value chu "1" a ni nghal ang.
+  * Ni tlem zawk a nih chuan Subscription Type chu "Day", Subscription Value chu ni zat (days count) a ni ang.
+- Bulk Renew Excel-a column 7 leh column 8 ah LPS portal-in a phut angin a lut vek ang.
+
+--------------------------------------------------------------------------------
+5. BILL KHUT DAN & LCO HLAWH / SEN:
+--------------------------------------------------------------------------------
+- BST Base Pack: Rs. 154 (LCO Share: Rs. 78.60, LPS Cut: Rs. 75.40)
+- LPS LOCALS Pack: Rs. 71 (LCO Share: Rs. 36.20, LPS Cut: Rs. 34.80)
+- Ala-carte Channels: Broadcaster rate atangin 8.47% chu LCO share a ni a, a bak 91.53% chu MSO chan a ni.
+- Customer Bill box-ah customer hnen atanga i khawn zat tur (entirnan 300, 350, 360, 450 etc.) i dah khan, LCO Hlawh (20%) leh LCO Sen (80%) a chhut nghal zung zung bawk.
+
+--------------------------------------------------------------------------------
+6. EXCEL DOWNLOAD DAN:
+--------------------------------------------------------------------------------
+- Table hnuai lamah "LPS Bulk Renew Format Export (12-Columns)" button sen hmet la.
+- Preview a lo lang ang a, "Download 12-Column Excel File (.xlsx)" tih i hmeh khan file a lo in-download ang.
+- He file hi LPS Operator Portal-ah "Bulk Package Renew" section-ah i upload nghal tawp thei a ni.
+
+================================================================================
+Power by MobiTech - LPS Cable TV Subscriber Channel Management System
+================================================================================

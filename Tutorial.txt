@@ -1,0 +1,30 @@
+LPS SUBSCRIBER DATA CONVERTER - TUTORIAL
+
+He application hi LPS Subscriber raw data Excel file atanga Bulk Renew Excel file siam chhuah nana hman a ni.
+
+1. EXCEL FILE UPLOAD DAN:
+   - Dashboard-ah "Upload Subscriber Excel" button kha hmet la, i computer-a LPS Subscriber Raw Data (Excel file) kha thlang rawh.
+   - File i upload hnuah customer hming list a lo lang ang.
+
+2. CUSTOMER TINTE CHANNEL THLAN SAK DAN:
+   - Customer hming i click khan a veilam (Sidebar)-ah an details a lo lang ang.
+   - "Channel list atanga thlan belhna" tih kha hmet la, channel an lak belh duh te i search thei a, "+" button hmetin i thlang belh thei ang.
+   - Channel i thlan belh apiang khan an bill zat tur a lo in-update nghal ang.
+   - A-la-carte channel-ah hian LCO share chu 8.47% a ni a, MSO/Broadcaster cut chu 91.53% a ni.
+
+3. SUBSCRIPTION DATE & VALUE (CALENDAR) HMAN DAN:
+   - A chung ber veilam-ah "Calendar" button (Date in-ziakna) kha hmet la.
+   - Start Date (Renew tanni tur) leh End Date (Renew tawp ni tur) kha thlang rawh.
+   - Subscription Type (Month/Day) leh Value kha a auto-detect ang:
+     * Thlakhat a tlin chuan: SubscriptionType = "Month", Value = 1
+     * Thlakhat a tling lo a nih chuan: SubscriptionType = "Day", Value = [Ni zat]
+   - "Apply" hmet la, tichuan Export i hmeh hunah Excel-ah khan he date settings hi a lo lut nghal ang.
+
+4. EXCEL EXPORT (LPS PORTAL-A HMAN TUR):
+   - I peih fel hunah "Export Bulk Renew Excel" button kha hmet la.
+   - File lo thla (Download) kha LPS Portal-ah "Bulk Renew" nan i hmang thei tawh ang.
+
+HRILHFIAHNA (PRICING):
+- BST (Rs 154): LCO Share hi Rs 78.60 a ni a, MSO Cut hi Rs 75.40 a ni.
+- LOCAL (Rs 71): LCO Share hi Rs 36.20 a ni a, MSO Cut hi Rs 34.80 a ni.
+- A-la-carte: Channel rate atangin 8.47% chu LCO hlawh a ni a, a bak 91.53% chu MSO/Broadcaster chan a ni.
