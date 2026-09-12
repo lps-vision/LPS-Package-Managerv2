@@ -163,6 +163,7 @@ export interface BulkRenewExportOptions {
   localPackageName?: string;
   hdPackageName?: string;
   includeLpsHd?: 'none' | 'with-locals' | 'hd-only' | 'all';
+  includeBillCollected?: boolean;
   subscriptionSettings?: SubscriptionDateSettings;
 }
 
@@ -171,7 +172,7 @@ export function exportBulkPackageRenewExcel(
   fileName: string = 'BulkPackageRenew_BST.xlsx',
   options?: BulkRenewExportOptions
 ): void {
-  // Exact 12-column format matching official LPS Cable Bulk Renew template:
+  // Exact format matching LPS Cable Bulk Renew template:
   // 1. Name
   // 2. SubscriberCode
   // 3. STBNo
@@ -184,11 +185,13 @@ export function exportBulkPackageRenewExcel(
   // 10. PackageDiscount
   // 11. ServiceType
   // 12. FranchiseeName
+  // (Optional 13. Bill Collected)
   const subTypeCol = options?.subscriptionTypeHeader || 'SubscriptionType(Day/Month/Year)';
   const sheetName = options?.sheetName || 'BulkPackageRenew';
   const localPkgName = options?.localPackageName || 'LPS LOCALS';
   const hdPkgName = options?.hdPackageName || 'LPS HD';
   const includeLpsHd = options?.includeLpsHd || 'none';
+  const includeBillCollected = !!options?.includeBillCollected;
   const rawRows: Record<string, unknown>[] = [];
 
   for (const c of customers) {
@@ -204,8 +207,10 @@ export function exportBulkPackageRenewExcel(
     }
     if (isNaN(subVal) || subVal <= 0) subVal = 1;
 
+    const billCollectedVal = c.customBillAmount !== undefined && c.customBillAmount > 0 ? c.customBillAmount : '';
+
     // 1. Base Package row (Always 'BST')
-    rawRows.push({
+    const bstRowObj: Record<string, unknown> = {
       'Name': c.name,
       'SubscriberCode': c.subscriberCode,
       'STBNo': c.stbNo,
@@ -218,11 +223,15 @@ export function exportBulkPackageRenewExcel(
       'PackageDiscount': c.packageDiscount ?? '0.00',
       'ServiceType': c.serviceType || 'PayTV',
       'FranchiseeName': c.franchiseeName || '',
-    });
+    };
+    if (includeBillCollected) {
+      bstRowObj['Bill Collected'] = billCollectedVal;
+    }
+    rawRows.push(bstRowObj);
 
     // 2. Local Package row (default 'LPS LOCALS')
     if (isLocalActive) {
-      rawRows.push({
+      const localRowObj: Record<string, unknown> = {
         'Name': c.name,
         'SubscriberCode': c.subscriberCode,
         'STBNo': c.stbNo,
@@ -235,7 +244,11 @@ export function exportBulkPackageRenewExcel(
         'PackageDiscount': c.packageDiscount ?? '0.00',
         'ServiceType': c.serviceType || 'PayTV',
         'FranchiseeName': c.franchiseeName || '',
-      });
+      };
+      if (includeBillCollected) {
+        localRowObj['Bill Collected'] = '';
+      }
+      rawRows.push(localRowObj);
     }
 
     // 3. HD Package row (default 'LPS HD' - included alongside LPS LOCALS)
@@ -249,7 +262,7 @@ export function exportBulkPackageRenewExcel(
           )));
 
     if (shouldIncludeHdRow) {
-      rawRows.push({
+      const hdRowObj: Record<string, unknown> = {
         'Name': c.name,
         'SubscriberCode': c.subscriberCode,
         'STBNo': c.stbNo,
@@ -262,12 +275,16 @@ export function exportBulkPackageRenewExcel(
         'PackageDiscount': c.packageDiscount ?? '0.00',
         'ServiceType': c.serviceType || 'PayTV',
         'FranchiseeName': c.franchiseeName || '',
-      });
+      };
+      if (includeBillCollected) {
+        hdRowObj['Bill Collected'] = '';
+      }
+      rawRows.push(hdRowObj);
     }
 
     // 4. Each selected channel row
     for (const channelName of c.selectedChannels) {
-      rawRows.push({
+      const chRowObj: Record<string, unknown> = {
         'Name': c.name,
         'SubscriberCode': c.subscriberCode,
         'STBNo': c.stbNo,
@@ -280,28 +297,35 @@ export function exportBulkPackageRenewExcel(
         'PackageDiscount': c.packageDiscount ?? '0.00',
         'ServiceType': c.serviceType || 'PayTV',
         'FranchiseeName': c.franchiseeName || '',
-      });
+      };
+      if (includeBillCollected) {
+        chRowObj['Bill Collected'] = '';
+      }
+      rawRows.push(chRowObj);
     }
   }
 
-  const worksheet = XLSX.utils.json_to_sheet(rawRows, {
-    header: [
-      'Name',
-      'SubscriberCode',
-      'STBNo',
-      'VCNo',
-      'Type (Package/Channel)',
-      'PackageChannelName',
-      subTypeCol,
-      'SubscriptionValue',
-      'NetworkCapacityFee',
-      'PackageDiscount',
-      'ServiceType',
-      'FranchiseeName'
-    ]
-  });
+  const headers = [
+    'Name',
+    'SubscriberCode',
+    'STBNo',
+    'VCNo',
+    'Type (Package/Channel)',
+    'PackageChannelName',
+    subTypeCol,
+    'SubscriptionValue',
+    'NetworkCapacityFee',
+    'PackageDiscount',
+    'ServiceType',
+    'FranchiseeName'
+  ];
+  if (includeBillCollected) {
+    headers.push('Bill Collected');
+  }
 
-  worksheet['!cols'] = [
+  const worksheet = XLSX.utils.json_to_sheet(rawRows, { header: headers });
+
+  const colWidths = [
     { wch: 28 }, // Name
     { wch: 18 }, // SubscriberCode
     { wch: 18 }, // STBNo
@@ -315,6 +339,11 @@ export function exportBulkPackageRenewExcel(
     { wch: 15 }, // ServiceType
     { wch: 20 }, // FranchiseeName
   ];
+  if (includeBillCollected) {
+    colWidths.push({ wch: 16 });
+  }
+
+  worksheet['!cols'] = colWidths;
 
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);

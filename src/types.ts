@@ -5,12 +5,14 @@ export interface SubscriberRawRow {
   vcNo: string;
   type: string; // 'Package' | 'Channel'
   packageChannelName: string;
+  packageAddonInfo?: string;
   subscriptionPeriod?: string;
   subscriptionCount?: string | number;
   networkCapacityFee?: string | number;
   packageDiscount?: string | number;
   serviceType?: string;
   franchiseeName?: string;
+  customBillAmount?: number;
 }
 
 export interface CustomerSummary {

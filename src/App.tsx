@@ -584,6 +584,7 @@ export default function App() {
           packageDiscount: uc.packageDiscount ?? '0.00',
           serviceType: uc.serviceType || 'PayTV',
           franchiseeName: uc.franchiseeName || '',
+          customBillAmount: customBillAmount !== undefined && customBillAmount > 0 ? customBillAmount : uc.customBillAmount,
         };
 
         // 3. Add Local Addon row if active
@@ -675,6 +676,7 @@ export default function App() {
       
       for (const c of customers) {
         // 1. BST Row
+        const targetBill = hasExplicitBill ? customBillAmount : c.customBillAmount;
         newAllRows.push({
           name: c.name,
           subscriberCode: c.subscriberCode,
@@ -688,6 +690,7 @@ export default function App() {
           packageDiscount: c.packageDiscount ?? '0.00',
           serviceType: c.serviceType || 'PayTV',
           franchiseeName: c.franchiseeName || '',
+          customBillAmount: targetBill !== undefined && targetBill > 0 ? targetBill : undefined,
         });
 
         // 2. LOCAL Row
@@ -802,6 +805,7 @@ export default function App() {
           packageDiscount: uc.packageDiscount ?? '0.00',
           serviceType: uc.serviceType || 'PayTV',
           franchiseeName: uc.franchiseeName || '',
+          customBillAmount: hasCustomBill ? customBillAmount : uc.customBillAmount,
         });
 
         // 2. Local Addon Row

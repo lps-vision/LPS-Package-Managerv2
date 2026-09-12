@@ -218,11 +218,48 @@ export function calculateCustomerPricing(
   };
 }
 
+export function isLpsPackageName(name: string): boolean {
+  const upper = (name || '').toUpperCase().trim().replace(/\s+/g, ' ');
+  if (!upper) return false;
+
+  if (
+    upper === 'BST' ||
+    upper === 'BST CHAUH' ||
+    upper === 'BST ONLY' ||
+    upper === 'BST + LOCAL' ||
+    upper === 'BST+LOCAL' ||
+    upper === 'BST + LOCALS' ||
+    upper === 'BST+LOCALS' ||
+    upper === 'LPS LOCALS' ||
+    upper === 'LPS LOCAL' ||
+    upper === 'LOCAL' ||
+    upper === 'LOCALS' ||
+    upper === 'LOCAL 1-12' ||
+    upper === 'LOCALS 1-12' ||
+    upper === 'LPS HD' ||
+    upper === 'LPS-HD' ||
+    upper === 'LPS GOLD' ||
+    upper === 'GOLD PACK' ||
+    upper === 'LPS-GOLD' ||
+    upper === 'LPS_GOLD' ||
+    upper === 'LPS GOLD HD' ||
+    upper === 'LPS GOLD (HD)' ||
+    upper === 'LPS SILVER' ||
+    upper === 'SILVER PACK' ||
+    upper === 'LPS-SILVER' ||
+    upper === 'LPS_SILVER' ||
+    upper === 'LPS SILVER SD' ||
+    upper === 'LPS SILVER (SD)' ||
+    upper === 'GRAND TOTAL' ||
+    upper === 'TOTAL'
+  ) {
+    return true;
+  }
+  return false;
+}
+
 export function sanitizePackageName(name: string): string {
   const upper = (name || '').toUpperCase().trim();
-  // Gold Silver leh Add On vel hi a awm tawh dawn lo a.
-  // Chu vangin column F a PackageChannelName ah LPS SILVER leh LPS GOLD tih a awm chuan
-  // Automatic in BST tia thlak tur.
   if (
     upper.includes('SILVER') ||
     upper.includes('GOLD') ||
@@ -257,6 +294,7 @@ export function processRawRowsToCustomers(
     networkCapacityFee: string | number;
     packageDiscount: string | number;
     serviceType: string;
+    customBillAmount?: number;
   }>();
 
   const priceMap = getChannelPriceMap(customChannels);
@@ -265,30 +303,63 @@ export function processRawRowsToCustomers(
   // Helper to find canonical channel name
   const findCanonicalChannelName = (input: string): string => {
     const clean = input.trim();
+    if (!clean) return '';
     const cleanLower = clean.toLowerCase();
-    const matched = allChannelsList.find(
+
+    // 1. Direct case-insensitive match
+    const exact = allChannelsList.find(
       (c) => c.name.toLowerCase() === cleanLower
     );
-    return matched ? matched.name : clean;
+    if (exact) return exact.name;
+
+    // 2. Normalized key match (ignoring whitespace, hyphens, punctuation)
+    const normInput = normalizeKey(clean);
+    const matchedNorm = allChannelsList.find((c) => normalizeKey(c.name) === normInput);
+    if (matchedNorm) return matchedNorm.name;
+
+    // 3. Substring match helper
+    const searchMatch = allChannelsList.find((c) => {
+      const cNorm = normalizeKey(c.name);
+      return (normInput.length >= 4 && cNorm.includes(normInput)) || (cNorm.length >= 4 && normInput.includes(cNorm));
+    });
+    if (searchMatch) return searchMatch.name;
+
+    // 4. Return trimmed clean input directly so unknown/new channels are never dropped
+    return clean;
   };
 
   for (const row of rawRows) {
-    const subCode = (row.subscriberCode || row.stbNo || row.name || 'UNKNOWN').trim();
+    const rawName = (row.name || '').trim();
+    const rawSubCode = (row.subscriberCode || '').trim();
+    const rawStb = (row.stbNo || '').trim();
+    const rawPkgName = (row.packageChannelName || '').trim();
+    const upperRaw = rawPkgName.toUpperCase().replace(/\s+/g, ' ').trim();
+    const upperName = rawName.toUpperCase();
+
+    // Skip summary / grand total rows or completely empty subscriber rows
+    if (
+      upperRaw === 'GRAND TOTAL' ||
+      upperRaw === 'TOTAL' ||
+      upperName === 'GRAND TOTAL' ||
+      upperName === 'TOTAL' ||
+      (!rawName && !rawSubCode && !rawStb)
+    ) {
+      continue;
+    }
+
+    const subCode = (rawSubCode || rawStb || rawName).trim();
     if (!subCode) continue;
 
     let existing = customerMap.get(subCode);
     if (!existing) {
-      // Tuna convert dan thar ah hian auto-presets hlui cancel a ni a.
-      // Raw file a row awm ang zelin convert a ni ang.
-      // Default in BST + Local 1-12 a ni a, channels chu empty list atangin a intan ang.
       existing = {
-        name: (row.name || '').trim(),
-        subscriberCode: subCode,
-        stbNo: (row.stbNo || '').trim(),
+        name: rawName,
+        subscriberCode: rawSubCode || subCode,
+        stbNo: rawStb,
         vcNo: (row.vcNo || '').trim(),
         franchiseeName: (row.franchiseeName || '').trim(),
         basePackage: 'BST',
-        hasLocalAddon: true, // Local 1-12 intick sa in
+        hasLocalAddon: true, // Default to true (Local 1-12)
         hasLpsHd: false,
         channels: [],
         subscriptionPeriod: row.subscriptionPeriod || 'Month',
@@ -296,65 +367,135 @@ export function processRawRowsToCustomers(
         networkCapacityFee: row.networkCapacityFee || '0.00',
         packageDiscount: row.packageDiscount || '0.00',
         serviceType: row.serviceType || 'PayTV',
+        customBillAmount: row.customBillAmount,
       };
       customerMap.set(subCode, existing);
     }
 
-    if (row.name && !existing.name) existing.name = row.name.trim();
-    if (row.stbNo && !existing.stbNo) existing.stbNo = row.stbNo.trim();
+    // Keep metadata updated if present on subsequent lines
+    if (rawName && !existing.name) existing.name = rawName;
+    if (rawStb && !existing.stbNo) existing.stbNo = rawStb;
     if (row.vcNo && !existing.vcNo) existing.vcNo = row.vcNo.trim();
     if (row.franchiseeName && !existing.franchiseeName) {
       existing.franchiseeName = row.franchiseeName.trim();
     }
 
-    const rawPkgName = (row.packageChannelName || '').trim();
-    const upperRaw = rawPkgName.toUpperCase().replace(/\s+/g, ' ').trim();
+    // Preserve custom bill amount if present
+    if (row.customBillAmount !== undefined && row.customBillAmount > 0) {
+      existing.customBillAmount = row.customBillAmount;
+    }
 
-    // 1. LPS GOLD: BST line hranin leh LPS LOCALS line hranin chauhva in-convert tur (a bak zawng chu remove rih)
+    // Check packageAddonInfo (from "Package / Addon" column)
+    if (row.packageAddonInfo) {
+      const upperAddon = row.packageAddonInfo.toUpperCase().trim();
+      if (upperAddon.includes('CHAUH') || upperAddon.includes('ONLY') || upperAddon === 'BST') {
+        existing.hasLocalAddon = false;
+      } else if (upperAddon.includes('LOCAL')) {
+        existing.hasLocalAddon = true;
+      }
+    }
+
+    // 1. LPS GOLD: Sets BST, Local and HD
     if (
       upperRaw === 'LPS GOLD' ||
-      upperRaw === 'GOLD' ||
-      upperRaw.includes('LPS GOLD') ||
-      upperRaw.includes('GOLD PACK') ||
+      upperRaw === 'GOLD PACK' ||
       upperRaw === 'LPS-GOLD' ||
       upperRaw === 'LPS_GOLD' ||
       upperRaw.includes('LPS GOLD HD') ||
       upperRaw.includes('LPS GOLD (HD)') ||
-      (upperRaw.includes('GOLD') && !upperRaw.includes('STAR GOLD') && !upperRaw.includes('ZEE') && !upperRaw.includes('CINEMA') && !upperRaw.includes('MOVIES'))
+      (upperRaw.startsWith('LPS GOLD') && !upperRaw.includes('STAR GOLD') && !upperRaw.includes('ZEE'))
     ) {
       existing.basePackage = 'BST';
       existing.hasLocalAddon = true;
-      // a bak zawng chu remove rih (no extra channels)
+      existing.hasLpsHd = true;
     }
-    // 2. LPS SILVER: BST line hranin leh LPS LOCALS line hranin chauhva in-convert tur (a bak zawng chu remove rih)
+    // 2. LPS SILVER: BST + Local
     else if (
       upperRaw === 'LPS SILVER' ||
-      upperRaw === 'SILVER' ||
-      upperRaw.includes('LPS SILVER') ||
-      upperRaw.includes('SILVER PACK') ||
+      upperRaw === 'SILVER PACK' ||
       upperRaw === 'LPS-SILVER' ||
       upperRaw === 'LPS_SILVER' ||
       upperRaw.includes('LPS SILVER SD') ||
-      upperRaw.includes('LPS SILVER (SD)') ||
-      (upperRaw.includes('SILVER') && !upperRaw.includes('CINEMA') && !upperRaw.includes('MOVIES'))
+      upperRaw.includes('LPS SILVER (SD)')
     ) {
       existing.basePackage = 'BST';
       existing.hasLocalAddon = true;
-      // a bak zawng chu remove rih (no extra channels)
     }
-    // 3. BST package
-    else if (upperRaw === 'BST') {
-      existing.basePackage = 'BST';
-    }
-    // 4. Local package
+    // 3. Combined BST + Local (e.g. from Channel thlan column when no extra channels)
     else if (
-      upperRaw.includes('LOCAL') ||
-      upperRaw.includes('1-12') ||
-      upperRaw.includes('LPS LOCALS')
+      upperRaw === 'BST + LOCAL' ||
+      upperRaw === 'BST+LOCAL' ||
+      upperRaw === 'BST + LOCALS' ||
+      upperRaw === 'BST+LOCALS'
+    ) {
+      existing.basePackage = 'BST';
+      existing.hasLocalAddon = true;
+    }
+    // 4. BST chauh / BST only
+    else if (
+      upperRaw === 'BST' ||
+      upperRaw === 'BST CHAUH' ||
+      upperRaw === 'BST ONLY'
+    ) {
+      existing.basePackage = 'BST';
+      if (upperRaw.includes('CHAUH') || upperRaw.includes('ONLY')) {
+        existing.hasLocalAddon = false;
+      }
+    }
+    // 5. Local package alone (LPS LOCALS, Local 1-12, etc.)
+    else if (
+      upperRaw === 'LPS LOCALS' ||
+      upperRaw === 'LPS LOCAL' ||
+      upperRaw === 'LOCAL' ||
+      upperRaw === 'LOCALS' ||
+      upperRaw === 'LOCAL 1-12' ||
+      upperRaw === 'LOCALS 1-12'
     ) {
       existing.hasLocalAddon = true;
     }
-    // A bak zawng (Add-on packs, individual channel lines etc.) chu user duh danin remove rih a ni.
+    // 6. LPS HD package specifically
+    else if (upperRaw === 'LPS HD' || upperRaw === 'LPS-HD' || (upperRaw === 'HD' && row.type === 'Package')) {
+      existing.hasLpsHd = true;
+    }
+    // 7. Individual Ala-carte Channels!
+    // Any other row is recognized as an a-la-carte channel
+    else if (rawPkgName && rawPkgName.length > 0) {
+      // Check if candidate is bullet or comma separated (e.g. copied from UI)
+      const channelCandidates = rawPkgName.includes('•')
+        ? rawPkgName.split('•')
+        : rawPkgName.includes(',')
+        ? rawPkgName.split(',')
+        : [rawPkgName];
+
+      for (const candidate of channelCandidates) {
+        const trimmed = candidate.trim();
+        if (!trimmed) continue;
+        const upperCand = trimmed.toUpperCase();
+
+        if (
+          upperCand === 'BST' ||
+          upperCand.includes('BST+LOCAL') ||
+          upperCand.includes('BST + LOCAL') ||
+          upperCand === 'BST CHAUH' ||
+          upperCand === 'LPS LOCALS' ||
+          upperCand === 'LOCAL 1-12' ||
+          upperCand === 'LOCAL' ||
+          upperCand === 'GRAND TOTAL'
+        ) {
+          if (upperCand.includes('LOCAL')) {
+            existing.hasLocalAddon = true;
+          } else if (upperCand.includes('CHAUH')) {
+            existing.hasLocalAddon = false;
+          }
+          continue;
+        }
+
+        const canonicalName = findCanonicalChannelName(trimmed);
+        if (canonicalName && !existing.channels.includes(canonicalName)) {
+          existing.channels.push(canonicalName);
+        }
+      }
+    }
   }
 
   const customers: CustomerSummary[] = [];
@@ -382,6 +523,11 @@ export function processRawRowsToCustomers(
       priceMap
     );
 
+    const hasCustomBill = item.customBillAmount !== undefined && item.customBillAmount > 0;
+    const effectiveLcoHlawh = hasCustomBill
+      ? Number((item.customBillAmount! - pricing.lcoSen).toFixed(2))
+      : pricing.lcoHlawh;
+
     customers.push({
       id: code,
       name: item.name,
@@ -394,14 +540,15 @@ export function processRawRowsToCustomers(
       hasLpsHd: isLpsHd,
       selectedChannels: item.channels,
       channelPrice: pricing.price,
-      lcoHlawh: pricing.lcoHlawh,
+      lcoHlawh: effectiveLcoHlawh,
       lcoSen: pricing.lcoSen,
       subscriptionPeriod: item.subscriptionPeriod,
       subscriptionCount: item.subscriptionCount,
       networkCapacityFee: item.networkCapacityFee,
       packageDiscount: item.packageDiscount,
       serviceType: item.serviceType,
-      isModified: false,
+      customBillAmount: item.customBillAmount,
+      isModified: hasCustomBill || item.channels.length > 0 || !item.hasLocalAddon,
     });
   }
 
@@ -434,39 +581,50 @@ export async function parseSubscriberExcel(
     throw new Error('Excel file-ah data a awm lo a ni.');
   }
 
-  const rawRows: SubscriberRawRow[] = rawJson.map((row) => {
+  const parsedRows: (SubscriberRawRow | null)[] = rawJson.map((row) => {
     let name = '';
     let subscriberCode = '';
     let stbNo = '';
     let vcNo = '';
     let type = '';
     let packageChannelName = '';
+    let packageAddonInfo = '';
     let subscriptionPeriod = 'Month';
     let subscriptionCount: string | number = 1;
     let networkCapacityFee = '0.00';
     let packageDiscount = '0.00';
     let serviceType = 'PayTV';
     let franchiseeName = '';
+    let customBillAmount: number | undefined = undefined;
 
     for (const [key, val] of Object.entries(row)) {
       const norm = normalizeKey(key);
       const strVal = String(val ?? '').trim();
 
-      if (norm === 'name' || norm === 'subscribername' || norm === 'customername' || norm === 'hming') {
+      if (norm === 'name' || norm === 'subscribername' || norm === 'customername' || norm === 'hming' || norm === 'subname' || norm.includes('subscribername')) {
         name = strVal;
-      } else if (norm === 'subscribercode' || norm === 'subcode' || norm === 'customercode' || norm === 'code') {
+      } else if (norm === 'subscribercode' || norm === 'subcode' || norm === 'customercode' || norm === 'code' || norm === 'subid' || norm === 'subscriberid') {
         subscriberCode = strVal;
-      } else if (norm === 'stbno' || norm === 'stb' || norm === 'stbnumber') {
+      } else if (norm === 'stbno' || norm === 'stb' || norm === 'stbnumber' || norm === 'settopbox' || norm === 'boxno') {
         stbNo = strVal;
-      } else if (norm === 'vcno' || norm === 'vc' || norm === 'smartcard') {
+      } else if (norm === 'vcno' || norm === 'vc' || norm === 'smartcard' || norm === 'cardno' || norm === 'smartcardno') {
         vcNo = strVal;
-      } else if (norm === 'type' || norm === 'typepackagechannel' || norm === 'packagetype') {
+      } else if (norm === 'type' || norm === 'typepackagechannel' || norm === 'packagetype' || norm === 'itemtype' || norm.includes('typepackagechannel')) {
         type = strVal;
+      } else if (norm === 'packageaddon' || norm === 'packageoraddon' || norm === 'addon' || norm === 'basepackage' || norm === 'packageinfo') {
+        packageAddonInfo = strVal;
       } else if (
+        norm === 'channelthlan' ||
+        norm === 'channelthlanna' ||
+        norm === 'channelthlang' ||
+        norm.includes('channelthlan') ||
         norm === 'packagechannelname' ||
         norm === 'channelname' ||
         norm === 'packagename' ||
         norm === 'channel' ||
+        norm === 'channels' ||
+        norm === 'channellist' ||
+        norm === 'selectedchannels' ||
         norm === 'package' ||
         norm === 'pack' ||
         norm === 'plan' ||
@@ -510,36 +668,72 @@ export async function parseSubscriberExcel(
         norm.includes('lconame')
       ) {
         franchiseeName = strVal;
+      } else if (
+        norm === 'billcollected' ||
+        norm === 'actualcollected' ||
+        norm === 'custombill' ||
+        norm === 'custombillamount' ||
+        norm === 'collected' ||
+        norm === 'collectedamount' ||
+        norm === 'khawnzat' ||
+        norm === 'khawnzatamount' ||
+        norm === 'bill' ||
+        norm === 'billamount' ||
+        norm === 'totalbill' ||
+        norm.includes('billcollected') ||
+        norm.includes('custombill')
+      ) {
+        const p = parseFloat(strVal.replace(/[^0-9.]/g, ''));
+        if (!isNaN(p) && p > 0) {
+          customBillAmount = p;
+        }
       }
+    }
+
+    // Fallback: if packageChannelName is empty but packageAddonInfo exists, use packageAddonInfo
+    if (!packageChannelName && packageAddonInfo) {
+      packageChannelName = packageAddonInfo;
     }
 
     const cleanPkgName = packageChannelName.trim() || 'BST';
     const upperCleanPkg = cleanPkgName.toUpperCase();
-    const isKnownPackage =
-      upperCleanPkg === 'BST' ||
-      upperCleanPkg.includes('LOCAL') ||
-      upperCleanPkg.includes('GOLD') ||
-      upperCleanPkg.includes('SILVER') ||
-      upperCleanPkg.includes('ADD ON') ||
-      upperCleanPkg.includes('ADDON') ||
-      upperCleanPkg.includes('SPORTS PACK');
+    const upperName = name.toUpperCase().trim();
+
+    // Skip summary, empty, or Grand Total rows
+    if (
+      upperCleanPkg === 'GRAND TOTAL' ||
+      upperCleanPkg === 'TOTAL' ||
+      upperName === 'GRAND TOTAL' ||
+      upperName === 'TOTAL' ||
+      (!name && !subscriberCode && !stbNo)
+    ) {
+      return null;
+    }
+
+    const isPkg = isLpsPackageName(cleanPkgName);
+    const resolvedType = type
+      ? (type.toLowerCase().includes('package') ? 'Package' : 'Channel')
+      : (isPkg ? 'Package' : 'Channel');
 
     return {
       name,
       subscriberCode,
       stbNo,
       vcNo,
-      type: type || (isKnownPackage ? 'Package' : 'Channel'),
+      type: resolvedType,
       packageChannelName: cleanPkgName,
+      packageAddonInfo: packageAddonInfo || undefined,
       subscriptionPeriod,
       subscriptionCount,
       networkCapacityFee,
       packageDiscount,
       serviceType,
       franchiseeName,
+      customBillAmount,
     };
   });
 
+  const rawRows = parsedRows.filter((r): r is SubscriberRawRow => r !== null);
   const customers = processRawRowsToCustomers(rawRows, customChannels, bstPrice, localAddonPrice);
 
   return { rawRows, customers, sheetNames };

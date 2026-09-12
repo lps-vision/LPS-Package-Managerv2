@@ -23,6 +23,7 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
   const [localPackageName, setLocalPackageName] = useState<string>('LPS LOCALS');
   const [hdPackageName, setHdPackageName] = useState<string>('LPS HD');
   const [includeLpsHd, setIncludeLpsHd] = useState<'none' | 'with-locals' | 'hd-only' | 'all'>('none');
+  const [includeBillCollected, setIncludeBillCollected] = useState<boolean>(false);
 
   // Calculate statistics
   const stats = useMemo(() => {
@@ -73,6 +74,7 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
       discount: string | number;
       serviceType: string;
       franchiseeName: string;
+      billCollected?: string | number;
     }[] = [];
 
     for (const c of customers) {
@@ -100,6 +102,7 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
         discount: c.packageDiscount ?? '0.00',
         serviceType: c.serviceType || 'PayTV',
         franchiseeName: c.franchiseeName || '',
+        billCollected: c.customBillAmount !== undefined && c.customBillAmount > 0 ? c.customBillAmount : '',
       });
 
       // 2. Local Package row (default LPS LOCALS)
@@ -117,6 +120,7 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
           discount: c.packageDiscount ?? '0.00',
           serviceType: c.serviceType || 'PayTV',
           franchiseeName: c.franchiseeName || '',
+          billCollected: '',
         });
       }
 
@@ -135,6 +139,7 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
           discount: c.packageDiscount ?? '0.00',
           serviceType: c.serviceType || 'PayTV',
           franchiseeName: c.franchiseeName || '',
+          billCollected: '',
         });
       }
 
@@ -153,6 +158,7 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
           discount: c.packageDiscount ?? '0.00',
           serviceType: c.serviceType || 'PayTV',
           franchiseeName: c.franchiseeName || '',
+          billCollected: '',
         });
       }
 
@@ -175,6 +181,7 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
       localPackageName,
       hdPackageName,
       includeLpsHd,
+      includeBillCollected,
       subscriptionSettings,
     });
   };
@@ -312,10 +319,22 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
                     <option value="SubscriptionType(Days/Month)">SubscriptionType(Days/Month)</option>
                   </select>
                 </div>
+
+                <div className="flex items-center gap-1.5 ml-auto">
+                  <label className="flex items-center gap-1.5 cursor-pointer select-none text-xs font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-300 hover:bg-emerald-100 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={includeBillCollected}
+                      onChange={(e) => setIncludeBillCollected(e.target.checked)}
+                      className="rounded text-emerald-600 focus:ring-emerald-500 w-3.5 h-3.5 cursor-pointer"
+                    />
+                    <span>Include 'Bill Collected' (He Apps a upload leh nan)</span>
+                  </label>
+                </div>
               </div>
             </div>
 
-            {/* List of 12 Columns */}
+            {/* List of Columns */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-xs">
               <div className="bg-white px-2.5 py-1.5 rounded border border-slate-200 flex items-center gap-1.5 font-mono">
                 <span className="text-slate-700 font-semibold">A.</span>
@@ -365,6 +384,12 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
                 <span className="text-slate-700 font-semibold">L.</span>
                 <span className="text-slate-800 font-bold">FranchiseeName</span>
               </div>
+              {includeBillCollected && (
+                <div className="bg-emerald-50 px-2.5 py-1.5 rounded border border-emerald-300 flex items-center gap-1.5 font-mono">
+                  <span className="text-emerald-700 font-semibold">M.</span>
+                  <span className="text-emerald-900 font-bold">Bill Collected</span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -390,7 +415,10 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
                     <th className="px-3 py-2 border-r border-blue-800">NetworkCapacityFee</th>
                     <th className="px-3 py-2 border-r border-blue-800">PackageDiscount</th>
                     <th className="px-3 py-2 border-r border-blue-800">ServiceType</th>
-                    <th className="px-3 py-2">FranchiseeName</th>
+                    <th className={`px-3 py-2 ${includeBillCollected ? 'border-r border-blue-800' : ''}`}>FranchiseeName</th>
+                    {includeBillCollected && (
+                      <th className="px-3 py-2 bg-emerald-800 text-emerald-100">Bill Collected</th>
+                    )}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white font-mono text-[11px] whitespace-nowrap">
@@ -420,7 +448,10 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
                       <td className="px-3 py-1.5 text-gray-600 border-r border-gray-200">{row.ncf}</td>
                       <td className="px-3 py-1.5 text-gray-600 border-r border-gray-200">{row.discount}</td>
                       <td className="px-3 py-1.5 text-gray-700 border-r border-gray-200">{row.serviceType}</td>
-                      <td className="px-3 py-1.5 text-gray-700">{row.franchiseeName}</td>
+                      <td className={`px-3 py-1.5 text-gray-700 ${includeBillCollected ? 'border-r border-gray-200' : ''}`}>{row.franchiseeName}</td>
+                      {includeBillCollected && (
+                        <td className="px-3 py-1.5 font-bold text-emerald-700 bg-emerald-50/50">{row.billCollected || '-'}</td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
