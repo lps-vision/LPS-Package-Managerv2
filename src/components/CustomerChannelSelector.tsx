@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import {
   Search,
   ChevronDown,
@@ -14,6 +14,8 @@ import {
   Filter,
   Layers,
   Zap,
+  Save,
+  RotateCcw,
 } from 'lucide-react';
 import { CustomerSummary, ChannelItem } from '../types';
 import {
@@ -135,23 +137,29 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
     return customers.find((c) => c.id === selectedCustomerId) || null;
   }, [customers, selectedCustomerId]);
 
-  // When customer changes, populate channel tags, local addon status, and custom bill
+  // Track active customer ID so draft isn't overwritten on unrelated parent state re-renders
+  const lastCustomerIdRef = useRef<string | null>(null);
+
+  // When customer selection changes, populate channel tags, local addon status, and custom bill
   useEffect(() => {
-    if (currentCustomer) {
-      setSelectedChannelTags([...currentCustomer.selectedChannels]);
-      setHasLocalAddon(currentCustomer.hasLocalAddon !== false);
-      setCustomBillInput(
-        currentCustomer.customBillAmount !== undefined && currentCustomer.customBillAmount > 0
-          ? currentCustomer.customBillAmount.toString()
-          : ''
-      );
-      setSaveSuccessMessage(null);
-    } else {
-      setSelectedChannelTags([]);
-      setHasLocalAddon(true);
-      setCustomBillInput('');
+    if (selectedCustomerId !== lastCustomerIdRef.current) {
+      lastCustomerIdRef.current = selectedCustomerId;
+      if (currentCustomer) {
+        setSelectedChannelTags([...currentCustomer.selectedChannels]);
+        setHasLocalAddon(currentCustomer.hasLocalAddon !== false);
+        setCustomBillInput(
+          currentCustomer.customBillAmount !== undefined && currentCustomer.customBillAmount > 0
+            ? currentCustomer.customBillAmount.toString()
+            : ''
+        );
+        setSaveSuccessMessage(null);
+      } else {
+        setSelectedChannelTags([]);
+        setHasLocalAddon(true);
+        setCustomBillInput('');
+      }
     }
-  }, [currentCustomer]);
+  }, [selectedCustomerId, currentCustomer]);
 
   // Price map for quick lookup
   const channelPriceMap = useMemo(() => getChannelPriceMap(availableChannels), [availableChannels]);
@@ -314,15 +322,16 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
   // Toggle all ADD ON SPORTS channels (4 SD)
   const handleToggleAllSportsAddon = () => {
     if (isAllSportsAddonSelected) {
-      setSelectedChannelTags(selectedChannelTags.filter((t) => !sportsAddonNames.includes(t)));
+      const newTags = selectedChannelTags.filter((t) => !sportsAddonNames.includes(t));
+      updateDraft(newTags, hasLocalAddon);
     } else {
       const toAdd = sportsAddonNames.filter((name) => !selectedChannelTags.includes(name));
-      setSelectedChannelTags([...selectedChannelTags, ...toAdd]);
+      updateDraft([...selectedChannelTags, ...toAdd], hasLocalAddon);
     }
   };
 
-  // Core apply and auto-save helper
-  const applyAndSave = (
+  // Helper to update draft working state ONLY (Does NOT save to customer until clicking SAVE button)
+  const updateDraft = (
     newTags: string[],
     newLocalAddon: boolean,
     newBillVal?: number | string
@@ -330,23 +339,13 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
     setSelectedChannelTags(newTags);
     setHasLocalAddon(newLocalAddon);
 
-    let parsedBill: number | undefined;
     if (newBillVal !== undefined) {
       if (typeof newBillVal === 'number') {
-        parsedBill = newBillVal > 0 ? Number(newBillVal.toFixed(2)) : undefined;
-        setCustomBillInput(parsedBill ? parsedBill.toString() : '');
+        const parsed = newBillVal > 0 ? Number(newBillVal.toFixed(2)) : undefined;
+        setCustomBillInput(parsed ? parsed.toString() : '');
       } else if (typeof newBillVal === 'string') {
-        const val = parseFloat(newBillVal);
-        parsedBill = !isNaN(val) && val > 0 ? Number(val.toFixed(2)) : undefined;
         setCustomBillInput(newBillVal);
       }
-    } else {
-      const val = parseFloat(customBillInput);
-      parsedBill = !isNaN(val) && val > 0 ? Number(val.toFixed(2)) : undefined;
-    }
-
-    if (currentCustomer) {
-      onSaveCustomerChannels(currentCustomer.id, newTags, newLocalAddon, parsedBill);
     }
   };
 
@@ -354,20 +353,20 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
   const handleToggleAllSdAddon = () => {
     if (isAllSdAddonSelected) {
       const newTags = selectedChannelTags.filter((t) => !sdAddonNames.includes(t));
-      applyAndSave(newTags, hasLocalAddon);
+      updateDraft(newTags, hasLocalAddon);
     } else {
       const toAdd = sdAddonNames.filter((name) => !selectedChannelTags.includes(name));
-      applyAndSave([...selectedChannelTags, ...toAdd], hasLocalAddon);
+      updateDraft([...selectedChannelTags, ...toAdd], hasLocalAddon);
     }
   };
 
   const handleToggleAllHdAddon = () => {
     if (isAllHdAddonSelected) {
       const newTags = selectedChannelTags.filter((t) => !hdAddonNames.includes(t));
-      applyAndSave(newTags, hasLocalAddon);
+      updateDraft(newTags, hasLocalAddon);
     } else {
       const toAdd = hdAddonNames.filter((name) => !selectedChannelTags.includes(name));
-      applyAndSave([...selectedChannelTags, ...toAdd], hasLocalAddon);
+      updateDraft([...selectedChannelTags, ...toAdd], hasLocalAddon);
     }
   };
 
@@ -376,25 +375,25 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
     const newTags = selectedChannelTags.includes(channelName)
       ? selectedChannelTags.filter((t) => t !== channelName)
       : [...selectedChannelTags, channelName];
-    applyAndSave(newTags, hasLocalAddon);
+    updateDraft(newTags, hasLocalAddon);
   };
 
   // Add channel tag
   const handleAddChannel = (channelName: string) => {
     if (!selectedChannelTags.includes(channelName)) {
-      applyAndSave([...selectedChannelTags, channelName], hasLocalAddon);
+      updateDraft([...selectedChannelTags, channelName], hasLocalAddon);
     }
   };
 
   // Remove channel tag
   const handleRemoveChannel = (channelName: string) => {
     const newTags = selectedChannelTags.filter((name) => name !== channelName);
-    applyAndSave(newTags, hasLocalAddon);
+    updateDraft(newTags, hasLocalAddon);
   };
 
   // Clear all channels
   const handleClearAllChannels = () => {
-    applyAndSave([], hasLocalAddon, '');
+    updateDraft([], hasLocalAddon, '');
   };
 
   // --- QUICK PRESETS (Rs. 300, Rs. 350, Rs. 50, Rs. 60, Rs. 100) ---
@@ -460,7 +459,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
       );
       const sportsAddon = is100Active ? 100 : is60Active ? 60 : 0;
       const newBill = (hasLocalAddon ? 225 : 154) + (is50Active ? 50 : 0) + sportsAddon;
-      applyAndSave(newTags, hasLocalAddon, newBill);
+      updateDraft(newTags, hasLocalAddon, newBill);
     } else {
       // Remove all 350 HD channels (SS Select HD-1, SS Select HD-2, Star Sports HD-1)
       let newTags = selectedChannelTags.filter(
@@ -471,9 +470,9 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
       }
       const sportsAddon = is100Active ? 100 : is60Active ? 60 : 0;
       const newBill = 300 + (is50Active ? 50 : 0) + sportsAddon;
-      applyAndSave(newTags, true, newBill);
-      setSaveSuccessMessage('Rs. 300 SD Pack thlan a ni e. 350 HD channels a bo ta.');
-      setTimeout(() => setSaveSuccessMessage(null), 3000);
+      updateDraft(newTags, true, newBill);
+      setSaveSuccessMessage('Rs. 300 SD Pack thlan a ni e. SAVE (BST + Local & Channels) button hmet la a in-save ang.');
+      setTimeout(() => setSaveSuccessMessage(null), 3500);
     }
   };
 
@@ -486,7 +485,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
       );
       const sportsAddon = is100Active ? 100 : is60Active ? 60 : 0;
       const newBill = (hasLocalAddon ? 225 : 154) + (is50Active ? 50 : 0) + sportsAddon;
-      applyAndSave(newTags, hasLocalAddon, newBill);
+      updateDraft(newTags, hasLocalAddon, newBill);
     } else {
       // Remove all 300 SD channels (Star Sports Select 1, Star Sports Select 2)
       let newTags = selectedChannelTags.filter(
@@ -497,9 +496,9 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
       }
       const sportsAddon = is100Active ? 100 : is60Active ? 60 : 0;
       const newBill = 350 + (is50Active ? 50 : 0) + sportsAddon;
-      applyAndSave(newTags, true, newBill);
-      setSaveSuccessMessage('Rs. 350 HD Pack thlan a ni e. 300 SD channels a bo ta.');
-      setTimeout(() => setSaveSuccessMessage(null), 3000);
+      updateDraft(newTags, true, newBill);
+      setSaveSuccessMessage('Rs. 350 HD Pack thlan a ni e. SAVE (BST + Local & Channels) button hmet la a in-save ang.');
+      setTimeout(() => setSaveSuccessMessage(null), 3500);
     }
   };
 
@@ -511,14 +510,14 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
     if (is50Active) {
       newTags = selectedChannelTags.filter((ch) => !PRESET_50_CHANNELS.includes(ch));
       const newBill = base + sportsAddon;
-      applyAndSave(newTags, hasLocalAddon, newBill);
+      updateDraft(newTags, hasLocalAddon, newBill);
     } else {
       newTags = [...selectedChannelTags];
       for (const ch of PRESET_50_CHANNELS) {
         if (!newTags.includes(ch)) newTags.push(ch);
       }
       const newBill = base + 50 + sportsAddon;
-      applyAndSave(newTags, hasLocalAddon, newBill);
+      updateDraft(newTags, hasLocalAddon, newBill);
     }
   };
 
@@ -530,7 +529,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
     if (is60Active) {
       const newTags = selectedChannelTags.filter((ch) => !PRESET_60_CHANNELS.includes(ch));
       const newBill = base + addon50;
-      applyAndSave(newTags, hasLocalAddon, newBill);
+      updateDraft(newTags, hasLocalAddon, newBill);
     } else {
       // Remove all 100 HD channels (SONY SPORTS TEN 1 HD, SONY SPORTS TEN 2 HD)
       let newTags = selectedChannelTags.filter((ch) => !PRESET_100_CHANNELS.includes(ch));
@@ -538,8 +537,8 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
         if (!newTags.includes(ch)) newTags.push(ch);
       }
       const newBill = base + addon50 + 60;
-      applyAndSave(newTags, hasLocalAddon, newBill);
-      setSaveSuccessMessage('Rs. 60 Sports SD Addon thlan a ni e. Rs. 100 HD addon a bo ta.');
+      updateDraft(newTags, hasLocalAddon, newBill);
+      setSaveSuccessMessage('Rs. 60 Sports SD Addon thlan a ni e. SAVE button hmet la a in-save ang.');
       setTimeout(() => setSaveSuccessMessage(null), 3000);
     }
   };
@@ -552,7 +551,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
     if (is100Active) {
       const newTags = selectedChannelTags.filter((ch) => !PRESET_100_CHANNELS.includes(ch));
       const newBill = base + addon50;
-      applyAndSave(newTags, hasLocalAddon, newBill);
+      updateDraft(newTags, hasLocalAddon, newBill);
     } else {
       // Remove all 60 SD channels (SONY SPORTS TEN 1, SONY SPORTS TEN 2)
       let newTags = selectedChannelTags.filter((ch) => !PRESET_60_CHANNELS.includes(ch));
@@ -560,8 +559,8 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
         if (!newTags.includes(ch)) newTags.push(ch);
       }
       const newBill = base + addon50 + 100;
-      applyAndSave(newTags, hasLocalAddon, newBill);
-      setSaveSuccessMessage('Rs. 100 Sports HD Addon thlan a ni e. Rs. 60 SD addon a bo ta.');
+      updateDraft(newTags, hasLocalAddon, newBill);
+      setSaveSuccessMessage('Rs. 100 Sports HD Addon thlan a ni e. SAVE button hmet la a in-save ang.');
       setTimeout(() => setSaveSuccessMessage(null), 3000);
     }
   };
@@ -582,9 +581,9 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
       if (!newTags.includes(ch)) newTags.push(ch);
     }
     const newBill = 450 + (is50Active ? 50 : 0);
-    applyAndSave(newTags, true, newBill);
-    setSaveSuccessMessage('Rs. 450 Plan (350 HD + 100 Sports HD) thlan fel a ni e! 300 leh 60 paih a ni a, Excel tan a in-save nghal.');
-    setTimeout(() => setSaveSuccessMessage(null), 4000);
+    updateDraft(newTags, true, newBill);
+    setSaveSuccessMessage('Rs. 450 Plan (350 HD + 100 Sports HD) thlan fel a ni e! SAVE (BST + Local & Channels) button hmet la a in-save ang.');
+    setTimeout(() => setSaveSuccessMessage(null), 3500);
   };
 
   // 7. Direct Combo: Rs. 360 Plan (300 SD + 60 Sports SD)
@@ -604,9 +603,9 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
       if (!newTags.includes(ch)) newTags.push(ch);
     }
     const newBill = 360 + (is50Active ? 50 : 0);
-    applyAndSave(newTags, true, newBill);
-    setSaveSuccessMessage('Rs. 360 Plan (300 SD + 60 Sports SD) thlan fel a ni e! 350 leh 100 paih a ni a, Excel tan a in-save nghal.');
-    setTimeout(() => setSaveSuccessMessage(null), 4000);
+    updateDraft(newTags, true, newBill);
+    setSaveSuccessMessage('Rs. 360 Plan (300 SD + 60 Sports SD) thlan fel a ni e! SAVE (BST + Local & Channels) button hmet la a in-save ang.');
+    setTimeout(() => setSaveSuccessMessage(null), 3500);
   };
 
   // Apply current plan & channel selection to ALL customers (Excel-ah a rualin lut vek tur)
@@ -624,15 +623,53 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
     setTimeout(() => setSaveSuccessMessage(null), 4000);
   };
 
-  // Save changes
+  // Check if draft selections or custom bill have unsaved changes compared to customer's saved state
+  const hasUnsavedChanges = useMemo(() => {
+    if (!currentCustomer) return false;
+    const savedLocal = currentCustomer.hasLocalAddon !== false;
+    if (savedLocal !== hasLocalAddon) return true;
+
+    const savedChannels = [...currentCustomer.selectedChannels].sort();
+    const currentChannels = [...selectedChannelTags].sort();
+    if (savedChannels.length !== currentChannels.length) return true;
+    for (let i = 0; i < savedChannels.length; i++) {
+      if (savedChannels[i] !== currentChannels[i]) return true;
+    }
+
+    const savedBill =
+      currentCustomer.customBillAmount !== undefined && currentCustomer.customBillAmount > 0
+        ? currentCustomer.customBillAmount
+        : undefined;
+    const pInput = parseFloat(customBillInput);
+    const draftBill = !isNaN(pInput) && pInput > 0 ? Number(pInput.toFixed(2)) : undefined;
+    if (savedBill !== draftBill) return true;
+
+    return false;
+  }, [currentCustomer, hasLocalAddon, selectedChannelTags, customBillInput]);
+
+  // Revert draft changes back to the customer's active saved state
+  const handleRevert = () => {
+    if (!currentCustomer) return;
+    setSelectedChannelTags([...currentCustomer.selectedChannels]);
+    setHasLocalAddon(currentCustomer.hasLocalAddon !== false);
+    setCustomBillInput(
+      currentCustomer.customBillAmount !== undefined && currentCustomer.customBillAmount > 0
+        ? currentCustomer.customBillAmount.toString()
+        : ''
+    );
+    setSaveSuccessMessage('Channel leh bill thlan chu saved state-ah dah let leh a ni e.');
+    setTimeout(() => setSaveSuccessMessage(null), 3000);
+  };
+
+  // Save changes explicitly ONLY when clicking the SAVE button
   const handleSave = () => {
     if (!currentCustomer) return;
     const parsedBill = parseFloat(customBillInput);
     const billToSave = !isNaN(parsedBill) && parsedBill > 0 ? Number(parsedBill.toFixed(2)) : undefined;
     onSaveCustomerChannels(currentCustomer.id, selectedChannelTags, hasLocalAddon, billToSave);
-    const addonText = hasLocalAddon ? 'BST + Local Add-on' : 'BST only';
+    const addonText = hasLocalAddon ? 'BST + Local Add-on' : 'BST chauh';
     const billText = billToSave ? ` • Bill: Rs. ${billToSave.toFixed(2)}` : '';
-    setSaveSuccessMessage(`"${currentCustomer.name}" tan ${addonText} & channels (${selectedChannelTags.length})${billText} hlawhtling takin save a ni e! Excel download tan save thar chauh a inpeih e.`);
+    setSaveSuccessMessage(`"${currentCustomer.name}" tan ${addonText} & channels (${selectedChannelTags.length})${billText} hlawhtling takin save a ni e!`);
     setTimeout(() => {
       setSaveSuccessMessage(null);
     }, 4500);
@@ -800,24 +837,54 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
       {currentCustomer && (
         <>
           {/* 3. A hmaa save tawh */}
-          <div className="bg-blue-50/90 border border-blue-200/90 rounded-xl p-3.5 text-sm text-blue-950 flex items-start gap-2.5 shadow-2xs">
-            <div className="text-blue-600 mt-0.5 shrink-0">
-              <Tv2 className="w-5 h-5" />
-            </div>
-            <div className="leading-relaxed">
-              <span className="font-bold text-blue-900">Actived channel: </span>
-              <span className="font-extrabold text-blue-950">
-                {currentCustomer.hasLocalAddon ? 'BST + Local Add-on' : 'BST chauh (Local tello)'}
-              </span>
-              {currentCustomer.selectedChannels.length > 0 ? (
-                <span className="text-blue-950">
-                  {' '}+ A-la-carte ({currentCustomer.selectedChannels.length}):{' '}
-                  <strong className="text-blue-950 font-extrabold">{currentCustomer.selectedChannels.join(', ')}</strong>
+          <div className="bg-blue-50/90 border border-blue-200/90 rounded-xl p-3.5 text-sm text-blue-950 flex flex-col gap-2.5 shadow-2xs">
+            <div className="flex items-start gap-2.5">
+              <div className="text-blue-600 mt-0.5 shrink-0">
+                <Tv2 className="w-5 h-5" />
+              </div>
+              <div className="leading-relaxed flex-1">
+                <span className="font-bold text-blue-900">Actived channel: </span>
+                <span className="font-extrabold text-blue-950">
+                  {currentCustomer.hasLocalAddon ? 'BST + Local Add-on' : 'BST chauh (Local tello)'}
                 </span>
-              ) : (
-                <span className="italic text-blue-700 font-medium"> (a-la-carte channel thlan ala awm lo)</span>
-              )}
+                {currentCustomer.selectedChannels.length > 0 ? (
+                  <span className="text-blue-950">
+                    {' '}+ A-la-carte ({currentCustomer.selectedChannels.length}):{' '}
+                    <strong className="text-blue-950 font-extrabold">{currentCustomer.selectedChannels.join(', ')}</strong>
+                  </span>
+                ) : (
+                  <span className="italic text-blue-700 font-medium"> (a-la-carte channel thlan ala awm lo)</span>
+                )}
+                {currentCustomer.customBillAmount !== undefined && currentCustomer.customBillAmount > 0 && (
+                  <span className="ml-2 font-bold text-emerald-800 bg-emerald-100/90 border border-emerald-300 px-2 py-0.5 rounded text-xs">
+                    Saved Bill: Rs. {currentCustomer.customBillAmount.toFixed(0)}
+                  </span>
+                )}
+              </div>
             </div>
+
+            {/* Unsaved Draft Status & Warning Bar */}
+            {hasUnsavedChanges && (
+              <div className="pt-2 border-t border-blue-200/70 flex items-center justify-between flex-wrap gap-2 text-xs">
+                <span className="px-2.5 py-1 bg-amber-100 text-amber-950 border border-amber-300 font-extrabold rounded-lg flex items-center gap-1.5 shadow-2xs animate-pulse">
+                  <AlertCircle className="w-4 h-4 text-amber-700 shrink-0" />
+                  <span>
+                    Thlan thar mek (A la in-save lo): <strong>{selectedChannelTags.length} channels</strong>
+                    {marginAnalysis.hasCustom ? ` • Bill: Rs. ${marginAnalysis.effectiveBill.toFixed(0)}` : ''}
+                    {' '}— SAVE button hmet la a in-save ang.
+                  </span>
+                </span>
+                <button
+                  type="button"
+                  onClick={handleRevert}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 font-bold border border-slate-300 rounded-lg text-xs shadow-2xs transition-all cursor-pointer"
+                  title="Thlan thar zawng zawng paih a, customer active state-ah let leh rawh"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>Dah let leh rawh (Revert)</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* 4. Price Preview & Customer Bill for this Customer */}
@@ -899,17 +966,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                       min="0"
                       value={customBillInput}
                       onChange={(e) => {
-                        const val = e.target.value;
-                        setCustomBillInput(val);
-                        if (currentCustomer) {
-                          const p = parseFloat(val);
-                          onSaveCustomerChannels(
-                            currentCustomer.id,
-                            selectedChannelTags,
-                            hasLocalAddon,
-                            !isNaN(p) && p > 0 ? Number(p.toFixed(2)) : undefined
-                          );
-                        }
+                        setCustomBillInput(e.target.value);
                       }}
                       placeholder={priceEstimate.total.toFixed(0)}
                       className={`w-24 px-2 py-1 text-sm font-black bg-white rounded-md focus:outline-none focus:ring-2 font-mono text-center shadow-inner ${
@@ -917,7 +974,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                           ? 'text-red-950 border-2 border-red-300 focus:ring-red-400'
                           : 'text-emerald-950 border-2 border-emerald-300 focus:ring-emerald-400'
                       }`}
-                      title="Customer hnen atanga bill khawn zat tur (e.g. 350, 400). MSO in cut hi component (BST, Local, Ala-carte) thlan ang zelin a ni ang."
+                      title="Customer hnen atanga bill khawn zat tur (e.g. 350, 400). A hnuai lama SAVE button hmeh hunah chauh a in-save ang."
                     />
                   </div>
                   {customBillInput ? (
@@ -925,14 +982,6 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                       type="button"
                       onClick={() => {
                         setCustomBillInput('');
-                        if (currentCustomer) {
-                          onSaveCustomerChannels(
-                            currentCustomer.id,
-                            selectedChannelTags,
-                            hasLocalAddon,
-                            undefined
-                          );
-                        }
                       }}
                       title="Clear (Hmang rawh calculated total)"
                       className="text-xs font-black px-1.5 py-0.5 rounded bg-black/20 hover:bg-black/30 text-white cursor-pointer transition-colors"
@@ -2277,24 +2326,42 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
           )}
 
           {/* 6. Save he customer tan */}
-          <div className="pt-1">
+          <div className="pt-2 flex flex-wrap items-center gap-3">
             <button
               type="button"
               id="save-customer-channels-btn"
               onClick={handleSave}
-              className={`w-full sm:w-auto px-6 py-2.5 font-semibold text-sm rounded-lg shadow-sm hover:shadow transition-all cursor-pointer flex items-center justify-center gap-2 text-white ${
+              className={`w-full sm:w-auto px-7 py-3 font-extrabold text-sm rounded-xl shadow-sm hover:shadow transition-all cursor-pointer flex items-center justify-center gap-2 text-white ${
                 marginAnalysis.isLoss
                   ? 'bg-red-600 hover:bg-red-700'
                   : marginAnalysis.isBelow20
                   ? 'bg-amber-600 hover:bg-amber-700'
-                  : 'bg-[#007bff] hover:bg-[#0069d9]'
+                  : hasUnsavedChanges
+                  ? 'bg-[#007bff] hover:bg-[#0069d9] ring-2 ring-blue-300 shadow-md animate-pulse'
+                  : 'bg-emerald-700 hover:bg-emerald-800'
               }`}
             >
+              <Save className="w-5 h-5" />
               <span>
                 SAVE (BST {hasLocalAddon ? '+ Local' : 'chauh'} & Channels
                 {marginAnalysis.hasCustom ? ` • Bill: Rs ${marginAnalysis.effectiveBill.toFixed(0)}` : ''})
               </span>
+              {hasUnsavedChanges && (
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-300 animate-ping" />
+              )}
             </button>
+
+            {hasUnsavedChanges && (
+              <button
+                type="button"
+                onClick={handleRevert}
+                className="w-full sm:w-auto px-4 py-3 bg-white hover:bg-slate-100 text-slate-700 font-bold border border-slate-300 rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                title="Thlan thar zawng zawng paih a, customer active state-ah let leh rawh"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span>Dah let leh rawh (Revert)</span>
+              </button>
+            )}
           </div>
         </>
       )}
