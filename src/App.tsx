@@ -849,32 +849,58 @@ export default function App() {
     });
   };
 
-  // Grand totals computation
+  // Grand totals computation based on active Subscription Settings (Month / Day)
   const grandTotals: GrandTotals = useMemo(() => {
-    const totalStandardPrice = customers.reduce((sum, c) => sum + c.channelPrice, 0);
-    const totalLcoHlawh = customers.reduce((sum, c) => sum + c.lcoHlawh, 0);
-    const totalLcoSen = customers.reduce((sum, c) => sum + c.lcoSen, 0);
+    // 1. Base monthly standard amounts across all subscribers
+    const monthlyStandardPrice = customers.reduce((sum, c) => sum + c.channelPrice, 0);
+    const monthlyLcoHlawh = customers.reduce((sum, c) => sum + c.lcoHlawh, 0);
+    const monthlyLcoSen = customers.reduce((sum, c) => sum + c.lcoSen, 0);
     const localAddonCount = customers.filter((c) => Boolean(c.hasLocalAddon)).length;
     const bstOnlyCount = customers.filter((c) => !c.hasLocalAddon).length;
 
-    // Actual money handling
-    const totalActualCollection = customers.reduce(
+    // Base monthly actual collection
+    const monthlyActualCollection = customers.reduce(
       (sum, c) => sum + (c.customBillAmount !== undefined && c.customBillAmount > 0 ? c.customBillAmount : c.channelPrice),
       0
     );
+
+    // 2. Period multiplier based on subscriptionSettings (e.g. 6 days = 6/30 = 0.20x)
+    let periodRatio = 1;
+    let periodLabel = '1 Month';
+    if (subscriptionSettings) {
+      if (subscriptionSettings.subscriptionType === 'Day') {
+        const days = Math.max(1, Number(subscriptionSettings.subscriptionValue) || 1);
+        periodRatio = days / 30;
+        periodLabel = `Ni ${days} (Day: ${days})`;
+      } else {
+        const months = Math.max(1, Number(subscriptionSettings.subscriptionValue) || 1);
+        periodRatio = months;
+        periodLabel = months === 1 ? 'Thlakhat (1 Month)' : `Thla ${months} (${months} Months)`;
+      }
+    }
+
+    const totalPrice = Number((monthlyStandardPrice * periodRatio).toFixed(2));
+    const totalLcoHlawh = Number((monthlyLcoHlawh * periodRatio).toFixed(2));
+    const totalLcoSen = Number((monthlyLcoSen * periodRatio).toFixed(2));
+    const totalActualCollection = Number((monthlyActualCollection * periodRatio).toFixed(2));
     const totalActualNetProfit = Number((totalActualCollection - totalLcoSen).toFixed(2));
 
     return {
-      totalPrice: Number(totalStandardPrice.toFixed(2)),
-      totalLcoHlawh: Number(totalLcoHlawh.toFixed(2)),
-      totalLcoSen: Number(totalLcoSen.toFixed(2)),
+      totalPrice,
+      totalLcoHlawh,
+      totalLcoSen,
       totalCustomers: customers.length,
       localAddonCount,
       bstOnlyCount,
-      totalActualCollection: Number(totalActualCollection.toFixed(2)),
+      totalActualCollection,
       totalActualNetProfit,
+      periodRatio,
+      periodLabel,
+      subscriptionType: subscriptionSettings?.subscriptionType || 'Month',
+      subscriptionValue: subscriptionSettings?.subscriptionValue || 1,
+      totalDays: subscriptionSettings?.totalDays || (subscriptionSettings?.subscriptionType === 'Day' ? subscriptionSettings.subscriptionValue : 30),
     };
-  }, [customers]);
+  }, [customers, subscriptionSettings]);
 
   // Total Ala-carte amount across all loaded customers for the calculator sync
   const currentAlacarteSum = useMemo(() => {
@@ -899,7 +925,7 @@ export default function App() {
     const name = currentFileName
       ? `Final_Export_${currentFileName.replace(/\.[^/.]+$/, '')}.xlsx`
       : 'Final_Export_LCO_Share.xlsx';
-    exportSummaryExcel(customers, name, availableChannels, BST_PRICE, LOCAL_PRICE);
+    exportSummaryExcel(customers, name, availableChannels, BST_PRICE, LOCAL_PRICE, subscriptionSettings);
   };
 
   const handleExportBulkRenew = () => {

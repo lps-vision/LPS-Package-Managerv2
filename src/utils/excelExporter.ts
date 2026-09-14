@@ -12,7 +12,8 @@ export function exportSummaryExcel(
   fileName: string = 'Final_Export_LCO_Share.xlsx',
   customChannels?: ChannelItem[],
   bstPrice: number = BST_PRICE,
-  localAddonPrice: number = LOCAL_PRICE
+  localAddonPrice: number = LOCAL_PRICE,
+  subscriptionSettings?: SubscriptionDateSettings
 ): void {
   // Format matching Official LPS Bill Formula:
   // 1. BST Rs 154: LCO Share Rs 78.60 (51.04%), MSO Cut Rs 75.40 (48.96%)
@@ -22,6 +23,20 @@ export function exportSummaryExcel(
   const priceMap = getChannelPriceMap(customChannels);
   const dataRows: Record<string, unknown>[] = [];
   let rowNumber = 1;
+
+  let periodRatio = 1;
+  let periodLabel = '1 Month';
+  if (subscriptionSettings) {
+    if (subscriptionSettings.subscriptionType === 'Day') {
+      const days = Math.max(1, Number(subscriptionSettings.subscriptionValue) || 1);
+      periodRatio = days / 30;
+      periodLabel = `Ni ${days}`;
+    } else {
+      const months = Math.max(1, Number(subscriptionSettings.subscriptionValue) || 1);
+      periodRatio = months;
+      periodLabel = months === 1 ? '1 Month' : `${months} Months`;
+    }
+  }
 
   for (const c of customers) {
     const isLocalActive = c.hasLocalAddon !== false;
@@ -35,14 +50,15 @@ export function exportSummaryExcel(
     );
 
     const hasCustomBill = c.customBillAmount !== undefined && c.customBillAmount > 0;
-    const billCollected = hasCustomBill ? c.customBillAmount! : pricing.price;
-    const totalStandardPrice = pricing.price;
-    const totalStandardHlawh = pricing.lcoHlawh;
-    const totalStandardSen = pricing.lcoSen;
+    const baseBill = hasCustomBill ? c.customBillAmount! : pricing.price;
+    const billCollected = Number((baseBill * periodRatio).toFixed(2));
+    const totalStandardPrice = Number((pricing.price * periodRatio).toFixed(2));
+    const totalStandardHlawh = Number((pricing.lcoHlawh * periodRatio).toFixed(2));
+    const totalStandardSen = Number((pricing.lcoSen * periodRatio).toFixed(2));
     const actualNetProfit = Number((billCollected - totalStandardSen).toFixed(2));
 
     if (c.selectedChannels.length === 0) {
-      const channelDisplay = isLocalActive ? 'BST + Local' : 'BST';
+      const channelDisplay = isLocalActive ? `BST + Local (${periodLabel})` : `BST (${periodLabel})`;
       const packageAddonDisplay = isLocalActive ? 'BST + Local' : 'BST chauh';
 
       dataRows.push({
@@ -64,7 +80,8 @@ export function exportSummaryExcel(
       
       c.selectedChannels.forEach((channelName, chIdx) => {
         const cleanName = channelName.toLowerCase().trim();
-        const chRate = priceMap.get(cleanName) || 0;
+        const rawChRate = priceMap.get(cleanName) || 0;
+        const chRate = Number((rawChRate * periodRatio).toFixed(2));
 
         // Base components share for this specific line
         const chLcoHlawh = Number(((chRate * ALACARTE_LCO_COMMISSION_PERCENT) / 100).toFixed(2));
@@ -76,10 +93,11 @@ export function exportSummaryExcel(
 
         if (chIdx === 0) {
           // First row carries the base package (BST + Local)
-          const baseLcoHlawh = (pricing.bstLcoShare || 0) + (pricing.localLcoShare || 0);
-          const baseLcoSen = (pricing.bstMsoCut || 0) + (pricing.localMsoCut || 0);
+          const baseLcoHlawh = Number((((pricing.bstLcoShare || 0) + (pricing.localLcoShare || 0)) * periodRatio).toFixed(2));
+          const baseLcoSen = Number((((pricing.bstMsoCut || 0) + (pricing.localMsoCut || 0)) * periodRatio).toFixed(2));
+          const basePkgPrice = Number(((bstPrice + (isLocalActive ? localAddonPrice : 0)) * periodRatio).toFixed(2));
           
-          linePrice = Number(((bstPrice + (isLocalActive ? localAddonPrice : 0)) + chRate).toFixed(2));
+          linePrice = Number((basePkgPrice + chRate).toFixed(2));
           lineHlawh = Number((baseLcoHlawh + chLcoHlawh).toFixed(2));
           lineSen = Number((baseLcoSen + chLcoSen).toFixed(2));
         } else {
@@ -95,7 +113,7 @@ export function exportSummaryExcel(
           'SubscriberCode': c.subscriberCode,
           'STBNo': c.stbNo,
           'Package / Addon': packageAddonDisplay,
-          'Channel thlan': channelName,
+          'Channel thlan': periodRatio !== 1 ? `${channelName} (${periodLabel})` : channelName,
           'Standard Rate': linePrice,
           'LCO Hlawh (Standard)': lineHlawh,
           'LCO Sen (Cut)': lineSen,
@@ -107,14 +125,19 @@ export function exportSummaryExcel(
     }
   }
 
-  // Calculate grand totals
-  const totalStandardPrice = customers.reduce((sum, c) => sum + c.channelPrice, 0);
-  const totalStandardHlawh = customers.reduce((sum, c) => sum + c.lcoHlawh, 0);
-  const totalStandardSen = customers.reduce((sum, c) => sum + c.lcoSen, 0);
-  const totalActualCollection = customers.reduce(
+  // Calculate grand totals based on periodRatio
+  const baseStandardPrice = customers.reduce((sum, c) => sum + c.channelPrice, 0);
+  const baseStandardHlawh = customers.reduce((sum, c) => sum + c.lcoHlawh, 0);
+  const baseStandardSen = customers.reduce((sum, c) => sum + c.lcoSen, 0);
+  const baseActualCollection = customers.reduce(
     (sum, c) => sum + (c.customBillAmount !== undefined && c.customBillAmount > 0 ? c.customBillAmount : c.channelPrice),
     0
   );
+
+  const totalStandardPrice = Number((baseStandardPrice * periodRatio).toFixed(2));
+  const totalStandardHlawh = Number((baseStandardHlawh * periodRatio).toFixed(2));
+  const totalStandardSen = Number((baseStandardSen * periodRatio).toFixed(2));
+  const totalActualCollection = Number((baseActualCollection * periodRatio).toFixed(2));
   const totalActualNetProfit = Number((totalActualCollection - totalStandardSen).toFixed(2));
 
   // Append empty row then Grand Total row
@@ -124,12 +147,12 @@ export function exportSummaryExcel(
     'SubscriberCode': '',
     'STBNo': '',
     'Package / Addon': '',
-    'Channel thlan': 'GRAND TOTAL',
-    'Standard Rate': Number(totalStandardPrice.toFixed(2)),
-    'LCO Hlawh (Standard)': Number(totalStandardHlawh.toFixed(2)),
-    'LCO Sen (Cut)': Number(totalStandardSen.toFixed(2)),
-    'Bill Collected': Number(totalActualCollection.toFixed(2)),
-    'Actual Profit (Net)': Number(totalActualNetProfit.toFixed(2)),
+    'Channel thlan': periodRatio !== 1 ? `GRAND TOTAL (${periodLabel})` : 'GRAND TOTAL',
+    'Standard Rate': totalStandardPrice,
+    'LCO Hlawh (Standard)': totalStandardHlawh,
+    'LCO Sen (Cut)': totalStandardSen,
+    'Bill Collected': totalActualCollection,
+    'Actual Profit (Net)': totalActualNetProfit,
     'FranchiseeName': '',
   });
 

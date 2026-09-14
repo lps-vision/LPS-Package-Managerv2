@@ -55,6 +55,11 @@ export interface GrandTotals {
   bstOnlyCount: number;
   totalActualCollection: number;
   totalActualNetProfit: number;
+  periodRatio?: number;
+  periodLabel?: string;
+  subscriptionType?: 'Month' | 'Day';
+  subscriptionValue?: number;
+  totalDays?: number;
 }
 
 export interface SubscriptionDateSettings {

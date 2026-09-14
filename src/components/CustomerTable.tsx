@@ -143,6 +143,16 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
     });
   }, [customers, filterMode, tableSearch, sortField, sortAsc]);
 
+  const periodRatio = useMemo(() => {
+    if (!subscriptionSettings) return 1;
+    if (subscriptionSettings.subscriptionType === 'Day') {
+      const days = Math.max(1, Number(subscriptionSettings.subscriptionValue) || 1);
+      return days / 30;
+    }
+    const months = Math.max(1, Number(subscriptionSettings.subscriptionValue) || 1);
+    return months;
+  }, [subscriptionSettings]);
+
   // Generate table rows based on viewMode
   // If viewMode === 'multi_line', when a customer has > 1 channel,
   // each channel gets its own row with customer name and that single channel
@@ -152,17 +162,18 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
     for (const c of filteredCustomers) {
       const hasExtra = c.selectedChannels.length > 0;
       const isLocalActive = c.hasLocalAddon !== false;
-      const effectiveBasePrice = isLocalActive ? (BST_PRICE + LOCAL_PRICE) : BST_PRICE;
-      const baseLcoHlawh = BST_LCO_SHARE + (isLocalActive ? LOCAL_LCO_SHARE : 0);
       
       const periodLabel = subscriptionSettings 
-        ? `${subscriptionSettings.subscriptionValue} ${subscriptionSettings.subscriptionType}`
+        ? (subscriptionSettings.subscriptionType === 'Day'
+            ? `Ni ${subscriptionSettings.subscriptionValue}`
+            : subscriptionSettings.subscriptionValue === 1
+              ? '1 Month'
+              : `${subscriptionSettings.subscriptionValue} Months`)
         : (c.subscriptionPeriod && c.subscriptionCount) 
           ? `${c.subscriptionCount} ${c.subscriptionPeriod}`
           : '1 Month';
 
       if (viewMode === 'consolidated') {
-        const isLocalActive = c.hasLocalAddon !== false;
         const packageLabel = isLocalActive ? `BST+Local (${periodLabel})` : `BST chauh (${periodLabel})`;
         const channelDisplay = c.selectedChannels.length > 0
           ? `${packageLabel} • ${c.selectedChannels.join(', ')}`
@@ -180,9 +191,9 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
           subscriberCode: c.subscriberCode,
           stbNo: c.stbNo,
           channelName: channelDisplay,
-          linePrice: effectiveLinePrice,
-          lineHlawh: c.lcoHlawh,
-          lineSen: c.lcoSen,
+          linePrice: Number((effectiveLinePrice * periodRatio).toFixed(2)),
+          lineHlawh: Number((c.lcoHlawh * periodRatio).toFixed(2)),
+          lineSen: Number((c.lcoSen * periodRatio).toFixed(2)),
           franchiseeName: c.franchiseeName || '',
           isModified: c.isModified,
           hasExtraChannels: hasExtra,
@@ -192,6 +203,10 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
         // Multi-line mode: Separate rows for BST, Local, and each A-la-carte channel
         
         // 1. Mandatory BST Row
+        const bstLinePrice = Number((BST_PRICE * periodRatio).toFixed(2));
+        const bstLineHlawh = Number((BST_LCO_SHARE * periodRatio).toFixed(2));
+        const bstLineSen = Number(((BST_PRICE - BST_LCO_SHARE) * periodRatio).toFixed(2));
+
         rows.push({
           rowId: `${c.id}_bst`,
           customerId: c.id,
@@ -200,9 +215,9 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
           subscriberCode: c.subscriberCode,
           stbNo: c.stbNo,
           channelName: `BST (${periodLabel})`,
-          linePrice: BST_PRICE,
-          lineHlawh: BST_LCO_SHARE,
-          lineSen: Number((BST_PRICE - BST_LCO_SHARE).toFixed(2)),
+          linePrice: bstLinePrice,
+          lineHlawh: bstLineHlawh,
+          lineSen: bstLineSen,
           franchiseeName: c.franchiseeName || '',
           isModified: c.isModified,
           hasExtraChannels: false,
@@ -212,8 +227,11 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
         });
 
         // 2. Optional LPS LOCALS Row
-        const isLocalActive = c.hasLocalAddon !== false;
         if (isLocalActive) {
+          const localLinePrice = Number((LOCAL_PRICE * periodRatio).toFixed(2));
+          const localLineHlawh = Number((LOCAL_LCO_SHARE * periodRatio).toFixed(2));
+          const localLineSen = Number(((LOCAL_PRICE - LOCAL_LCO_SHARE) * periodRatio).toFixed(2));
+
           rows.push({
             rowId: `${c.id}_local`,
             customerId: c.id,
@@ -222,9 +240,9 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
             subscriberCode: c.subscriberCode,
             stbNo: c.stbNo,
             channelName: `LPS LOCALS (${periodLabel})`,
-            linePrice: LOCAL_PRICE,
-            lineHlawh: LOCAL_LCO_SHARE,
-            lineSen: Number((LOCAL_PRICE - LOCAL_LCO_SHARE).toFixed(2)),
+            linePrice: localLinePrice,
+            lineHlawh: localLineHlawh,
+            lineSen: localLineSen,
             franchiseeName: c.franchiseeName || '',
             isModified: c.isModified,
             hasExtraChannels: false,
@@ -237,7 +255,8 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
         // 3. A-la-carte Channel rows
         c.selectedChannels.forEach((chName, chIdx) => {
           const chClean = chName.toLowerCase().trim();
-          const rate = priceMap.get(chClean) ?? priceMap.get(normalizeKey(chClean)) ?? 0;
+          const baseRate = priceMap.get(chClean) ?? priceMap.get(normalizeKey(chClean)) ?? 0;
+          const rate = Number((baseRate * periodRatio).toFixed(2));
           const lineHlawh = Number(((rate * (ALACARTE_LCO_COMMISSION_PERCENT / 100))).toFixed(2));
           const lineSen = Number((rate - lineHlawh).toFixed(2));
 
@@ -248,7 +267,7 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
             name: c.name,
             subscriberCode: c.subscriberCode,
             stbNo: c.stbNo,
-            channelName: chName,
+            channelName: periodRatio !== 1 ? `${chName} (${periodLabel})` : chName,
             linePrice: rate,
             lineHlawh,
             lineSen,
@@ -264,7 +283,7 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
     }
 
     return rows;
-  }, [filteredCustomers, viewMode, priceMap, basePrice]);
+  }, [filteredCustomers, viewMode, priceMap, basePrice, subscriptionSettings, periodRatio]);
 
   // Pagination
   const totalPages = Math.max(1, Math.ceil(tableRows.length / pageSize));
@@ -893,13 +912,25 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
                     <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" />
                   </div>
                 </th>
-                <th className="py-3 px-3 text-right border-r border-slate-200" title="BST (Rs 78.60) + Local (Rs 36.20) + Ala-carte (8.47%)">
+                <th className="py-3 px-3 text-right border-r border-slate-200" title="BST + Local + Ala-carte (8.47%)">
                   <div className="font-extrabold text-slate-900">LCO Hlawh</div>
-                  <div className="text-[11px] font-semibold normal-case text-slate-600">Local 36.2 + 8.47%</div>
+                  <div className="text-[11px] font-bold normal-case text-emerald-700">
+                    {subscriptionSettings?.subscriptionType === 'Day'
+                      ? `Ni ${subscriptionSettings.subscriptionValue} chhut`
+                      : (subscriptionSettings?.subscriptionValue ?? 1) > 1
+                      ? `Thla ${subscriptionSettings?.subscriptionValue} chhut`
+                      : 'Local 36.2 + 8.47%'}
+                  </div>
                 </th>
-                <th className="py-3 px-3 text-right border-r border-slate-200" title="BST (Rs 75.40) + Local (Rs 34.80) + Ala-carte (91.53%)">
-                  <div className="font-extrabold text-slate-900">LCO Sen (Cut)</div>
-                  <div className="text-[11px] font-semibold normal-case text-slate-600">BST 75.4 + 91.53%</div>
+                <th className="py-3 px-3 text-right border-r border-slate-200" title="BST + Local + Ala-carte (91.53%)">
+                  <div className="font-extrabold text-slate-900">LCO Sen (MSO Cut)</div>
+                  <div className="text-[11px] font-bold normal-case text-slate-600">
+                    {subscriptionSettings?.subscriptionType === 'Day'
+                      ? `MSO cut (Ni ${subscriptionSettings.subscriptionValue})`
+                      : (subscriptionSettings?.subscriptionValue ?? 1) > 1
+                      ? `MSO cut (Thla ${subscriptionSettings?.subscriptionValue})`
+                      : 'BST 75.4 + 91.53%'}
+                  </div>
                 </th>
                 <th className="py-3 px-3 border-r border-slate-200">FranchiseeName</th>
                 <th className="py-3 px-2 text-center w-20">Action</th>

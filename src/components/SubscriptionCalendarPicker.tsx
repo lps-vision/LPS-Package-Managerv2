@@ -120,45 +120,94 @@ const formatDateDisplay = (isoStr: string): string => {
   };
 
   // Presets handling
-  const applyPreset = (preset: '300_350_month' | '10_days' | '15_days' | '20_days' | '2_months' | '3_months') => {
-    if (preset === '300_350_month') {
-      // "19 Sept - 19 Oct (31) ... Excel ah 1 a ni anga, SubscriptionType(Day/Month/Year) column ah Month a in ziak ang"
-      setStartDateStr('2026-09-19');
-      setEndDateStr('2026-10-19');
+  const applyPreset = (preset: 'month_1' | 'day_6' | 'day_10' | 'day_15' | 'day_20' | 'month_2' | 'month_3') => {
+    const s = new Date(startDateStr);
+    const baseDate = isNaN(s.getTime()) ? new Date(2026, 8, 14) : s;
+
+    if (preset === 'month_1') {
+      const e = new Date(baseDate);
+      e.setMonth(e.getMonth() + 1);
+      const iso = `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, '0')}-${String(e.getDate()).padStart(2, '0')}`;
+      setEndDateStr(iso);
       setSubscriptionType('Month');
       setSubscriptionValue(1);
-      setCurrentViewDate(new Date(2026, 8, 19));
-    } else if (preset === '10_days') {
-      // "thlakhat tling lo 19 Sept - 1 Oct kan thlan chuan SubscriptionValue ah 10 a in ziak anga, SubscriptionType(Day/Month/Year) ah Day a in ziak ang"
-      setStartDateStr('2026-09-19');
-      setEndDateStr('2026-10-01');
+    } else if (preset === 'day_6') {
+      const e = new Date(baseDate.getTime() + 5 * 24 * 60 * 60 * 1000);
+      const iso = `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, '0')}-${String(e.getDate()).padStart(2, '0')}`;
+      setEndDateStr(iso);
+      setSubscriptionType('Day');
+      setSubscriptionValue(6);
+    } else if (preset === 'day_10') {
+      const e = new Date(baseDate.getTime() + 9 * 24 * 60 * 60 * 1000);
+      const iso = `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, '0')}-${String(e.getDate()).padStart(2, '0')}`;
+      setEndDateStr(iso);
       setSubscriptionType('Day');
       setSubscriptionValue(10);
-      setCurrentViewDate(new Date(2026, 8, 19));
-    } else if (preset === '15_days') {
-      setStartDateStr('2026-09-19');
-      setEndDateStr('2026-10-04');
+    } else if (preset === 'day_15') {
+      const e = new Date(baseDate.getTime() + 14 * 24 * 60 * 60 * 1000);
+      const iso = `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, '0')}-${String(e.getDate()).padStart(2, '0')}`;
+      setEndDateStr(iso);
       setSubscriptionType('Day');
       setSubscriptionValue(15);
-      setCurrentViewDate(new Date(2026, 8, 19));
-    } else if (preset === '20_days') {
-      setStartDateStr('2026-09-19');
-      setEndDateStr('2026-10-09');
+    } else if (preset === 'day_20') {
+      const e = new Date(baseDate.getTime() + 19 * 24 * 60 * 60 * 1000);
+      const iso = `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, '0')}-${String(e.getDate()).padStart(2, '0')}`;
+      setEndDateStr(iso);
       setSubscriptionType('Day');
       setSubscriptionValue(20);
-      setCurrentViewDate(new Date(2026, 8, 19));
-    } else if (preset === '2_months') {
-      setStartDateStr('2026-09-19');
-      setEndDateStr('2026-11-19');
+    } else if (preset === 'month_2') {
+      const e = new Date(baseDate);
+      e.setMonth(e.getMonth() + 2);
+      const iso = `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, '0')}-${String(e.getDate()).padStart(2, '0')}`;
+      setEndDateStr(iso);
       setSubscriptionType('Month');
       setSubscriptionValue(2);
-      setCurrentViewDate(new Date(2026, 8, 19));
-    } else if (preset === '3_months') {
-      setStartDateStr('2026-09-19');
-      setEndDateStr('2026-12-19');
+    } else if (preset === 'month_3') {
+      const e = new Date(baseDate);
+      e.setMonth(e.getMonth() + 3);
+      const iso = `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, '0')}-${String(e.getDate()).padStart(2, '0')}`;
+      setEndDateStr(iso);
       setSubscriptionType('Month');
       setSubscriptionValue(3);
-      setCurrentViewDate(new Date(2026, 8, 19));
+    }
+  };
+
+  const handleValueChange = (newVal: number) => {
+    const val = Math.max(1, newVal);
+    setSubscriptionValue(val);
+    const s = new Date(startDateStr);
+    if (!isNaN(s.getTime())) {
+      if (subscriptionType === 'Day') {
+        const e = new Date(s.getTime() + (val - 1) * 24 * 60 * 60 * 1000);
+        const iso = `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, '0')}-${String(e.getDate()).padStart(2, '0')}`;
+        setEndDateStr(iso);
+      } else {
+        const e = new Date(s);
+        e.setMonth(e.getMonth() + val);
+        const iso = `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, '0')}-${String(e.getDate()).padStart(2, '0')}`;
+        setEndDateStr(iso);
+      }
+    }
+  };
+
+  const handleTypeChange = (newType: 'Month' | 'Day') => {
+    setSubscriptionType(newType);
+    const s = new Date(startDateStr);
+    if (!isNaN(s.getTime())) {
+      if (newType === 'Day') {
+        const days = subscriptionValue > 3 ? subscriptionValue : 6;
+        setSubscriptionValue(days);
+        const e = new Date(s.getTime() + (days - 1) * 24 * 60 * 60 * 1000);
+        const iso = `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, '0')}-${String(e.getDate()).padStart(2, '0')}`;
+        setEndDateStr(iso);
+      } else {
+        const months = 1;
+        setSubscriptionValue(months);
+        const e = new Date(s);
+        e.setMonth(e.getMonth() + months);
+        const iso = `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, '0')}-${String(e.getDate()).padStart(2, '0')}`;
+        setEndDateStr(iso);
+      }
     }
   };
 
@@ -231,13 +280,13 @@ const formatDateDisplay = (isoStr: string): string => {
       endDate: endDateStr,
       subscriptionType,
       subscriptionValue: Math.max(1, Number(subscriptionValue) || 1),
-      totalDays,
+      totalDays: subscriptionType === 'Day' ? Math.max(1, Number(subscriptionValue) || 1) : totalDays,
     };
     onChangeSettings(finalSettings);
     setIsOpen(false);
   };
 
-  const displayLabel = `${formatDateDisplay(settings.startDate)} - ${formatDateDisplay(settings.endDate)} (${settings.totalDays} ni)`;
+  const displayLabel = `${formatDateDisplay(settings.startDate)} - ${formatDateDisplay(settings.endDate)} (${settings.subscriptionType === 'Day' ? settings.subscriptionValue : settings.totalDays} ni)`;
 
   return (
     <div className="relative inline-block" ref={containerRef} id="subscription-calendar-picker">
@@ -261,21 +310,21 @@ const formatDateDisplay = (isoStr: string): string => {
               : 'bg-amber-100 text-amber-900 border-amber-300'
           }`}
         >
-          {settings.subscriptionType}: {settings.subscriptionValue}
+          {settings.subscriptionType === 'Day' ? `DAY : ${settings.subscriptionValue} (Ni ${settings.subscriptionValue})` : `MONTH : ${settings.subscriptionValue}`}
         </span>
         <ChevronDown className={`w-4 h-4 text-emerald-700 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {/* Dropdown Calendar Popover */}
       {isOpen && (
-        <div className="absolute left-0 lg:left-auto lg:right-0 mt-2 z-50 w-[340px] sm:w-[390px] bg-white rounded-xl shadow-2xl border border-slate-300 p-4 space-y-3.5 animate-in fade-in zoom-in-95 duration-150 text-xs sm:text-[13px]">
+        <div className="absolute left-0 lg:left-auto lg:right-0 mt-2 z-50 w-[340px] sm:w-[420px] bg-white rounded-xl shadow-2xl border border-slate-300 p-4 space-y-3.5 animate-in fade-in zoom-in-95 duration-150 text-xs sm:text-[13px]">
           {/* Header */}
           <div className="flex items-center justify-between pb-2 border-b border-slate-200">
             <div className="flex items-center gap-2">
               <CalendarIcon className="w-5 h-5 text-emerald-700" />
               <div>
-                <h4 className="font-extrabold text-slate-900 text-xs sm:text-sm">Subscription Date & Value (Excel)</h4>
-                <p className="text-xs text-slate-600 font-medium">Excel Export-a SubscriptionType leh Value tur thlanna</p>
+                <h4 className="font-extrabold text-slate-900 text-xs sm:text-sm">Subscription Date & Financial Period</h4>
+                <p className="text-xs text-slate-600 font-medium">Date leh Day thlanna hian Hlawh & MSO Cut a ti danglam nghal ang</p>
               </div>
             </div>
             <button
@@ -285,6 +334,92 @@ const formatDateDisplay = (isoStr: string): string => {
             >
               <X className="w-4 h-4" />
             </button>
+          </div>
+
+          {/* Quick Presets for 1-click selection */}
+          <div className="space-y-1.5 bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+            <span className="text-[11px] font-extrabold text-slate-700 block uppercase tracking-wider">
+              Quick Presets (Click nghal theih):
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                type="button"
+                onClick={() => applyPreset('month_1')}
+                className={`px-2.5 py-1 rounded-md text-xs font-bold border transition-all cursor-pointer ${
+                  subscriptionType === 'Month' && subscriptionValue === 1
+                    ? 'bg-blue-600 text-white border-blue-700 shadow-2xs'
+                    : 'bg-white hover:bg-slate-100 text-slate-800 border-slate-300'
+                }`}
+              >
+                Thlakhat (1 Mo)
+              </button>
+              <button
+                type="button"
+                onClick={() => applyPreset('day_6')}
+                className={`px-2.5 py-1 rounded-md text-xs font-black border transition-all cursor-pointer ${
+                  subscriptionType === 'Day' && subscriptionValue === 6
+                    ? 'bg-amber-600 text-white border-amber-700 shadow-2xs ring-2 ring-amber-400'
+                    : 'bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-300'
+                }`}
+              >
+                ★ Ni 6 (6 Days)
+              </button>
+              <button
+                type="button"
+                onClick={() => applyPreset('day_10')}
+                className={`px-2.5 py-1 rounded-md text-xs font-bold border transition-all cursor-pointer ${
+                  subscriptionType === 'Day' && subscriptionValue === 10
+                    ? 'bg-amber-600 text-white border-amber-700 shadow-2xs'
+                    : 'bg-white hover:bg-slate-100 text-slate-800 border-slate-300'
+                }`}
+              >
+                Ni 10
+              </button>
+              <button
+                type="button"
+                onClick={() => applyPreset('day_15')}
+                className={`px-2.5 py-1 rounded-md text-xs font-bold border transition-all cursor-pointer ${
+                  subscriptionType === 'Day' && subscriptionValue === 15
+                    ? 'bg-amber-600 text-white border-amber-700 shadow-2xs'
+                    : 'bg-white hover:bg-slate-100 text-slate-800 border-slate-300'
+                }`}
+              >
+                Ni 15
+              </button>
+              <button
+                type="button"
+                onClick={() => applyPreset('day_20')}
+                className={`px-2.5 py-1 rounded-md text-xs font-bold border transition-all cursor-pointer ${
+                  subscriptionType === 'Day' && subscriptionValue === 20
+                    ? 'bg-amber-600 text-white border-amber-700 shadow-2xs'
+                    : 'bg-white hover:bg-slate-100 text-slate-800 border-slate-300'
+                }`}
+              >
+                Ni 20
+              </button>
+              <button
+                type="button"
+                onClick={() => applyPreset('month_2')}
+                className={`px-2.5 py-1 rounded-md text-xs font-bold border transition-all cursor-pointer ${
+                  subscriptionType === 'Month' && subscriptionValue === 2
+                    ? 'bg-blue-600 text-white border-blue-700 shadow-2xs'
+                    : 'bg-white hover:bg-slate-100 text-slate-800 border-slate-300'
+                }`}
+              >
+                Thla 2
+              </button>
+              <button
+                type="button"
+                onClick={() => applyPreset('month_3')}
+                className={`px-2.5 py-1 rounded-md text-xs font-bold border transition-all cursor-pointer ${
+                  subscriptionType === 'Month' && subscriptionValue === 3
+                    ? 'bg-blue-600 text-white border-blue-700 shadow-2xs'
+                    : 'bg-white hover:bg-slate-100 text-slate-800 border-slate-300'
+                }`}
+              >
+                Thla 3
+              </button>
+            </div>
           </div>
 
           {/* Date Selector Inputs */}
@@ -399,17 +534,21 @@ const formatDateDisplay = (isoStr: string): string => {
             </div>
             <div className="flex items-center justify-between text-xs text-slate-600 pt-1.5 border-t border-slate-100 font-medium">
               <span>Thlan duh click rawh ({activeSelectTarget === 'start' ? 'Start Date' : 'End Date'})</span>
-              <span className="font-bold text-emerald-800 font-mono">Total: {totalDays} ni / days</span>
+              <span className="font-bold text-emerald-800 font-mono">
+                Total: {subscriptionType === 'Day' ? subscriptionValue : totalDays} ni / days
+              </span>
             </div>
           </div>
 
-          {/* SubscriptionType & SubscriptionValue Settings for Excel */}
+          {/* SubscriptionType & SubscriptionValue Settings for Excel & Calculation */}
           <div className="bg-emerald-50/70 p-3 rounded-lg border border-emerald-300 space-y-2.5">
             <div className="flex items-center justify-between">
               <span className="font-extrabold text-emerald-950 text-xs sm:text-sm flex items-center gap-1">
-                Excel Column Values:
+                Period Settings & Calculation:
               </span>
-              <span className="text-xs text-emerald-800 font-semibold">Auto-detected</span>
+              <span className="text-xs text-emerald-800 font-semibold font-mono">
+                {subscriptionType === 'Day' ? `Ni ${subscriptionValue} chhut` : `Thla ${subscriptionValue} chhut`}
+              </span>
             </div>
 
             <div className="grid grid-cols-2 gap-2.5">
@@ -421,7 +560,7 @@ const formatDateDisplay = (isoStr: string): string => {
                 <div className="flex rounded-lg border border-slate-300 p-0.5 bg-white shadow-2xs">
                   <button
                     type="button"
-                    onClick={() => setSubscriptionType('Month')}
+                    onClick={() => handleTypeChange('Month')}
                     className={`flex-1 py-1.5 text-center rounded-md text-xs font-extrabold transition-colors cursor-pointer ${
                       subscriptionType === 'Month'
                         ? 'bg-blue-600 text-white shadow-xs'
@@ -432,7 +571,7 @@ const formatDateDisplay = (isoStr: string): string => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setSubscriptionType('Day')}
+                    onClick={() => handleTypeChange('Day')}
                     className={`flex-1 py-1.5 text-center rounded-md text-xs font-extrabold transition-colors cursor-pointer ${
                       subscriptionType === 'Day'
                         ? 'bg-amber-600 text-white shadow-xs'
@@ -447,17 +586,54 @@ const formatDateDisplay = (isoStr: string): string => {
               {/* Value Input */}
               <div>
                 <label className="text-xs font-bold text-slate-700 block mb-1">
-                  SubscriptionValue
+                  {subscriptionType === 'Day' ? 'Ni zat (Days count)' : 'Thla zat (Months count)'}
                 </label>
                 <input
                   type="number"
                   min={1}
                   value={subscriptionValue}
-                  onChange={(e) => setSubscriptionValue(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                  onChange={(e) => handleValueChange(parseInt(e.target.value, 10) || 1)}
                   className="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs sm:text-sm font-black text-center text-slate-950 focus:ring-2 focus:ring-emerald-500 focus:outline-none shadow-2xs font-mono"
                 />
               </div>
             </div>
+
+            {/* Live Financial Calculation Preview */}
+            {(() => {
+              const ratio = subscriptionType === 'Day' ? (subscriptionValue / 30) : subscriptionValue;
+              const bstScaled = Number((154 * ratio).toFixed(2));
+              const bstLco = Number((78.60 * ratio).toFixed(2));
+              const bstMso = Number((75.40 * ratio).toFixed(2));
+              const localScaled = Number((71 * ratio).toFixed(2));
+              const localLco = Number((36.20 * ratio).toFixed(2));
+              const localMso = Number((34.80 * ratio).toFixed(2));
+
+              return (
+                <div className="bg-white/95 border border-emerald-300/90 rounded-lg p-2.5 text-xs text-slate-800 space-y-1 shadow-2xs">
+                  <div className="flex items-center justify-between font-black text-emerald-950 border-b border-emerald-100 pb-1">
+                    <span>Hlawh & MSO Cut in chhut dan ({subscriptionType === 'Day' ? `Ni ${subscriptionValue}` : `Thla ${subscriptionValue}`}):</span>
+                    <span className="font-mono text-[11px] bg-emerald-100 text-emerald-900 font-extrabold px-1.5 py-0.5 rounded border border-emerald-300">
+                      {ratio.toFixed(3)}x ratio
+                    </span>
+                  </div>
+                  <div className="text-[11px] leading-relaxed pt-0.5 space-y-0.5">
+                    <div className="flex items-center justify-between">
+                      <span>&bull; <strong>BST:</strong> Rs {bstScaled}</span>
+                      <span className="font-mono text-emerald-800 font-bold">LCO Hlawh: Rs {bstLco}</span>
+                      <span className="font-mono text-slate-700 font-bold">MSO Cut: Rs {bstMso}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>&bull; <strong>Local:</strong> Rs {localScaled}</span>
+                      <span className="font-mono text-emerald-800 font-bold">LCO Hlawh: Rs {localLco}</span>
+                      <span className="font-mono text-slate-700 font-bold">MSO Cut: Rs {localMso}</span>
+                    </div>
+                    <div className="text-[10px] text-slate-500 italic pt-0.5">
+                      * Alakarte channels: Commission 8.47% LCO hlawh, 91.53% MSO a chhun luh tur
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Explanatory summary text based on User requirement */}
             <div className="text-xs text-slate-700 bg-white/90 p-2.5 rounded-lg border border-emerald-200 leading-relaxed font-medium">
@@ -480,7 +656,7 @@ const formatDateDisplay = (isoStr: string): string => {
           {/* Action Footer */}
           <div className="flex items-center justify-between pt-1">
             <span className="text-xs text-slate-600 font-medium">
-              Customer {totalSubscribers > 0 ? `${totalSubscribers} te` : ''} tan
+              Customer {totalSubscribers > 0 ? `${totalSubscribers} te` : ''} tan apply tur
             </span>
             <div className="flex items-center gap-2">
               <button
@@ -492,11 +668,12 @@ const formatDateDisplay = (isoStr: string): string => {
               </button>
               <button
                 type="button"
+                id="apply-subscription-calendar-btn"
                 onClick={handleApply}
-                className="px-4 py-1.5 text-xs font-black text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-2xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                className="px-5 py-2 text-xs font-black text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
               >
                 <Check className="w-4 h-4" />
-                <span>Apply</span>
+                <span>Apply & Chhut nghal (Apply)</span>
               </button>
             </div>
           </div>
