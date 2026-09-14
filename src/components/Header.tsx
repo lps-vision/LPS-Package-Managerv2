@@ -92,7 +92,7 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Base Pack */}
           <span className="inline-flex items-center px-3 py-1.5 rounded-lg bg-[#2b3035] text-amber-300 border border-amber-800 shadow-2xs font-semibold">
-            Base Pack: <strong className="ml-1 text-white font-mono font-bold">Rs {basePrice.toFixed(2)}</strong>
+            Base Pack: <strong className="ml-1 text-white font-mono font-bold">₹ {basePrice.toFixed(2)}</strong>
           </span>
 
           {/* Upload Channel Price Button (Blue button matching PayTV) */}

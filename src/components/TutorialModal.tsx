@@ -17,9 +17,9 @@ He application hi LPS Subscriber raw data Excel file atanga Bulk Renew Excel fil
 
 2. CUSTOMER TINTE CHANNEL LEH PLAN PRESET THLAN DAN:
    - Customer hming i click khan a chung / sidebar-ah an details a lo lang ang.
-   - Quick Plan Presets (Rs. 300, Rs. 350, Rs. 50, Rs. 60, Rs. 100, Rs. 450, Rs. 360):
-     * "Rs. 450 Plan (350 HD + 100 Sports HD)": Hemi button i hmeh hian 300 SD leh 60 SD hlui zawng zawng a paih fai vek ang a, 350 HD leh 100 Sports HD chauh a lut nghal ang.
-     * "Rs. 360 Plan (300 SD + 60 Sports SD)": 350 HD leh 100 HD hlui a paih fai vek ang a, 300 leh 60 chauh a lut ang.
+   - Quick Plan Presets (₹ 300, ₹ 350, ₹ 50, ₹ 60, ₹ 100, ₹ 450, ₹ 360):
+     * "₹ 450 Plan (350 HD + 100 Sports HD)": Hemi button i hmeh hian 300 SD leh 60 SD hlui zawng zawng a paih fai vek ang a, 350 HD leh 100 Sports HD chauh a lut nghal ang.
+     * "₹ 360 Plan (300 SD + 60 Sports SD)": 350 HD leh 100 HD hlui a paih fai vek ang a, 300 leh 60 chauh a lut ang.
      * 300 leh 350 hi an in-replace tawn: 350 i hmeh chuan 300 a bo nghal.
      * 60 leh 100 hi an in-replace tawn: 100 i hmeh chuan 60 a bo nghal.
      * Plan thar i thlan apiang hian auto-save a ni a, Excel download i tih hunah channel hlui (300 leh 60) kha bo vekin, save thar (350 leh 100) chauh Excel-ah a lut ang.
@@ -40,8 +40,8 @@ He application hi LPS Subscriber raw data Excel file atanga Bulk Renew Excel fil
    - He file download hi LPS Operator Portal-ah "Bulk Package Renew" tih-ah upload nghal tawp tur a ni e.
 
 PRICING & SHARE LEH HLAWH CHHUT DAN:
-- BST Pack (Rs 154): LCO Share hi Rs 78.60 a ni a, MSO Cut hi Rs 75.40 a ni.
-- LOCAL Pack (Rs 71): LCO Share hi Rs 36.20 a ni a, MSO Cut hi Rs 34.80 a ni.
+- BST Pack (₹ 154): LCO Share hi ₹ 78.60 a ni a, MSO Cut hi ₹ 75.40 a ni.
+- LOCAL Pack (₹ 71): LCO Share hi ₹ 36.20 a ni a, MSO Cut hi ₹ 34.80 a ni.
 - A-la-carte: Channel rate atangin 8.47% chu LCO hlawh a ni a, a bak 91.53% chu MSO/Broadcaster chan a ni.
 `;
 

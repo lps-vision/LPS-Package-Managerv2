@@ -471,7 +471,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
       const sportsAddon = is100Active ? 100 : is60Active ? 60 : 0;
       const newBill = 300 + (is50Active ? 50 : 0) + sportsAddon;
       updateDraft(newTags, true, newBill);
-      setSaveSuccessMessage('Rs. 300 SD Pack thlan a ni e. SAVE (BST + Local & Channels) button hmet la a in-save ang.');
+      setSaveSuccessMessage('₹ 300 SD Pack thlan a ni e. SAVE (BST + Local & Channels) button hmet la a in-save ang.');
       setTimeout(() => setSaveSuccessMessage(null), 3500);
     }
   };
@@ -497,7 +497,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
       const sportsAddon = is100Active ? 100 : is60Active ? 60 : 0;
       const newBill = 350 + (is50Active ? 50 : 0) + sportsAddon;
       updateDraft(newTags, true, newBill);
-      setSaveSuccessMessage('Rs. 350 HD Pack thlan a ni e. SAVE (BST + Local & Channels) button hmet la a in-save ang.');
+      setSaveSuccessMessage('₹ 350 HD Pack thlan a ni e. SAVE (BST + Local & Channels) button hmet la a in-save ang.');
       setTimeout(() => setSaveSuccessMessage(null), 3500);
     }
   };
@@ -538,7 +538,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
       }
       const newBill = base + addon50 + 60;
       updateDraft(newTags, hasLocalAddon, newBill);
-      setSaveSuccessMessage('Rs. 60 Sports SD Addon thlan a ni e. SAVE button hmet la a in-save ang.');
+      setSaveSuccessMessage('₹ 60 Sports SD Addon thlan a ni e. SAVE button hmet la a in-save ang.');
       setTimeout(() => setSaveSuccessMessage(null), 3000);
     }
   };
@@ -560,7 +560,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
       }
       const newBill = base + addon50 + 100;
       updateDraft(newTags, hasLocalAddon, newBill);
-      setSaveSuccessMessage('Rs. 100 Sports HD Addon thlan a ni e. SAVE button hmet la a in-save ang.');
+      setSaveSuccessMessage('₹ 100 Sports HD Addon thlan a ni e. SAVE button hmet la a in-save ang.');
       setTimeout(() => setSaveSuccessMessage(null), 3000);
     }
   };
@@ -582,7 +582,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
     }
     const newBill = 450 + (is50Active ? 50 : 0);
     updateDraft(newTags, true, newBill);
-    setSaveSuccessMessage('Rs. 450 Plan (350 HD + 100 Sports HD) thlan fel a ni e! SAVE (BST + Local & Channels) button hmet la a in-save ang.');
+    setSaveSuccessMessage('₹ 450 Plan (350 HD + 100 Sports HD) thlan fel a ni e! SAVE (BST + Local & Channels) button hmet la a in-save ang.');
     setTimeout(() => setSaveSuccessMessage(null), 3500);
   };
 
@@ -604,7 +604,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
     }
     const newBill = 360 + (is50Active ? 50 : 0);
     updateDraft(newTags, true, newBill);
-    setSaveSuccessMessage('Rs. 360 Plan (300 SD + 60 Sports SD) thlan fel a ni e! SAVE (BST + Local & Channels) button hmet la a in-save ang.');
+    setSaveSuccessMessage('₹ 360 Plan (300 SD + 60 Sports SD) thlan fel a ni e! SAVE (BST + Local & Channels) button hmet la a in-save ang.');
     setTimeout(() => setSaveSuccessMessage(null), 3500);
   };
 
@@ -668,7 +668,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
     const billToSave = !isNaN(parsedBill) && parsedBill > 0 ? Number(parsedBill.toFixed(2)) : undefined;
     onSaveCustomerChannels(currentCustomer.id, selectedChannelTags, hasLocalAddon, billToSave);
     const addonText = hasLocalAddon ? 'BST + Local Add-on' : 'BST chauh';
-    const billText = billToSave ? ` • Bill: Rs. ${billToSave.toFixed(2)}` : '';
+    const billText = billToSave ? ` • Bill: ₹ ${billToSave.toFixed(2)}` : '';
     setSaveSuccessMessage(`"${currentCustomer.name}" tan ${addonText} & channels (${selectedChannelTags.length})${billText} hlawhtling takin save a ni e!`);
     setTimeout(() => {
       setSaveSuccessMessage(null);
@@ -857,7 +857,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                 )}
                 {currentCustomer.customBillAmount !== undefined && currentCustomer.customBillAmount > 0 && (
                   <span className="ml-2 font-bold text-emerald-800 bg-emerald-100/90 border border-emerald-300 px-2 py-0.5 rounded text-xs">
-                    Saved Bill: Rs. {currentCustomer.customBillAmount.toFixed(0)}
+                    Saved Bill: ₹ {currentCustomer.customBillAmount.toFixed(0)}
                   </span>
                 )}
               </div>
@@ -870,7 +870,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                   <AlertCircle className="w-4 h-4 text-amber-700 shrink-0" />
                   <span>
                     Thlan thar mek (A la in-save lo): <strong>{selectedChannelTags.length} channels</strong>
-                    {marginAnalysis.hasCustom ? ` • Bill: Rs. ${marginAnalysis.effectiveBill.toFixed(0)}` : ''}
+                    {marginAnalysis.hasCustom ? ` • Bill: ₹ ${marginAnalysis.effectiveBill.toFixed(0)}` : ''}
                     {' '}— SAVE button hmet la a in-save ang.
                   </span>
                 </span>
@@ -890,36 +890,36 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
           {/* 4. Price Preview & Customer Bill for this Customer */}
           <div>
             <div className="text-xs sm:text-[13px] text-slate-800 flex flex-wrap items-center gap-x-5 gap-y-3 bg-slate-50/90 p-3.5 rounded-xl border border-slate-200/90 shadow-2xs">
-              <span title="BST Rs. 154 (LCO Share: Rs 78.60 / 51.04%)" className="flex items-center gap-1.5">
+              <span title="BST ₹ 154 (LCO Share: ₹ 78.60 / 51.04%)" className="flex items-center gap-1.5">
                 <span className="text-slate-600 font-semibold">BST (Mandatory):</span>
-                <strong className="text-slate-950 font-bold font-mono text-sm">Rs {bstPrice.toFixed(2)}</strong>
+                <strong className="text-slate-950 font-bold font-mono text-sm">₹ {bstPrice.toFixed(2)}</strong>
               </span>
 
-              <span title="Local addon: Rs. 71 (LCO Share: Rs 36.20 / 50.99%)" className="flex items-center gap-1.5">
+              <span title="Local addon: ₹ 71 (LCO Share: ₹ 36.20 / 50.99%)" className="flex items-center gap-1.5">
                 <span className="text-slate-600 font-semibold">Local:</span>
                 <strong className={`font-mono text-sm ${hasLocalAddon ? 'text-emerald-700 font-extrabold' : 'text-slate-400 font-medium'}`}>
-                  {hasLocalAddon ? `+Rs ${localAddonPrice.toFixed(2)}` : 'Rs 0.00 (Off)'}
+                  {hasLocalAddon ? `+₹ ${localAddonPrice.toFixed(2)}` : '₹ 0.00 (Off)'}
                 </strong>
               </span>
 
-              <span title={`Alakarte Rate Pangngai: Rs ${priceEstimate.alacarteTotal.toFixed(2)} | LCO Chan (8.47%): Rs ${priceEstimate.alacarteLcoShare.toFixed(2)} | In Cut (91.53%): Rs ${priceEstimate.alacarteMsoCut.toFixed(2)}`} className="flex items-center gap-1.5 flex-wrap">
+              <span title={`Alakarte Rate Pangngai: ₹ ${priceEstimate.alacarteTotal.toFixed(2)} | LCO Chan (8.47%): ₹ ${priceEstimate.alacarteLcoShare.toFixed(2)} | In Cut (91.53%): ₹ ${priceEstimate.alacarteMsoCut.toFixed(2)}`} className="flex items-center gap-1.5 flex-wrap">
                 <span className="text-slate-600 font-semibold">AlaCarte ({selectedChannelTags.length}):</span>
-                <strong className="text-slate-950 font-bold font-mono text-sm">+Rs {priceEstimate.alacarteTotal.toFixed(2)}</strong>
+                <strong className="text-slate-950 font-bold font-mono text-sm">+₹ {priceEstimate.alacarteTotal.toFixed(2)}</strong>
                 {selectedChannelTags.length > 0 && (
                   <span className="text-xs text-emerald-800 font-bold bg-emerald-100/70 border border-emerald-300/80 px-2 py-0.5 rounded-md">
-                    LCO 8.47%: Rs {priceEstimate.alacarteLcoShare.toFixed(2)} &bull; Cut 91.53%: Rs {priceEstimate.alacarteMsoCut.toFixed(2)}
+                    LCO 8.47%: ₹ {priceEstimate.alacarteLcoShare.toFixed(2)} &bull; Cut 91.53%: ₹ {priceEstimate.alacarteMsoCut.toFixed(2)}
                   </span>
                 )}
               </span>
 
               <span className="text-slate-900 font-semibold border-l pl-3 border-slate-300 flex items-center gap-1.5">
                 <span className="text-slate-600 font-semibold">Total Price:</span>
-                <strong className="text-blue-700 font-black text-sm sm:text-base font-mono">Rs {priceEstimate.total.toFixed(2)}</strong>
+                <strong className="text-blue-700 font-black text-sm sm:text-base font-mono">₹ {priceEstimate.total.toFixed(2)}</strong>
               </span>
 
-              <span title="LCO Share: BST Rs 78.60 + Local Rs 36.20 + 8.47% Ala-carte" className="flex items-center gap-1.5">
+              <span title="LCO Share: BST ₹ 78.60 + Local ₹ 36.20 + 8.47% Ala-carte" className="flex items-center gap-1.5">
                 <span className="text-slate-600 font-semibold">LCO Hlawh:</span>
-                <strong className="text-emerald-700 font-black text-sm sm:text-base font-mono">Rs {priceEstimate.lcoHlawh.toFixed(2)}</strong>
+                <strong className="text-emerald-700 font-black text-sm sm:text-base font-mono">₹ {priceEstimate.lcoHlawh.toFixed(2)}</strong>
                 <span className="text-xs text-slate-500 font-medium">
                   ({((priceEstimate.lcoHlawh / priceEstimate.total) * 100).toFixed(1)}%)
                 </span>
@@ -929,14 +929,14 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                 <span title="Customer Bill atanga i hlawh tak tak tur (Bill - MSO Cut)" className="flex items-center gap-1.5 border-l pl-3 border-emerald-200 bg-emerald-50 px-2 py-0.5 rounded-lg border">
                   <span className="text-emerald-800 font-bold">Net Profit:</span>
                   <strong className={`font-black text-sm sm:text-base font-mono ${marginAnalysis.isLoss ? 'text-red-600' : 'text-emerald-700'}`}>
-                    Rs {marginAnalysis.actualLcoProfit.toFixed(2)}
+                    ₹ {marginAnalysis.actualLcoProfit.toFixed(2)}
                   </strong>
                 </span>
               )}
 
-              <span title={marginAnalysis.hasCustom ? 'MSO 80% In Cut (Customer Bill atangin)' : 'MSO Cut: BST Rs 75.40 + Local Rs 34.80 + 91.53% Ala-carte'} className="flex items-center gap-1.5">
+              <span title={marginAnalysis.hasCustom ? 'MSO 80% In Cut (Customer Bill atangin)' : 'MSO Cut: BST ₹ 75.40 + Local ₹ 34.80 + 91.53% Ala-carte'} className="flex items-center gap-1.5">
                 <span className="text-slate-600 font-semibold">LCO Sen (In Cut):</span>
-                <strong className="text-slate-900 font-black text-sm sm:text-base font-mono">Rs {marginAnalysis.msoCut.toFixed(2)}</strong>
+                <strong className="text-slate-900 font-black text-sm sm:text-base font-mono">₹ {marginAnalysis.msoCut.toFixed(2)}</strong>
                 <span className="text-xs text-slate-500 font-medium">
                   ({marginAnalysis.msoCutPercent.toFixed(1)}%)
                 </span>
@@ -958,7 +958,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                     <span>Customer Bill:</span>
                   </label>
                   <div className="relative flex items-center">
-                    <span className="text-xs sm:text-sm font-black mr-1 text-white/90">Rs.</span>
+                    <span className="text-xs sm:text-sm font-black mr-1 text-white/90">₹</span>
                     <input
                       id="customer-bill-edittext"
                       type="number"
@@ -1014,11 +1014,11 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                   <div className="font-extrabold text-sm flex items-center justify-between gap-2 flex-wrap">
                     <span>HLOH TUR ALERT: MSO IN CUT A SANG LUTUK!</span>
                     <span className="bg-white text-red-700 px-2.5 py-0.5 rounded text-xs font-black">
-                      LCO Hloh (Loss): -Rs. {marginAnalysis.lossAmount.toFixed(2)}
+                      LCO Hloh (Loss): -₹ {marginAnalysis.lossAmount.toFixed(2)}
                     </span>
                   </div>
                   <p className="text-red-100 mt-1 leading-relaxed">
-                    Customer hnen atanga bill khawn zat <strong>Rs. {marginAnalysis.effectiveBill.toFixed(2)}</strong> hi Channel thlan zawng zawng MSO chhun luh ngai zat (In Cut) <strong>Rs. {marginAnalysis.channelBaseMsoCost.toFixed(2)}</strong> aiin a tlem zawk! Channel thlan teuh a nih avangin LCO tan hloh (Loss) a thlen dawn e. Channel thlan ti tlem rawh emaw Customer Bill khawn zat hi tisang rawh.
+                    Customer hnen atanga bill khawn zat <strong>₹ {marginAnalysis.effectiveBill.toFixed(2)}</strong> hi Channel thlan zawng zawng MSO chhun luh ngai zat (In Cut) <strong>₹ {marginAnalysis.channelBaseMsoCost.toFixed(2)}</strong> aiin a tlem zawk! Channel thlan teuh a nih avangin LCO tan hloh (Loss) a thlen dawn e. Channel thlan ti tlem rawh emaw Customer Bill khawn zat hi tisang rawh.
                   </p>
                 </div>
               </div>
@@ -1035,12 +1035,12 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                     </span>
                     <div className="flex items-center gap-2">
                       <span className="bg-red-600 text-white px-2.5 py-0.5 rounded font-black text-xs">
-                        LCO Chan: {marginAnalysis.lcoMarginPercent.toFixed(1)}% (Rs. {marginAnalysis.actualLcoProfit.toFixed(2)})
+                        LCO Chan: {marginAnalysis.lcoMarginPercent.toFixed(1)}% (₹ {marginAnalysis.actualLcoProfit.toFixed(2)})
                       </span>
                     </div>
                   </div>
                   <p className="text-red-950 mt-1 leading-relaxed">
-                    <strong>Fimkhur a ngai:</strong> Channel thlan teuh teuh a nih avangin Package MSO Cost pangngai (<strong>Rs. {marginAnalysis.channelBaseMsoCost.toFixed(2)}</strong>) hi Customer Bill (<strong>Rs. {marginAnalysis.effectiveBill.toFixed(2)}</strong>) nen a inhnaih tawh hle a, i hlawh a tlem tawh a ni.
+                    <strong>Fimkhur a ngai:</strong> Channel thlan teuh teuh a nih avangin Package MSO Cost pangngai (<strong>₹ {marginAnalysis.channelBaseMsoCost.toFixed(2)}</strong>) hi Customer Bill (<strong>₹ {marginAnalysis.effectiveBill.toFixed(2)}</strong>) nen a inhnaih tawh hle a, i hlawh a tlem tawh a ni.
                   </p>
                 </div>
               </div>
@@ -1055,19 +1055,19 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                     Bill Chhut Dan (Component Based):
                   </span>
                   <span>
-                    Bill Khawn: <strong className="text-slate-950 font-mono font-bold">Rs. {marginAnalysis.effectiveBill.toFixed(2)}</strong>
+                    Bill Khawn: <strong className="text-slate-950 font-mono font-bold">₹ {marginAnalysis.effectiveBill.toFixed(2)}</strong>
                   </span>
                   <span className="text-emerald-400">&bull;</span>
                   <span>
-                    MSO Cut (Sen): <strong className="text-blue-950 font-mono font-black">Rs. {marginAnalysis.msoCut.toFixed(2)}</strong>
+                    MSO Cut (Sen): <strong className="text-blue-950 font-mono font-black">₹ {marginAnalysis.msoCut.toFixed(2)}</strong>
                   </span>
                   <span className="text-emerald-400">&bull;</span>
                   <span>
-                    Net Profit: <strong className="text-emerald-800 font-mono font-black">Rs. {marginAnalysis.actualLcoProfit.toFixed(2)}</strong>
+                    Net Profit: <strong className="text-emerald-800 font-mono font-black">₹ {marginAnalysis.actualLcoProfit.toFixed(2)}</strong>
                   </span>
                 </div>
                 <div className="flex flex-col items-end gap-1 text-[11px] font-bold text-emerald-900">
-                   <span>Standard Hlawh: Rs. {priceEstimate.lcoHlawh.toFixed(2)}</span>
+                   <span>Standard Hlawh: ₹ {priceEstimate.lcoHlawh.toFixed(2)}</span>
                    <span className="bg-emerald-200/90 text-emerald-950 px-3 py-1 rounded-full border border-emerald-300/80">
                       ✓ Component Share hmanga chhut
                    </span>
@@ -1080,11 +1080,11 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
               <div className="mt-2.5 p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 flex items-center justify-between gap-2 text-xs sm:text-[13px]">
                 <div className="flex items-center gap-2 flex-wrap font-medium">
                   <span className="font-bold text-slate-900">Standard Package Rate:</span>
-                  <span>BST Rs 154 (LCO: Rs 78.60 / MSO: Rs 75.40)</span>
+                  <span>BST ₹ 154 (LCO: ₹ 78.60 / MSO: ₹ 75.40)</span>
                   {hasLocalAddon && (
                     <>
                       <span className="text-slate-300">&bull;</span>
-                      <span>Local Rs 71 (LCO: Rs 36.20 / MSO: Rs 34.80)</span>
+                      <span>Local ₹ 71 (LCO: ₹ 36.20 / MSO: ₹ 34.80)</span>
                     </>
                   )}
                   {priceEstimate.alacartePrice > 0 && (
@@ -1126,15 +1126,15 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                   return (
                     <span
                       key={name}
-                      title={`Rate Pangngai: Rs ${chPrice.toFixed(2)} | LCO (8.47%): Rs ${chLco.toFixed(2)} | In Cut (91.53%): Rs ${chMso.toFixed(2)}`}
+                      title={`Rate Pangngai: ₹ ${chPrice.toFixed(2)} | LCO (8.47%): ₹ ${chLco.toFixed(2)} | In Cut (91.53%): ₹ ${chMso.toFixed(2)}`}
                       className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs sm:text-[13px] font-semibold bg-[#6f42c1] hover:bg-[#5a32a3] text-white shadow-2xs transition-all"
                     >
                       <span className="font-bold">{name}</span>
                       <span className="text-xs font-mono bg-purple-950/70 px-1.5 py-0.5 rounded text-purple-100 font-bold">
-                        Rs {chPrice.toFixed(2)}
+                        ₹ {chPrice.toFixed(2)}
                       </span>
-                      <span className="text-[11px] text-emerald-200 font-bold bg-purple-950/40 px-1.5 py-0.5 rounded hidden sm:inline" title={`8.47% LCO Chan: Rs ${chLco.toFixed(2)} | 91.53% In Cut: Rs ${chMso.toFixed(2)}`}>
-                        (LCO: Rs {chLco.toFixed(2)})
+                      <span className="text-[11px] text-emerald-200 font-bold bg-purple-950/40 px-1.5 py-0.5 rounded hidden sm:inline" title={`8.47% LCO Chan: ₹ ${chLco.toFixed(2)} | 91.53% In Cut: ₹ ${chMso.toFixed(2)}`}>
+                        (LCO: ₹ {chLco.toFixed(2)})
                       </span>
                       <button
                         type="button"
@@ -1182,7 +1182,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
 
               {isChannelDropdownOpen && (
                 <div className="p-3 border-t border-gray-200 space-y-3">
-                  {/* Quick Preset Buttons (Rs. 300, Rs. 350, +, Rs. 50, Rs. 60, Rs. 100, Rs. 360, Rs. 450) */}
+                  {/* Quick Preset Buttons (₹ 300, ₹ 350, +, ₹ 50, ₹ 60, ₹ 100, ₹ 360, ₹ 450) */}
                   <div className="pb-3 border-b border-slate-200 space-y-2">
                     <div className="flex flex-wrap items-center justify-between gap-2.5">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -1191,7 +1191,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                         </span>
                         {currentPresetBill > 0 && (
                           <span className="text-xs sm:text-[13px] font-black text-emerald-900 bg-emerald-100/90 border border-emerald-400 px-2.5 py-0.5 rounded-lg shadow-2xs font-mono">
-                            Plan Bill: Rs. {currentPresetBill}
+                            Plan Bill: ₹ {currentPresetBill}
                           </span>
                         )}
                       </div>
@@ -1216,7 +1216,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                       <button
                         type="button"
                         onClick={handleTogglePreset300}
-                        title="Rs. 300 SD Pack: BST + Local + Star Sports Select 1 & 2 + Cartoon Network"
+                        title="₹ 300 SD Pack: BST + Local + Star Sports Select 1 & 2 + Cartoon Network"
                         className={`px-3 py-1.5 rounded-lg border text-xs sm:text-[13px] font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none shadow-2xs ${
                           is300Active
                             ? 'bg-emerald-50 border-emerald-500 text-emerald-900 ring-2 ring-emerald-300'
@@ -1233,7 +1233,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                           {is300Active && <span className="text-red-600 font-black text-xs leading-none">✓</span>}
                         </span>
                         <span className={is300Active ? 'text-emerald-800 font-black font-mono' : 'text-amber-900 font-bold font-mono'}>
-                          Rs. 300
+                          ₹ 300
                         </span>
                       </button>
 
@@ -1241,7 +1241,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                       <button
                         type="button"
                         onClick={handleTogglePreset350}
-                        title="Rs. 350 HD Pack: BST + Local + SS Select HD 1 & 2 + Star Sports HD-1 + Cartoon Network"
+                        title="₹ 350 HD Pack: BST + Local + SS Select HD 1 & 2 + Star Sports HD-1 + Cartoon Network"
                         className={`px-3 py-1.5 rounded-lg border text-xs sm:text-[13px] font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none shadow-2xs ${
                           is350Active
                             ? 'bg-emerald-50 border-emerald-500 text-emerald-900 ring-2 ring-emerald-300'
@@ -1258,7 +1258,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                           {is350Active && <span className="text-red-600 font-black text-xs leading-none">✓</span>}
                         </span>
                         <span className={is350Active ? 'text-emerald-800 font-black font-mono' : 'text-amber-900 font-bold font-mono'}>
-                          Rs. 350
+                          ₹ 350
                         </span>
                       </button>
 
@@ -1269,7 +1269,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                       <button
                         type="button"
                         onClick={handleTogglePreset50}
-                        title="Rs. 50 Addon: Nick Jr, Movies Now, MNX, NG Wild, SM SELECT, VH1"
+                        title="₹ 50 Addon: Nick Jr, Movies Now, MNX, NG Wild, SM SELECT, VH1"
                         className={`px-3 py-1.5 rounded-lg border text-xs sm:text-[13px] font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none shadow-2xs ${
                           is50Active
                             ? 'bg-emerald-50 border-emerald-500 text-emerald-900 ring-2 ring-emerald-300'
@@ -1286,7 +1286,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                           {is50Active && <span className="text-red-600 font-black text-xs leading-none">✓</span>}
                         </span>
                         <span className={is50Active ? 'text-emerald-800 font-black font-mono' : 'text-amber-900 font-bold font-mono'}>
-                          Rs. 50
+                          ₹ 50
                         </span>
                       </button>
 
@@ -1294,7 +1294,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                       <button
                         type="button"
                         onClick={handleTogglePreset60}
-                        title="Rs. 60 Sports SD: Sony Sports Ten 1 & 2 SD"
+                        title="₹ 60 Sports SD: Sony Sports Ten 1 & 2 SD"
                         className={`px-3 py-1.5 rounded-lg border text-xs sm:text-[13px] font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none shadow-2xs ${
                           is60Active
                             ? 'bg-emerald-50 border-emerald-500 text-emerald-900 ring-2 ring-emerald-300'
@@ -1311,7 +1311,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                           {is60Active && <span className="text-red-600 font-black text-xs leading-none">✓</span>}
                         </span>
                         <span className={is60Active ? 'text-emerald-800 font-black font-mono' : 'text-amber-900 font-bold font-mono'}>
-                          Rs. 60
+                          ₹ 60
                         </span>
                       </button>
 
@@ -1319,7 +1319,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                       <button
                         type="button"
                         onClick={handleTogglePreset100}
-                        title="Rs. 100 Sports HD: Sony Sports Ten 1 & 2 HD"
+                        title="₹ 100 Sports HD: Sony Sports Ten 1 & 2 HD"
                         className={`px-3 py-1.5 rounded-lg border text-xs sm:text-[13px] font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none shadow-2xs ${
                           is100Active
                             ? 'bg-emerald-50 border-emerald-500 text-emerald-900 ring-2 ring-emerald-300'
@@ -1336,7 +1336,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                           {is100Active && <span className="text-red-600 font-black text-xs leading-none">✓</span>}
                         </span>
                         <span className={is100Active ? 'text-emerald-800 font-black font-mono' : 'text-amber-900 font-bold font-mono'}>
-                          Rs. 100
+                          ₹ 100
                         </span>
                       </button>
 
@@ -1347,7 +1347,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                       <button
                         type="button"
                         onClick={handleSetPlan360}
-                        title="Rs. 360 Plan: 300 SD Pack + 60 Sports SD"
+                        title="₹ 360 Plan: 300 SD Pack + 60 Sports SD"
                         className={`px-3 py-1.5 rounded-lg border text-xs sm:text-[13px] font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none shadow-2xs ${
                           isCombo360Active
                             ? 'bg-emerald-600 text-white border-emerald-700 ring-2 ring-emerald-400 font-black'
@@ -1355,14 +1355,14 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                         }`}
                       >
                         <span>{isCombo360Active ? '✓' : '⚡'}</span>
-                        <span className="font-mono">Rs. 360</span>
+                        <span className="font-mono">₹ 360</span>
                       </button>
 
                       {/* Rs. 450 Plan */}
                       <button
                         type="button"
                         onClick={handleSetPlan450}
-                        title="Rs. 450 Plan: 350 HD Pack + 100 Sports HD"
+                        title="₹ 450 Plan: 350 HD Pack + 100 Sports HD"
                         className={`px-3 py-1.5 rounded-lg border text-xs sm:text-[13px] font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none shadow-2xs ${
                           isCombo450Active
                             ? 'bg-emerald-600 text-white border-emerald-700 ring-2 ring-emerald-400 font-black'
@@ -1370,7 +1370,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                         }`}
                       >
                         <span>{isCombo450Active ? '✓' : '🌟'}</span>
-                        <span className="font-mono">Rs. 450</span>
+                        <span className="font-mono">₹ 450</span>
                       </button>
                     </div>
                   </div>
@@ -1425,7 +1425,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                               </span>
                               <span>Local</span>
                               {isLocalActive && (
-                                <span className="text-xs opacity-90 font-medium font-mono">(Rs 71)</span>
+                                <span className="text-xs opacity-90 font-medium font-mono">(₹ 71)</span>
                               )}
                             </button>
                           );
@@ -1613,7 +1613,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                                 )}
                               </span>
                               <span className="text-xs text-blue-800 font-medium block mt-0.5">
-                                Untick theih vek in &bull; Rate: <strong className="font-mono font-black">Rs {sportsAddonTotalPrice.toFixed(2)}</strong> (LCO: Rs {(sportsAddonTotalPrice * 0.0847).toFixed(2)} &bull; Cut: Rs {(sportsAddonTotalPrice * 0.9153).toFixed(2)})
+                                Untick theih vek in &bull; Rate: <strong className="font-mono font-black">₹ {sportsAddonTotalPrice.toFixed(2)}</strong> (LCO: ₹ {(sportsAddonTotalPrice * 0.0847).toFixed(2)} &bull; Cut: ₹ {(sportsAddonTotalPrice * 0.9153).toFixed(2)})
                               </span>
                             </label>
                           </div>
@@ -1661,13 +1661,13 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                                   <div className="truncate">
                                     <div className="font-bold truncate text-xs sm:text-[13px] text-slate-900">{ch.name}</div>
                                     <div className="text-[11px] text-slate-600 font-medium mt-0.5">
-                                      <span className="font-bold text-slate-700">SD</span> &bull; LCO: Rs {lcoShare.toFixed(2)}
+                                      <span className="font-bold text-slate-700">SD</span> &bull; LCO: ₹ {lcoShare.toFixed(2)}
                                     </div>
                                   </div>
                                 </div>
                                 <div className="text-right shrink-0">
                                   <span className="text-xs sm:text-sm font-mono font-black text-blue-950 block">
-                                    Rs {ch.price.toFixed(2)}
+                                    ₹ {ch.price.toFixed(2)}
                                   </span>
                                 </div>
                               </div>
@@ -1901,15 +1901,15 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                                 </span>
                               </label>
                               <p className="text-xs text-gray-600 mt-0.5">
-                                Tick chuan Local tab a hring ang a, LPS 1 atanga LPS 12 leh LPS HD channel list thlan sa in a tel nghal ang. <strong className="text-emerald-800">LCO Share: Rs. 36.20 (50.99%) &bull; MSO Cut: Rs. 34.80 (49.01%)</strong> a ni.
+                                Tick chuan Local tab a hring ang a, LPS 1 atanga LPS 12 leh LPS HD channel list thlan sa in a tel nghal ang. <strong className="text-emerald-800">LCO Share: ₹ 36.20 (50.99%) &bull; MSO Cut: ₹ 34.80 (49.01%)</strong> a ni.
                               </p>
                             </div>
                           </div>
                           <div className="text-right shrink-0">
                             <div className={`text-base font-mono font-bold ${hasLocalAddon ? 'text-emerald-700' : 'text-gray-400'}`}>
-                              {hasLocalAddon ? `+Rs. ${localAddonPrice.toFixed(2)}` : 'Rs. 0.00'}
+                              {hasLocalAddon ? `+₹ ${localAddonPrice.toFixed(2)}` : '₹ 0.00'}
                             </div>
-                            <div className="text-[10px] text-gray-500 font-medium">LCO Rs 36.20 &bull; MSO Rs 34.80</div>
+                            <div className="text-[10px] text-gray-500 font-medium">LCO ₹ 36.20 &bull; MSO ₹ 34.80</div>
                           </div>
                         </div>
                       </div>
@@ -2011,7 +2011,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                                 </span>
                               </label>
                               <p className="text-xs text-gray-600 mt-0.5">
-                                Untick theih vek in &bull; Channel {HD_ADDON_PRESET.length} awm &bull; Total Rate: <strong>Rs {hdAddonTotalPrice.toFixed(2)}</strong> &bull; LCO Share (8.47%): <strong>Rs {(hdAddonTotalPrice * 0.0847).toFixed(2)}</strong> &bull; MSO Cut (91.53%): <strong>Rs {(hdAddonTotalPrice * 0.9153).toFixed(2)}</strong>.
+                                Untick theih vek in &bull; Channel {HD_ADDON_PRESET.length} awm &bull; Total Rate: <strong>₹ {hdAddonTotalPrice.toFixed(2)}</strong> &bull; LCO Share (8.47%): <strong>₹ {(hdAddonTotalPrice * 0.0847).toFixed(2)}</strong> &bull; MSO Cut (91.53%): <strong>₹ {(hdAddonTotalPrice * 0.9153).toFixed(2)}</strong>.
                                 <span className="text-emerald-800 font-semibold block sm:inline sm:ml-1">
                                   (Export hunah channel pakhat tete in line khat ah a awm ang)
                                 </span>
@@ -2080,15 +2080,15 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                                       </span>
                                     </div>
                                     <div className="text-[10px] text-gray-500 flex items-center gap-1 mt-0.5">
-                                      <span className="text-emerald-700 font-medium">LCO: Rs {lcoShare.toFixed(2)}</span>
+                                      <span className="text-emerald-700 font-medium">LCO: ₹ {lcoShare.toFixed(2)}</span>
                                       <span>&bull;</span>
-                                      <span className="text-gray-500">Cut: Rs {msoCut.toFixed(2)}</span>
+                                      <span className="text-gray-500">Cut: ₹ {msoCut.toFixed(2)}</span>
                                     </div>
                                   </div>
                                 </div>
                                 <div className="text-right shrink-0">
                                   <span className={`text-xs font-mono font-bold block ${isSelected ? 'text-emerald-700' : 'text-gray-900'}`}>
-                                    Rs {item.price.toFixed(2)}
+                                    ₹ {item.price.toFixed(2)}
                                   </span>
                                   <span className="text-[9px] text-gray-400">{item.category}</span>
                                 </div>
@@ -2144,7 +2144,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                                 </span>
                               </label>
                               <p className="text-xs text-gray-600 mt-0.5">
-                                Untick theih vek in &bull; Channel {SD_ADDON_PRESET.length} awm &bull; Total Rate: <strong>Rs {sdAddonTotalPrice.toFixed(2)}</strong> &bull; LCO Share (8.47%): <strong>Rs {(sdAddonTotalPrice * 0.0847).toFixed(2)}</strong> &bull; MSO Cut (91.53%): <strong>Rs {(sdAddonTotalPrice * 0.9153).toFixed(2)}</strong>.
+                                Untick theih vek in &bull; Channel {SD_ADDON_PRESET.length} awm &bull; Total Rate: <strong>₹ {sdAddonTotalPrice.toFixed(2)}</strong> &bull; LCO Share (8.47%): <strong>₹ {(sdAddonTotalPrice * 0.0847).toFixed(2)}</strong> &bull; MSO Cut (91.53%): <strong>₹ {(sdAddonTotalPrice * 0.9153).toFixed(2)}</strong>.
                                 <span className="text-emerald-800 font-semibold block sm:inline sm:ml-1">
                                    (Export hunah channel pakhat tete in line khat ah a awm ang)
                                  </span>
@@ -2213,15 +2213,15 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                                       </span>
                                     </div>
                                     <div className="text-[10px] text-gray-500 flex items-center gap-1 mt-0.5">
-                                      <span className="text-emerald-700 font-medium">LCO: Rs {lcoShare.toFixed(2)}</span>
+                                      <span className="text-emerald-700 font-medium">LCO: ₹ {lcoShare.toFixed(2)}</span>
                                       <span>&bull;</span>
-                                      <span className="text-gray-500">Cut: Rs {msoCut.toFixed(2)}</span>
+                                      <span className="text-gray-500">Cut: ₹ {msoCut.toFixed(2)}</span>
                                     </div>
                                   </div>
                                 </div>
                                 <div className="text-right shrink-0">
                                   <span className={`text-xs font-mono font-bold block ${isSelected ? 'text-emerald-700' : 'text-gray-900'}`}>
-                                    Rs {item.price.toFixed(2)}
+                                    ₹ {item.price.toFixed(2)}
                                   </span>
                                   <span className="text-[9px] text-gray-400">{item.category}</span>
                                 </div>
@@ -2292,17 +2292,17 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                                     <span>{ch.category}</span>
                                     <span>&bull;</span>
                                     <span className="text-emerald-700 font-medium" title="8.47% LCO Chan">
-                                      LCO: Rs {lcoShare.toFixed(2)}
+                                      LCO: ₹ {lcoShare.toFixed(2)}
                                     </span>
                                     <span>&bull;</span>
                                     <span className="text-gray-500" title="91.53% In Cut">
-                                      Cut: Rs {msoCut.toFixed(2)}
+                                      Cut: ₹ {msoCut.toFixed(2)}
                                     </span>
                                   </div>
                                 </div>
                                 <div className="text-right shrink-0">
                                   <span className={`text-[11px] font-bold block ${isSelected ? 'text-blue-700' : 'text-gray-900'}`}>
-                                    Rs {ch.price.toFixed(2)}
+                                    ₹ {ch.price.toFixed(2)}
                                   </span>
                                   <span className="text-[9px] text-gray-400 font-normal">Rate</span>
                                 </div>
@@ -2344,7 +2344,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
               <Save className="w-5 h-5" />
               <span>
                 SAVE (BST {hasLocalAddon ? '+ Local' : 'chauh'} & Channels
-                {marginAnalysis.hasCustom ? ` • Bill: Rs ${marginAnalysis.effectiveBill.toFixed(0)}` : ''})
+                {marginAnalysis.hasCustom ? ` • Bill: ₹ ${marginAnalysis.effectiveBill.toFixed(0)}` : ''})
               </span>
               {hasUnsavedChanges && (
                 <span className="w-2.5 h-2.5 rounded-full bg-amber-300 animate-ping" />

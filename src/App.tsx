@@ -85,6 +85,7 @@ export default function App() {
   const [isBulkRenewModalOpen, setIsBulkRenewModalOpen] = useState<boolean>(false);
   const [isBillCalculatorOpen, setIsBillCalculatorOpen] = useState<boolean>(false);
   const [isTutorialOpen, setIsTutorialOpen] = useState<boolean>(false);
+  const [customTotalDeposit, setCustomTotalDeposit] = useState<number | null>(null);
 
   // Subscription Date Settings for Excel Export
   const [subscriptionSettings, setSubscriptionSettings] = useState<SubscriptionDateSettings>(() => {
@@ -488,6 +489,7 @@ export default function App() {
 
       setRawRows(result.rawRows);
       setCustomers(result.customers);
+      setCustomTotalDeposit(null);
       setCurrentFileName(file.name);
       setFileSizeText(sizeKb);
 
@@ -513,6 +515,7 @@ export default function App() {
 
     setRawRows([]);
     setCustomers([]);
+    setCustomTotalDeposit(null);
     setCurrentFileName(null);
     setFileSizeText('');
     setSelectedCustomerId(null);
@@ -882,7 +885,8 @@ export default function App() {
     const totalPrice = Number((monthlyStandardPrice * periodRatio).toFixed(2));
     const totalLcoHlawh = Number((monthlyLcoHlawh * periodRatio).toFixed(2));
     const totalLcoSen = Number((monthlyLcoSen * periodRatio).toFixed(2));
-    const totalActualCollection = Number((monthlyActualCollection * periodRatio).toFixed(2));
+    const defaultActualCollection = Number((monthlyActualCollection * periodRatio).toFixed(2));
+    const totalActualCollection = customTotalDeposit !== null ? customTotalDeposit : defaultActualCollection;
     const totalActualNetProfit = Number((totalActualCollection - totalLcoSen).toFixed(2));
 
     return {
@@ -900,7 +904,7 @@ export default function App() {
       subscriptionValue: subscriptionSettings?.subscriptionValue || 1,
       totalDays: subscriptionSettings?.totalDays || (subscriptionSettings?.subscriptionType === 'Day' ? subscriptionSettings.subscriptionValue : 30),
     };
-  }, [customers, subscriptionSettings]);
+  }, [customers, subscriptionSettings, customTotalDeposit]);
 
   // Total Ala-carte amount across all loaded customers for the calculator sync
   const currentAlacarteSum = useMemo(() => {
@@ -925,7 +929,7 @@ export default function App() {
     const name = currentFileName
       ? `Final_Export_${currentFileName.replace(/\.[^/.]+$/, '')}.xlsx`
       : 'Final_Export_LCO_Share.xlsx';
-    exportSummaryExcel(customers, name, availableChannels, BST_PRICE, LOCAL_PRICE, subscriptionSettings);
+    exportSummaryExcel(customers, name, availableChannels, BST_PRICE, LOCAL_PRICE, subscriptionSettings, customTotalDeposit);
   };
 
   const handleExportBulkRenew = () => {
@@ -1033,6 +1037,8 @@ export default function App() {
               totals={grandTotals}
               onExportSummary={handleExportSummary}
               onExportBulkRenew={handleExportBulkRenew}
+              customTotalDeposit={customTotalDeposit}
+              onUpdateDeposit={setCustomTotalDeposit}
             />
           </div>
         )}

@@ -13,7 +13,8 @@ export function exportSummaryExcel(
   customChannels?: ChannelItem[],
   bstPrice: number = BST_PRICE,
   localAddonPrice: number = LOCAL_PRICE,
-  subscriptionSettings?: SubscriptionDateSettings
+  subscriptionSettings?: SubscriptionDateSettings,
+  customTotalDeposit?: number | null
 ): void {
   // Format matching Official LPS Bill Formula:
   // 1. BST Rs 154: LCO Share Rs 78.60 (51.04%), MSO Cut Rs 75.40 (48.96%)
@@ -137,7 +138,10 @@ export function exportSummaryExcel(
   const totalStandardPrice = Number((baseStandardPrice * periodRatio).toFixed(2));
   const totalStandardHlawh = Number((baseStandardHlawh * periodRatio).toFixed(2));
   const totalStandardSen = Number((baseStandardSen * periodRatio).toFixed(2));
-  const totalActualCollection = Number((baseActualCollection * periodRatio).toFixed(2));
+  const defaultActualCollection = Number((baseActualCollection * periodRatio).toFixed(2));
+  const totalActualCollection = customTotalDeposit !== null && customTotalDeposit !== undefined
+    ? customTotalDeposit
+    : defaultActualCollection;
   const totalActualNetProfit = Number((totalActualCollection - totalStandardSen).toFixed(2));
 
   // Append empty row then Grand Total row

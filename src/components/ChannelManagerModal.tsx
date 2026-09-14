@@ -145,13 +145,13 @@ export const ChannelManagerModal: React.FC<ChannelManagerModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-gray-700">
               <div className="bg-white p-2.5 rounded border border-amber-100">
                 <div className="font-semibold text-gray-900">1. BST (Mandatory)</div>
-                <div className="text-gray-900 font-medium">Rs. {BST_PRICE.toFixed(2)}</div>
-                <div className="text-[10px] text-gray-600 mt-0.5">LCO: Rs 78.60 (51.04%) &bull; MSO: Rs 75.40</div>
+                <div className="text-gray-900 font-medium">₹ {BST_PRICE.toFixed(2)}</div>
+                <div className="text-[10px] text-gray-600 mt-0.5">LCO: ₹ 78.60 (51.04%) &bull; MSO: ₹ 75.40</div>
               </div>
               <div className="bg-white p-2.5 rounded border border-amber-100">
                 <div className="font-semibold text-gray-900">2. Local Pack</div>
-                <div className="text-gray-900 font-medium">Rs. 71.00</div>
-                <div className="text-[10px] text-emerald-700 mt-0.5 font-medium">LCO: Rs 36.20 (50.99%) &bull; MSO: Rs 34.80</div>
+                <div className="text-gray-900 font-medium">₹ 71.00</div>
+                <div className="text-[10px] text-emerald-700 mt-0.5 font-medium">LCO: ₹ 36.20 (50.99%) &bull; MSO: ₹ 34.80</div>
               </div>
               <div className="bg-white p-2.5 rounded border border-amber-100">
                 <div className="font-semibold text-gray-900">3. A-la-carte Channels</div>
@@ -160,7 +160,7 @@ export const ChannelManagerModal: React.FC<ChannelManagerModalProps> = ({
               </div>
             </div>
             <div className="text-[11px] text-amber-800 pt-1">
-              * Note: LPS Gold leh Silver a awm tawh lo a, Column F-ah automatic-in <strong>BST</strong>-ah a inthlak vek a ni. Base pack pumpui = <strong>Rs. {basePrice.toFixed(2)}</strong> (BST 154 + Local 71).
+              * Note: LPS Gold leh Silver a awm tawh lo a, Column F-ah automatic-in <strong>BST</strong>-ah a inthlak vek a ni. Base pack pumpui = <strong>₹ {basePrice.toFixed(2)}</strong> (BST 154 + Local 71).
             </div>
           </div>
 
@@ -171,7 +171,7 @@ export const ChannelManagerModal: React.FC<ChannelManagerModalProps> = ({
                 Base Package Rate (BST + Local)
               </span>
               <span className="text-xs text-gray-500">
-                LPS standard base monthly rate: Rs. 154 (BST) + Rs. 71 (Local) = Rs. 225.00
+                LPS standard base monthly rate: ₹ 154 (BST) + ₹ 71 (Local) = ₹ 225.00
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -254,7 +254,7 @@ export const ChannelManagerModal: React.FC<ChannelManagerModalProps> = ({
               <input
                 type="number"
                 step="0.01"
-                placeholder="Rate Pangngai (Rs) (e.g. 35.40)"
+                placeholder="Rate Pangngai (₹) (e.g. 35.40)"
                 value={newChannelPrice}
                 onChange={(e) => setNewChannelPrice(e.target.value)}
                 className="px-3 py-1.5 text-xs bg-white border border-gray-300 rounded-md font-mono"
@@ -280,9 +280,9 @@ export const ChannelManagerModal: React.FC<ChannelManagerModalProps> = ({
             {/* Live Commission Split Preview for entered price */}
             {parseFloat(newChannelPrice) > 0 && (
               <div className="text-[11px] bg-emerald-50 border border-emerald-200 rounded p-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-emerald-950 font-medium">
-                <span>Rate Pangngai: <strong>Rs. {parseFloat(newChannelPrice).toFixed(2)}</strong></span>
-                <span className="text-emerald-700">LCO Chan (8.47%): <strong>Rs. {(parseFloat(newChannelPrice) * 0.0847).toFixed(2)}</strong></span>
-                <span className="text-gray-700">In Cut Zat (91.53%): <strong>Rs. {(parseFloat(newChannelPrice) - parseFloat(newChannelPrice) * 0.0847).toFixed(2)}</strong></span>
+                <span>Rate Pangngai: <strong>₹ {parseFloat(newChannelPrice).toFixed(2)}</strong></span>
+                <span className="text-emerald-700">LCO Chan (8.47%): <strong>₹ {(parseFloat(newChannelPrice) * 0.0847).toFixed(2)}</strong></span>
+                <span className="text-gray-700">In Cut Zat (91.53%): <strong>₹ {(parseFloat(newChannelPrice) - parseFloat(newChannelPrice) * 0.0847).toFixed(2)}</strong></span>
               </div>
             )}
 
@@ -368,10 +368,10 @@ export const ChannelManagerModal: React.FC<ChannelManagerModalProps> = ({
                           />
                         </td>
                         <td className="py-2 px-3 text-right font-mono font-semibold text-emerald-700 bg-emerald-50/40">
-                          Rs {lcoShare.toFixed(2)}
+                          ₹ {lcoShare.toFixed(2)}
                         </td>
                         <td className="py-2 px-3 text-right font-mono font-medium text-gray-700">
-                          Rs {msoCut.toFixed(2)}
+                          ₹ {msoCut.toFixed(2)}
                         </td>
                         <td className="py-1 px-2 text-center">
                           <button

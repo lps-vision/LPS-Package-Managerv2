@@ -23,13 +23,13 @@ export interface CustomerSummary {
   vcNo: string;
   franchiseeName: string;
   basePackage: string; // "BST"
-  hasLocalAddon: boolean; // true = Local Add-on (+Rs. 71) thlang tel; false = BST chauh (+Rs. 0)
+  hasLocalAddon: boolean; // true = Local Add-on (+₹ 71) thlang tel; false = BST chauh (+₹ 0)
   hasLpsHd?: boolean; // true = LPS HD pack/line thlang tel (HD customers / LPS GOLD)
   selectedChannels: string[]; // e.g. ["Animal Planet", "Animal Planet HD"]
   channelPrice: number; // Total price = BST (154) + (hasLocalAddon ? 71 : 0) + alacarte
   lcoHlawh: number; // (hasLocalAddon ? 71 : 0) + 10% alacarte
   lcoSen: number; // BST (154) + 90% alacarte
-  customBillAmount?: number; // Customer hnen atanga bill khawn zat (e.g. Rs 350, Rs 400). If not set, defaults to channelPrice.
+  customBillAmount?: number; // Customer hnen atanga bill khawn zat (e.g. ₹ 350, ₹ 400). If not set, defaults to channelPrice.
   isModified?: boolean;
   subscriptionPeriod?: string;
   subscriptionCount?: string | number;

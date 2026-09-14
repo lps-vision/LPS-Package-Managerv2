@@ -158,7 +158,7 @@ export const BillCalculatorModal: React.FC<BillCalculatorModalProps> = ({
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-bold text-blue-900 flex items-center gap-1">
                     <Tv className="w-3.5 h-3.5 text-blue-700" />
-                    <span>1. BST (Rs {BST_PRICE.toFixed(0)}/-)</span>
+                    <span>1. BST (₹ {BST_PRICE.toFixed(0)}/-)</span>
                   </span>
                   <span className="text-[10px] font-bold bg-blue-200 text-blue-900 px-1.5 py-0.5 rounded">
                     Mandatory
@@ -168,13 +168,13 @@ export const BillCalculatorModal: React.FC<BillCalculatorModalProps> = ({
                   <div className="flex justify-between items-center py-1 border-b border-blue-100">
                     <span className="text-gray-600">LCO Share:</span>
                     <span className="font-bold text-emerald-700 font-mono">
-                      Rs {BST_LCO_SHARE.toFixed(2)} (51.04%)
+                      ₹ {BST_LCO_SHARE.toFixed(2)} (51.04%)
                     </span>
                   </div>
                   <div className="flex justify-between items-center py-1">
                     <span className="text-gray-600">MSO Cut:</span>
                     <span className="font-bold text-gray-800 font-mono">
-                      Rs {BST_MSO_CUT.toFixed(2)} (48.96%)
+                      ₹ {BST_MSO_CUT.toFixed(2)} (48.96%)
                     </span>
                   </div>
                 </div>
@@ -185,7 +185,7 @@ export const BillCalculatorModal: React.FC<BillCalculatorModalProps> = ({
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-bold text-emerald-950 flex items-center gap-1">
                     <Layers className="w-3.5 h-3.5 text-emerald-700" />
-                    <span>2. LOCAL (Rs {LOCAL_PRICE.toFixed(0)}/-)</span>
+                    <span>2. LOCAL (₹ {LOCAL_PRICE.toFixed(0)}/-)</span>
                   </span>
                   <span className="text-[10px] font-bold bg-emerald-200 text-emerald-900 px-1.5 py-0.5 rounded">
                     Add-on Pack
@@ -195,13 +195,13 @@ export const BillCalculatorModal: React.FC<BillCalculatorModalProps> = ({
                   <div className="flex justify-between items-center py-1 border-b border-emerald-100">
                     <span className="text-gray-600">LCO Share:</span>
                     <span className="font-bold text-emerald-700 font-mono">
-                      Rs {LOCAL_LCO_SHARE.toFixed(2)} (50.99% ~ 51%)
+                      ₹ {LOCAL_LCO_SHARE.toFixed(2)} (50.99% ~ 51%)
                     </span>
                   </div>
                   <div className="flex justify-between items-center py-1">
                     <span className="text-gray-600">MSO Cut:</span>
                     <span className="font-bold text-gray-800 font-mono">
-                      Rs {LOCAL_MSO_CUT.toFixed(2)} (49.01%)
+                      ₹ {LOCAL_MSO_CUT.toFixed(2)} (49.01%)
                     </span>
                   </div>
                 </div>
@@ -243,10 +243,10 @@ export const BillCalculatorModal: React.FC<BillCalculatorModalProps> = ({
             </div>
             <div className="flex items-center gap-2 flex-wrap text-[11px]">
               <span className="px-2.5 py-1 rounded bg-white border border-gray-300 shadow-2xs">
-                <strong>BST Only (Rs 154)</strong>: LCO Rs 78.60 &bull; MSO Rs 75.40
+                <strong>BST Only (₹ 154)</strong>: LCO ₹ 78.60 &bull; MSO ₹ 75.40
               </span>
               <span className="px-2.5 py-1 rounded bg-emerald-50 border border-emerald-300 text-emerald-950 shadow-2xs">
-                <strong>BST + Local (Rs 225)</strong>: LCO Rs 114.80 &bull; MSO Rs 110.20
+                <strong>BST + Local (₹ 225)</strong>: LCO ₹ 114.80 &bull; MSO ₹ 110.20
               </span>
             </div>
           </div>
@@ -300,13 +300,13 @@ export const BillCalculatorModal: React.FC<BillCalculatorModalProps> = ({
                   className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-300 rounded-lg font-mono font-bold text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <span className="text-[10px] text-gray-500 mt-1 block">
-                  Rs 154 x {calcSubscribers} = Rs {(calcSubscribers * BST_PRICE).toFixed(2)}
+                  ₹ 154 x {calcSubscribers} = ₹ {(calcSubscribers * BST_PRICE).toFixed(2)}
                 </span>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  2. Local Add-on nei zat (Rs 71)
+                  2. Local Add-on nei zat (₹ 71)
                 </label>
                 <input
                   type="number"
@@ -317,13 +317,13 @@ export const BillCalculatorModal: React.FC<BillCalculatorModalProps> = ({
                   className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-300 rounded-lg font-mono font-bold text-emerald-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
                 <span className="text-[10px] text-gray-500 mt-1 block">
-                  Rs 71 x {calcLocalCount} = Rs {(calcLocalCount * LOCAL_PRICE).toFixed(2)}
+                  ₹ 71 x {calcLocalCount} = ₹ {(calcLocalCount * LOCAL_PRICE).toFixed(2)}
                 </span>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  3. Total Ala-carte amount (Rs)
+                  3. Total Ala-carte amount (₹)
                 </label>
                 <input
                   type="number"
@@ -354,7 +354,7 @@ export const BillCalculatorModal: React.FC<BillCalculatorModalProps> = ({
                 <div className="bg-[#2b3035] rounded-lg p-3 border border-gray-700">
                   <span className="text-[11px] font-semibold text-gray-300 block">TOTAL BILL (CUSTOMER)</span>
                   <div className="text-2xl font-extrabold text-white mt-1 font-mono">
-                    Rs {calculation.grandTotalPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    ₹ {calculation.grandTotalPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                   <span className="text-[10px] text-gray-400 mt-0.5 block">
                     BST + Local + Ala-carte
@@ -370,7 +370,7 @@ export const BillCalculatorModal: React.FC<BillCalculatorModalProps> = ({
                     </span>
                   </div>
                   <div className="text-2xl font-extrabold text-emerald-400 mt-1 font-mono">
-                    Rs {calculation.grandLcoShare.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    ₹ {calculation.grandLcoShare.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                   <span className="text-[10px] text-emerald-200/80 mt-0.5 block">
                     51.04% BST + 50.99% Local + 8.47% Ala-carte
@@ -386,7 +386,7 @@ export const BillCalculatorModal: React.FC<BillCalculatorModalProps> = ({
                     </span>
                   </div>
                   <div className="text-2xl font-extrabold text-rose-400 mt-1 font-mono">
-                    Rs {calculation.grandMsoCut.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    ₹ {calculation.grandMsoCut.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                   <span className="text-[10px] text-rose-200/80 mt-0.5 block">
                     48.96% BST + 49.01% Local + 91.53% Ala-carte
@@ -399,21 +399,21 @@ export const BillCalculatorModal: React.FC<BillCalculatorModalProps> = ({
                 <div className="text-gray-300">
                   <div className="font-semibold text-gray-400">BST ({calculation.subs} subs):</div>
                   <div className="font-mono text-[11px]">
-                    LCO: <span className="text-emerald-400 font-bold">Rs {calculation.bstLcoShareTotal.toFixed(2)}</span> &bull; MSO: <span className="text-rose-400">Rs {calculation.bstMsoCutTotal.toFixed(2)}</span>
+                    LCO: <span className="text-emerald-400 font-bold">₹ {calculation.bstLcoShareTotal.toFixed(2)}</span> &bull; MSO: <span className="text-rose-400">₹ {calculation.bstMsoCutTotal.toFixed(2)}</span>
                   </div>
                 </div>
 
                 <div className="text-gray-300">
                   <div className="font-semibold text-gray-400">Local ({calculation.localSubs} subs):</div>
                   <div className="font-mono text-[11px]">
-                    LCO: <span className="text-emerald-400 font-bold">Rs {calculation.localLcoShareTotal.toFixed(2)}</span> &bull; MSO: <span className="text-rose-400">Rs {calculation.localMsoCutTotal.toFixed(2)}</span>
+                    LCO: <span className="text-emerald-400 font-bold">₹ {calculation.localLcoShareTotal.toFixed(2)}</span> &bull; MSO: <span className="text-rose-400">₹ {calculation.localMsoCutTotal.toFixed(2)}</span>
                   </div>
                 </div>
 
                 <div className="text-gray-300">
-                  <div className="font-semibold text-gray-400">Ala-carte (Rs {calculation.alacarte.toFixed(2)}):</div>
+                  <div className="font-semibold text-gray-400">Ala-carte (₹ {calculation.alacarte.toFixed(2)}):</div>
                   <div className="font-mono text-[11px]">
-                    LCO (8.47%): <span className="text-emerald-400 font-bold">Rs {calculation.alacarteLcoShareTotal.toFixed(2)}</span> &bull; MSO (91.53%): <span className="text-rose-400">Rs {calculation.alacarteMsoCutTotal.toFixed(2)}</span>
+                    LCO (8.47%): <span className="text-emerald-400 font-bold">₹ {calculation.alacarteLcoShareTotal.toFixed(2)}</span> &bull; MSO (91.53%): <span className="text-rose-400">₹ {calculation.alacarteMsoCutTotal.toFixed(2)}</span>
                   </div>
                 </div>
               </div>

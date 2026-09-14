@@ -618,14 +618,14 @@ const formatDateDisplay = (isoStr: string): string => {
                   </div>
                   <div className="text-[11px] leading-relaxed pt-0.5 space-y-0.5">
                     <div className="flex items-center justify-between">
-                      <span>&bull; <strong>BST:</strong> Rs {bstScaled}</span>
-                      <span className="font-mono text-emerald-800 font-bold">LCO Hlawh: Rs {bstLco}</span>
-                      <span className="font-mono text-slate-700 font-bold">MSO Cut: Rs {bstMso}</span>
+                      <span>&bull; <strong>BST:</strong> ₹ {bstScaled}</span>
+                      <span className="font-mono text-emerald-800 font-bold">LCO Hlawh: ₹ {bstLco}</span>
+                      <span className="font-mono text-slate-700 font-bold">MSO Cut: ₹ {bstMso}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span>&bull; <strong>Local:</strong> Rs {localScaled}</span>
-                      <span className="font-mono text-emerald-800 font-bold">LCO Hlawh: Rs {localLco}</span>
-                      <span className="font-mono text-slate-700 font-bold">MSO Cut: Rs {localMso}</span>
+                      <span>&bull; <strong>Local:</strong> ₹ {localScaled}</span>
+                      <span className="font-mono text-emerald-800 font-bold">LCO Hlawh: ₹ {localLco}</span>
+                      <span className="font-mono text-slate-700 font-bold">MSO Cut: ₹ {localMso}</span>
                     </div>
                     <div className="text-[10px] text-slate-500 italic pt-0.5">
                       * Alakarte channels: Commission 8.47% LCO hlawh, 91.53% MSO a chhun luh tur

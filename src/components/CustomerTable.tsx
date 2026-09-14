@@ -371,7 +371,7 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
         next.delete(presetName);
       } else {
         // Remove other base plans if a new plan is applied
-        const basePlans = ['Rs. 300 SD Plan', 'Rs. 350 HD Plan', 'Rs. 360 Plan (300+60)', 'Rs. 450 Plan (350+100)'];
+        const basePlans = ['₹ 300 SD Plan', '₹ 350 HD Plan', '₹ 360 Plan (300+60)', '₹ 450 Plan (350+100)'];
         if (basePlans.includes(presetName)) {
           basePlans.forEach(p => next.delete(p));
         }
@@ -381,7 +381,7 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
     });
 
     setBatchSuccessMessage(
-      `Subscribers ${targetIds.length}-ah ${presetName} (Bill: Rs. ${billAmount}) hlawhtling takin a lut vek e! Excel download tan save thar a inpeih nghal.`
+      `Subscribers ${targetIds.length}-ah ${presetName} (Bill: ₹ ${billAmount}) hlawhtling takin a lut vek e! Excel download tan save thar a inpeih nghal.`
     );
     setTimeout(() => {
       setBatchSuccessMessage(null);
@@ -429,7 +429,7 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
     });
 
     setBatchSuccessMessage(
-      `Subscribers ${targetIds.length}-ah ${addonName} (+Rs. ${addonAmount}) hlawhtling takin belh a ni e! Excel download tan save thar a inpeih nghal.`
+      `Subscribers ${targetIds.length}-ah ${addonName} (+₹ ${addonAmount}) hlawhtling takin belh a ni e! Excel download tan save thar a inpeih nghal.`
     );
     setTimeout(() => {
       setBatchSuccessMessage(null);
@@ -651,10 +651,10 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
               {/* Rs. 300 SD Pack */}
               <button
                 type="button"
-                onClick={() => handleBatchApply(PRESET_300_CHANNELS, true, 300, 'Rs. 300 SD Plan')}
+                onClick={() => handleBatchApply(PRESET_300_CHANNELS, true, 300, '₹ 300 SD Plan')}
                 disabled={selectedCustomerIds.size === 0}
                 className={`px-3 py-1.5 rounded-lg text-xs font-black shadow-md cursor-pointer flex items-center gap-2 transition-all transform active:scale-95 ${
-                  appliedActions.has('Rs. 300 SD Plan')
+                  appliedActions.has('₹ 300 SD Plan')
                     ? 'bg-emerald-700 text-white ring-2 ring-emerald-400'
                     : selectedCustomerIds.size > 0
                     ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
@@ -662,22 +662,22 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
                 }`}
               >
                 <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
-                  appliedActions.has('Rs. 300 SD Plan') 
+                  appliedActions.has('₹ 300 SD Plan') 
                     ? 'bg-white text-emerald-700 border-white' 
                     : 'bg-black/10 border-black/20'
                 }`}>
-                  {appliedActions.has('Rs. 300 SD Plan') && <span className="text-[11px] font-black leading-none">✓</span>}
+                  {appliedActions.has('₹ 300 SD Plan') && <span className="text-[11px] font-black leading-none">✓</span>}
                 </div>
-                <span className="font-mono">Bill Rs. 300</span>
+                <span className="font-mono">Bill ₹ 300</span>
               </button>
 
               {/* Rs. 350 HD Pack */}
               <button
                 type="button"
-                onClick={() => handleBatchApply(PRESET_350_CHANNELS, true, 350, 'Rs. 350 HD Plan')}
+                onClick={() => handleBatchApply(PRESET_350_CHANNELS, true, 350, '₹ 350 HD Plan')}
                 disabled={selectedCustomerIds.size === 0}
                 className={`px-3 py-1.5 rounded-lg text-xs font-black shadow-md cursor-pointer flex items-center gap-2 transition-all transform active:scale-95 ${
-                  appliedActions.has('Rs. 350 HD Plan')
+                  appliedActions.has('₹ 350 HD Plan')
                     ? 'bg-emerald-700 text-white ring-2 ring-emerald-400'
                     : selectedCustomerIds.size > 0
                     ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
@@ -685,13 +685,13 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
                 }`}
               >
                 <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
-                  appliedActions.has('Rs. 350 HD Plan') 
+                  appliedActions.has('₹ 350 HD Plan') 
                     ? 'bg-white text-emerald-700 border-white' 
                     : 'bg-black/10 border-black/20'
                 }`}>
-                  {appliedActions.has('Rs. 350 HD Plan') && <span className="text-[11px] font-black leading-none">✓</span>}
+                  {appliedActions.has('₹ 350 HD Plan') && <span className="text-[11px] font-black leading-none">✓</span>}
                 </div>
-                <span className="font-mono">Bill Rs. 350</span>
+                <span className="font-mono">Bill ₹ 350</span>
               </button>
 
               <span className="text-slate-400 font-black px-1 select-none">+</span>
@@ -699,10 +699,10 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
               {/* Rs. 50 Addon */}
               <button
                 type="button"
-                onClick={() => handleBatchApplyAddon(PRESET_50_CHANNELS, 50, 'Rs. 50 Addon')}
+                onClick={() => handleBatchApplyAddon(PRESET_50_CHANNELS, 50, '₹ 50 Addon')}
                 disabled={selectedCustomerIds.size === 0}
                 className={`px-3 py-1.5 border rounded-lg text-xs font-black shadow-sm cursor-pointer flex items-center gap-2 transition-all transform active:scale-95 ${
-                  appliedActions.has('Rs. 50 Addon')
+                  appliedActions.has('₹ 50 Addon')
                     ? 'bg-emerald-100 border-emerald-500 text-emerald-900 ring-2 ring-emerald-300'
                     : selectedCustomerIds.size > 0
                     ? 'bg-white border-emerald-600 text-emerald-900 hover:bg-emerald-50'
@@ -710,22 +710,22 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
                 }`}
               >
                 <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
-                  appliedActions.has('Rs. 50 Addon') 
+                  appliedActions.has('₹ 50 Addon') 
                     ? 'bg-emerald-600 text-white border-emerald-600' 
                     : 'bg-slate-100 border-slate-300'
                 }`}>
-                  {appliedActions.has('Rs. 50 Addon') ? <span className="text-[11px] font-black leading-none">✓</span> : <span className="text-[11px] font-black leading-none text-slate-400">+</span>}
+                  {appliedActions.has('₹ 50 Addon') ? <span className="text-[11px] font-black leading-none">✓</span> : <span className="text-[11px] font-black leading-none text-slate-400">+</span>}
                 </div>
-                <span className="font-mono">Rs. 50</span>
+                <span className="font-mono">₹ 50</span>
               </button>
 
               {/* Rs. 60 Sports SD */}
               <button
                 type="button"
-                onClick={() => handleBatchApplyAddon(PRESET_60_CHANNELS, 60, 'Rs. 60 Sports SD')}
+                onClick={() => handleBatchApplyAddon(PRESET_60_CHANNELS, 60, '₹ 60 Sports SD')}
                 disabled={selectedCustomerIds.size === 0}
                 className={`px-3 py-1.5 border rounded-lg text-xs font-black shadow-sm cursor-pointer flex items-center gap-2 transition-all transform active:scale-95 ${
-                  appliedActions.has('Rs. 60 Sports SD')
+                  appliedActions.has('₹ 60 Sports SD')
                     ? 'bg-emerald-100 border-emerald-500 text-emerald-900 ring-2 ring-emerald-300'
                     : selectedCustomerIds.size > 0
                     ? 'bg-white border-emerald-600 text-emerald-900 hover:bg-emerald-50'
@@ -733,22 +733,22 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
                 }`}
               >
                 <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
-                  appliedActions.has('Rs. 60 Sports SD') 
+                  appliedActions.has('₹ 60 Sports SD') 
                     ? 'bg-emerald-600 text-white border-emerald-600' 
                     : 'bg-slate-100 border-slate-300'
                 }`}>
-                  {appliedActions.has('Rs. 60 Sports SD') ? <span className="text-[11px] font-black leading-none">✓</span> : <span className="text-[11px] font-black leading-none text-slate-400">+</span>}
+                  {appliedActions.has('₹ 60 Sports SD') ? <span className="text-[11px] font-black leading-none">✓</span> : <span className="text-[11px] font-black leading-none text-slate-400">+</span>}
                 </div>
-                <span className="font-mono">Rs. 60</span>
+                <span className="font-mono">₹ 60</span>
               </button>
 
               {/* Rs. 100 Sports HD */}
               <button
                 type="button"
-                onClick={() => handleBatchApplyAddon(PRESET_100_CHANNELS, 100, 'Rs. 100 Sports HD')}
+                onClick={() => handleBatchApplyAddon(PRESET_100_CHANNELS, 100, '₹ 100 Sports HD')}
                 disabled={selectedCustomerIds.size === 0}
                 className={`px-3 py-1.5 border rounded-lg text-xs font-black shadow-sm cursor-pointer flex items-center gap-2 transition-all transform active:scale-95 ${
-                  appliedActions.has('Rs. 100 Sports HD')
+                  appliedActions.has('₹ 100 Sports HD')
                     ? 'bg-emerald-100 border-emerald-500 text-emerald-900 ring-2 ring-emerald-300'
                     : selectedCustomerIds.size > 0
                     ? 'bg-white border-emerald-600 text-emerald-900 hover:bg-emerald-50'
@@ -756,13 +756,13 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
                 }`}
               >
                 <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
-                  appliedActions.has('Rs. 100 Sports HD') 
+                  appliedActions.has('₹ 100 Sports HD') 
                     ? 'bg-emerald-600 text-white border-emerald-600' 
                     : 'bg-slate-100 border-slate-300'
                 }`}>
-                  {appliedActions.has('Rs. 100 Sports HD') ? <span className="text-[11px] font-black leading-none">✓</span> : <span className="text-[11px] font-black leading-none text-slate-400">+</span>}
+                  {appliedActions.has('₹ 100 Sports HD') ? <span className="text-[11px] font-black leading-none">✓</span> : <span className="text-[11px] font-black leading-none text-slate-400">+</span>}
                 </div>
-                <span className="font-mono">Rs. 100</span>
+                <span className="font-mono">₹ 100</span>
               </button>
 
               <span className="text-slate-300 mx-1 hidden sm:inline">|</span>
@@ -772,11 +772,11 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
                 type="button"
                 onClick={() => {
                   const channels = [...new Set([...PRESET_300_CHANNELS, ...PRESET_60_CHANNELS])];
-                  handleBatchApply(channels, true, 360, 'Rs. 360 Plan (300+60)');
+                  handleBatchApply(channels, true, 360, '₹ 360 Plan (300+60)');
                 }}
                 disabled={selectedCustomerIds.size === 0}
                 className={`px-3 py-1.5 rounded-lg text-xs font-black shadow-md cursor-pointer flex items-center gap-2 transition-all transform active:scale-95 ${
-                  appliedActions.has('Rs. 360 Plan (300+60)')
+                  appliedActions.has('₹ 360 Plan (300+60)')
                     ? 'bg-blue-700 text-white ring-2 ring-blue-400'
                     : selectedCustomerIds.size > 0
                     ? 'bg-blue-600 hover:bg-blue-700 text-white'
@@ -784,13 +784,13 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
                 }`}
               >
                 <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
-                  appliedActions.has('Rs. 360 Plan (300+60)') 
+                  appliedActions.has('₹ 360 Plan (300+60)') 
                     ? 'bg-white text-blue-700 border-white' 
                     : 'bg-black/10 border-black/20'
                 }`}>
-                  {appliedActions.has('Rs. 360 Plan (300+60)') ? <span className="text-[11px] font-black leading-none">✓</span> : <span className="text-[11px] font-black leading-none text-white/50">⚡</span>}
+                  {appliedActions.has('₹ 360 Plan (300+60)') ? <span className="text-[11px] font-black leading-none">✓</span> : <span className="text-[11px] font-black leading-none text-white/50">⚡</span>}
                 </div>
-                <span className="font-mono">Rs. 360</span>
+                <span className="font-mono">₹ 360</span>
               </button>
 
               {/* Rs. 450 Combo */}
@@ -798,11 +798,11 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
                 type="button"
                 onClick={() => {
                   const channels = [...new Set([...PRESET_350_CHANNELS, ...PRESET_100_CHANNELS])];
-                  handleBatchApply(channels, true, 450, 'Rs. 450 Plan (350+100)');
+                  handleBatchApply(channels, true, 450, '₹ 450 Plan (350+100)');
                 }}
                 disabled={selectedCustomerIds.size === 0}
                 className={`px-3 py-1.5 rounded-lg text-xs font-black shadow-md cursor-pointer flex items-center gap-2 transition-all transform active:scale-95 ${
-                  appliedActions.has('Rs. 450 Plan (350+100)')
+                  appliedActions.has('₹ 450 Plan (350+100)')
                     ? 'bg-indigo-700 text-white ring-2 ring-indigo-400'
                     : selectedCustomerIds.size > 0
                     ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
@@ -810,13 +810,13 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
                 }`}
               >
                 <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
-                  appliedActions.has('Rs. 450 Plan (350+100)') 
+                  appliedActions.has('₹ 450 Plan (350+100)') 
                     ? 'bg-white text-indigo-700 border-white' 
                     : 'bg-black/10 border-black/20'
                 }`}>
-                  {appliedActions.has('Rs. 450 Plan (350+100)') ? <span className="text-[11px] font-black leading-none">✓</span> : <span className="text-[11px] font-black leading-none text-white/50">🌟</span>}
+                  {appliedActions.has('₹ 450 Plan (350+100)') ? <span className="text-[11px] font-black leading-none">✓</span> : <span className="text-[11px] font-black leading-none text-white/50">🌟</span>}
                 </div>
-                <span className="font-mono">Rs. 450</span>
+                <span className="font-mono">₹ 450</span>
               </button>
 
 
@@ -908,12 +908,12 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
                   className="py-3 px-3 text-right cursor-pointer hover:bg-slate-200/70 transition-colors border-r border-slate-200"
                 >
                   <div className="flex items-center justify-end gap-1.5">
-                    <span>Channel Price</span>
+                    <span>Channel Price (₹)</span>
                     <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" />
                   </div>
                 </th>
                 <th className="py-3 px-3 text-right border-r border-slate-200" title="BST + Local + Ala-carte (8.47%)">
-                  <div className="font-extrabold text-slate-900">LCO Hlawh</div>
+                  <div className="font-extrabold text-slate-900">LCO Hlawh (₹)</div>
                   <div className="text-[11px] font-bold normal-case text-emerald-700">
                     {subscriptionSettings?.subscriptionType === 'Day'
                       ? `Ni ${subscriptionSettings.subscriptionValue} chhut`
@@ -923,7 +923,7 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
                   </div>
                 </th>
                 <th className="py-3 px-3 text-right border-r border-slate-200" title="BST + Local + Ala-carte (91.53%)">
-                  <div className="font-extrabold text-slate-900">LCO Sen (MSO Cut)</div>
+                  <div className="font-extrabold text-slate-900">LCO Sen / Cut (₹)</div>
                   <div className="text-[11px] font-bold normal-case text-slate-600">
                     {subscriptionSettings?.subscriptionType === 'Day'
                       ? `MSO cut (Ni ${subscriptionSettings.subscriptionValue})`
