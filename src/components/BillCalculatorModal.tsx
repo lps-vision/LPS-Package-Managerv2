@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { X, Calculator, Percent, Layers, Tv, ArrowRight, RotateCcw, CheckCircle2, Sparkles, TrendingUp } from 'lucide-react';
 import {
   BST_PRICE,
@@ -10,13 +10,14 @@ import {
   ALACARTE_LCO_COMMISSION_PERCENT,
   ALACARTE_MSO_PERCENT,
 } from '../data/defaultChannels';
-import { GrandTotals } from '../types';
+import { GrandTotals, CustomerSummary } from '../types';
 
 interface BillCalculatorModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentTotals?: GrandTotals;
   currentAlacarteSum?: number;
+  customers?: CustomerSummary[];
 }
 
 export const BillCalculatorModal: React.FC<BillCalculatorModalProps> = ({
@@ -24,30 +25,80 @@ export const BillCalculatorModal: React.FC<BillCalculatorModalProps> = ({
   onClose,
   currentTotals,
   currentAlacarteSum = 0,
+  customers = [],
 }) => {
-  // Calculator Interactive Inputs
+  // Derive current customer list / Excel stats
+  const excelStats = useMemo(() => {
+    if (!customers || customers.length === 0) {
+      const subs = currentTotals?.totalCustomers || 0;
+      const local = currentTotals?.localAddonCount ?? subs;
+      const sum = currentAlacarteSum || 0;
+      return {
+        totalSubs: subs,
+        localSubs: local,
+        alacarteCount: sum > 0 ? 1 : 0,
+        alacarteCustomersCount: sum > 0 ? 1 : 0,
+        alacarteSum: sum,
+        avgRate: sum > 0 ? sum : 22.42,
+      };
+    }
+
+    const totalSubs = customers.length;
+    const localSubs = customers.filter((c) => c.hasLocalAddon).length;
+    const alacarteCount = customers.reduce((sum, c) => sum + (c.selectedChannels?.length || 0), 0);
+    const alacarteCustomersCount = customers.filter((c) => c.selectedChannels && c.selectedChannels.length > 0).length;
+    const alacarteSum = currentAlacarteSum || 0;
+    const avgRate = alacarteCount > 0 ? Number((alacarteSum / alacarteCount).toFixed(2)) : 22.42;
+
+    return {
+      totalSubs,
+      localSubs,
+      alacarteCount,
+      alacarteCustomersCount,
+      alacarteSum,
+      avgRate,
+    };
+  }, [customers, currentTotals, currentAlacarteSum]);
+
+  // Calculator Interactive Inputs (Only subscriber count, local count, and a-la-carte count)
   const [calcSubscribers, setCalcSubscribers] = useState<number>(() => {
-    return currentTotals?.totalCustomers && currentTotals.totalCustomers > 0
-      ? currentTotals.totalCustomers
-      : 100;
+    return excelStats.totalSubs > 0 ? excelStats.totalSubs : 100;
   });
 
   const [calcLocalCount, setCalcLocalCount] = useState<number>(() => {
-    return currentTotals?.localAddonCount !== undefined && currentTotals.totalCustomers > 0
-      ? currentTotals.localAddonCount
-      : 100;
+    return excelStats.totalSubs > 0 ? excelStats.localSubs : 100;
   });
 
-  const [calcAlacarteTotal, setCalcAlacarteTotal] = useState<number>(() => {
-    return currentAlacarteSum > 0 ? Number(currentAlacarteSum.toFixed(2)) : 5000;
+  // Alacarte Channels Zat (Count) only - no amount calculation mode
+  const [calcAlacarteCount, setCalcAlacarteCount] = useState<number>(() => {
+    return excelStats.totalSubs > 0 ? excelStats.alacarteCount : 20;
   });
+
+  // Automatically synchronize with current app / excel data when modal opens
+  useEffect(() => {
+    if (isOpen && excelStats.totalSubs > 0) {
+      setCalcSubscribers(excelStats.totalSubs);
+      setCalcLocalCount(excelStats.localSubs);
+      setCalcAlacarteCount(excelStats.alacarteCount);
+    }
+  }, [isOpen, excelStats]);
 
   // Calculate live results
   const calculation = useMemo(() => {
     const subs = Math.max(0, calcSubscribers);
     const localSubs = Math.min(subs, Math.max(0, calcLocalCount));
     const bstOnlySubs = Math.max(0, subs - localSubs);
-    const alacarte = Math.max(0, calcAlacarteTotal);
+
+    const alacarteCount = Math.max(0, calcAlacarteCount);
+
+    // Total Ala-carte amount calculated strictly from count
+    let alacarte = 0;
+    if (alacarteCount === excelStats.alacarteCount && excelStats.alacarteSum > 0) {
+      alacarte = excelStats.alacarteSum;
+    } else {
+      const rate = excelStats.avgRate > 0 ? excelStats.avgRate : 22.42;
+      alacarte = Number((alacarteCount * rate).toFixed(2));
+    }
 
     // 1. BST
     const totalBstPrice = subs * BST_PRICE;
@@ -75,6 +126,7 @@ export const BillCalculatorModal: React.FC<BillCalculatorModalProps> = ({
       subs,
       localSubs,
       bstOnlySubs,
+      alacarteCount,
       alacarte,
       totalBstPrice,
       bstLcoShareTotal,
@@ -90,20 +142,20 @@ export const BillCalculatorModal: React.FC<BillCalculatorModalProps> = ({
       lcoPercent,
       msoPercent,
     };
-  }, [calcSubscribers, calcLocalCount, calcAlacarteTotal]);
+  }, [calcSubscribers, calcLocalCount, calcAlacarteCount, excelStats]);
 
   const handleSyncCurrentData = () => {
-    if (currentTotals && currentTotals.totalCustomers > 0) {
-      setCalcSubscribers(currentTotals.totalCustomers);
-      setCalcLocalCount(currentTotals.localAddonCount ?? currentTotals.totalCustomers);
-      setCalcAlacarteTotal(Number(currentAlacarteSum.toFixed(2)));
+    if (excelStats.totalSubs > 0) {
+      setCalcSubscribers(excelStats.totalSubs);
+      setCalcLocalCount(excelStats.localSubs);
+      setCalcAlacarteCount(excelStats.alacarteCount);
     }
   };
 
   const handleResetDefaults = () => {
     setCalcSubscribers(100);
     setCalcLocalCount(100);
-    setCalcAlacarteTotal(5000);
+    setCalcAlacarteCount(20);
   };
 
   if (!isOpen) return null;
@@ -260,19 +312,19 @@ export const BillCalculatorModal: React.FC<BillCalculatorModalProps> = ({
                   <span>Interactive Bill Calculator</span>
                 </h4>
                 <p className="text-xs text-gray-500">
-                  Subscriber zat leh Ala-carte amount thlak la, LCO Hlawh leh MSO Cut zat chhut chhuak rawh
+                  Subscriber zat leh Ala-carte hralh zat thlak la, LCO Hlawh leh MSO Cut zat chhut chhuak rawh
                 </p>
               </div>
 
               <div className="flex items-center gap-2">
-                {currentTotals && currentTotals.totalCustomers > 0 && (
+                {excelStats.totalSubs > 0 && (
                   <button
                     type="button"
                     onClick={handleSyncCurrentData}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-[#007bff] hover:bg-[#0069d9] rounded-md transition-colors cursor-pointer shadow-2xs"
                   >
                     <Sparkles className="w-3.5 h-3.5" />
-                    <span>Current App Data hmang rawh ({currentTotals.totalCustomers} subs)</span>
+                    <span>Current App Data hmang rawh ({excelStats.totalSubs} subs &bull; {excelStats.alacarteCount} a-la-carte)</span>
                   </button>
                 )}
                 <button
@@ -288,8 +340,9 @@ export const BillCalculatorModal: React.FC<BillCalculatorModalProps> = ({
 
             {/* Inputs Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
+              {/* Box 1: BST */}
+              <div className="bg-slate-50/70 border border-slate-200 rounded-xl p-3 shadow-2xs">
+                <label className="block text-xs font-bold text-gray-800 mb-1">
                   1. Total Subscribers zat (BST)
                 </label>
                 <input
@@ -297,15 +350,19 @@ export const BillCalculatorModal: React.FC<BillCalculatorModalProps> = ({
                   min="0"
                   value={calcSubscribers}
                   onChange={(e) => setCalcSubscribers(Number(e.target.value) || 0)}
-                  className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-300 rounded-lg font-mono font-bold text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg font-mono font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                <span className="text-[10px] text-gray-500 mt-1 block">
-                  ₹ 154 x {calcSubscribers} = ₹ {(calcSubscribers * BST_PRICE).toFixed(2)}
-                </span>
+                <div className="text-[10.5px] text-gray-600 mt-1.5 font-mono">
+                  ₹ {BST_PRICE.toFixed(0)} x {calcSubscribers} = ₹ {(calcSubscribers * BST_PRICE).toFixed(2)}
+                </div>
+                <div className="text-[9.5px] text-slate-500 mt-0.5">
+                  LCO: ₹ {(calcSubscribers * BST_LCO_SHARE).toFixed(2)} &bull; MSO: ₹ {(calcSubscribers * BST_MSO_CUT).toFixed(2)}
+                </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
+              {/* Box 2: Local */}
+              <div className="bg-emerald-50/50 border border-emerald-200 rounded-xl p-3 shadow-2xs">
+                <label className="block text-xs font-bold text-emerald-950 mb-1">
                   2. Local Add-on nei zat (₹ 71)
                 </label>
                 <input
@@ -314,30 +371,53 @@ export const BillCalculatorModal: React.FC<BillCalculatorModalProps> = ({
                   max={calcSubscribers}
                   value={calcLocalCount}
                   onChange={(e) => setCalcLocalCount(Number(e.target.value) || 0)}
-                  className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-300 rounded-lg font-mono font-bold text-emerald-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg font-mono font-bold text-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
-                <span className="text-[10px] text-gray-500 mt-1 block">
-                  ₹ 71 x {calcLocalCount} = ₹ {(calcLocalCount * LOCAL_PRICE).toFixed(2)}
-                </span>
+                <div className="text-[10.5px] text-emerald-800 mt-1.5 font-mono">
+                  ₹ {LOCAL_PRICE.toFixed(0)} x {calcLocalCount} = ₹ {(calcLocalCount * LOCAL_PRICE).toFixed(2)}
+                </div>
+                <div className="text-[9.5px] text-slate-500 mt-0.5">
+                  LCO: ₹ {(calcLocalCount * LOCAL_LCO_SHARE).toFixed(2)} &bull; MSO: ₹ {(calcLocalCount * LOCAL_MSO_CUT).toFixed(2)}
+                </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  3. Total Ala-carte amount (₹)
+              {/* Box 3: Ala-carte (Channels zat chhut luhna, Amount nilo in) */}
+              <div className="bg-purple-50/50 border border-purple-200 rounded-xl p-3 shadow-2xs">
+                <label className="block text-xs font-bold text-purple-950 mb-1">
+                  3. Ala-carte ka neih zat
                 </label>
                 <input
                   type="number"
                   min="0"
-                  step="0.01"
-                  value={calcAlacarteTotal}
-                  onChange={(e) => setCalcAlacarteTotal(Number(e.target.value) || 0)}
-                  className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-300 rounded-lg font-mono font-bold text-purple-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  value={calcAlacarteCount}
+                  onChange={(e) => setCalcAlacarteCount(Number(e.target.value) || 0)}
+                  placeholder="Ala-carte channels hralh zat"
+                  className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg font-mono font-bold text-purple-950 focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
-                <span className="text-[10px] text-gray-500 mt-1 block">
-                  LCO: 8.47% &bull; MSO: 91.53%
-                </span>
+
+                <div className="text-[10.5px] text-purple-900 mt-1.5 font-mono font-semibold">
+                  Ala-carte: ₹ {calculation.alacarte.toFixed(2)} ({calcAlacarteCount} channels)
+                </div>
+                <div className="text-[9.5px] text-slate-500 mt-0.5">
+                  LCO (8.47%): ₹ {calculation.alacarteLcoShareTotal.toFixed(2)} &bull; MSO (91.53%): ₹ {calculation.alacarteMsoCutTotal.toFixed(2)}
+                </div>
               </div>
             </div>
+
+            {/* Current Excel / Customer List Data Pill Badge */}
+            {excelStats.totalSubs > 0 && (
+              <div className="mt-3 px-3 py-2 bg-purple-50/80 border border-purple-200/80 rounded-lg text-xs text-purple-900 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-purple-950">📊 Excel / App Data:</span>
+                  <span>
+                    Subscribers <strong>{excelStats.totalSubs}</strong>, Local <strong>{excelStats.localSubs}</strong>, Ala-carte channels <strong>{excelStats.alacarteCount}</strong> {excelStats.alacarteCustomersCount > 0 ? `(Customer ${excelStats.alacarteCustomersCount}-in an thlang)` : ''}
+                  </span>
+                </div>
+                <div className="font-mono text-purple-950 font-bold text-[11px]">
+                  Excel Ala-carte: ₹ {excelStats.alacarteSum.toFixed(2)}
+                </div>
+              </div>
+            )}
 
             {/* Live Calculated Results Card */}
             <div className="mt-5 bg-[#212529] text-white rounded-xl p-4 sm:p-5 shadow-lg">
@@ -352,19 +432,19 @@ export const BillCalculatorModal: React.FC<BillCalculatorModalProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pb-4 border-b border-gray-700">
                 {/* Metric 1: Total Bill */}
                 <div className="bg-[#2b3035] rounded-lg p-3 border border-gray-700">
-                  <span className="text-[11px] font-semibold text-gray-300 block">TOTAL BILL (CUSTOMER)</span>
+                  <span className="text-[11px] font-semibold text-gray-300 block">TOTAL BILLING</span>
                   <div className="text-2xl font-extrabold text-white mt-1 font-mono">
                     ₹ {calculation.grandTotalPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                   <span className="text-[10px] text-gray-400 mt-0.5 block">
-                    BST + Local + Ala-carte
+                    BST + Local + Ala-carte ({calculation.alacarteCount} ch)
                   </span>
                 </div>
 
                 {/* Metric 2: LCO Share */}
                 <div className="bg-[#1e4620]/60 rounded-lg p-3 border border-emerald-700/60">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-semibold text-emerald-300 block">TOTAL LCO SHARE (HLAWH)</span>
+                    <span className="text-[11px] font-semibold text-emerald-300 block">TOTAL LCO SHARE</span>
                     <span className="text-[10px] font-bold bg-emerald-600 text-white px-1.5 py-0.2 rounded">
                       {calculation.lcoPercent.toFixed(1)}%
                     </span>
@@ -380,7 +460,7 @@ export const BillCalculatorModal: React.FC<BillCalculatorModalProps> = ({
                 {/* Metric 3: MSO Cut */}
                 <div className="bg-[#3a2020]/60 rounded-lg p-3 border border-red-800/60">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-semibold text-rose-300 block">TOTAL MSO CUT (LCO SEN)</span>
+                    <span className="text-[11px] font-semibold text-rose-300 block">TOTAL PORTAL CUT</span>
                     <span className="text-[10px] font-bold bg-rose-700 text-white px-1.5 py-0.2 rounded">
                       {calculation.msoPercent.toFixed(1)}%
                     </span>
@@ -411,7 +491,7 @@ export const BillCalculatorModal: React.FC<BillCalculatorModalProps> = ({
                 </div>
 
                 <div className="text-gray-300">
-                  <div className="font-semibold text-gray-400">Ala-carte (₹ {calculation.alacarte.toFixed(2)}):</div>
+                  <div className="font-semibold text-gray-400">Ala-carte ({calculation.alacarteCount} channels &bull; ₹ {calculation.alacarte.toFixed(2)}):</div>
                   <div className="font-mono text-[11px]">
                     LCO (8.47%): <span className="text-emerald-400 font-bold">₹ {calculation.alacarteLcoShareTotal.toFixed(2)}</span> &bull; MSO (91.53%): <span className="text-rose-400">₹ {calculation.alacarteMsoCutTotal.toFixed(2)}</span>
                   </div>

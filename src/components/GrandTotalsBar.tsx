@@ -66,7 +66,7 @@ export const GrandTotalsBar: React.FC<GrandTotalsBarProps> = ({
           <div>
             <div className="flex items-center justify-between gap-2 mb-1.5">
               <span className="block text-xs font-black tracking-wider text-blue-950 uppercase">
-                PAWISA RAWN CHHUN LUH (FEE KHAWN)
+                BILL KHAWN CHHUAH ZAT
               </span>
               {isCustom && (
                 <button
@@ -82,7 +82,7 @@ export const GrandTotalsBar: React.FC<GrandTotalsBarProps> = ({
             </div>
 
             <p className="text-[11px] text-blue-700/90 font-medium mb-2">
-              Fee khawn in pawisa an rawn chhun zat type rawh:
+              Fee khawn in pawisa an rawn chhun zat type rawh: (Fee khawn hlawh cut loin.)
             </p>
 
             {/* Input field with Rupee font symbol */}
@@ -111,7 +111,7 @@ export const GrandTotalsBar: React.FC<GrandTotalsBarProps> = ({
           <div className="mt-3.5 pt-2.5 border-t border-blue-200 bg-blue-100/60 -mx-4 -mb-4 sm:-mx-5 sm:-mb-5 p-3 sm:px-4 rounded-b-xl">
             <div className="flex items-baseline justify-between gap-2">
               <span className="text-xs font-black text-blue-950 uppercase tracking-wide">
-                LCO CHAN THEIH (HLAWH):
+                LCO CHAN THEIH:
               </span>
               <div
                 className={`text-2xl sm:text-3xl font-black font-mono tracking-tight flex items-baseline gap-1 ${
@@ -138,7 +138,7 @@ export const GrandTotalsBar: React.FC<GrandTotalsBarProps> = ({
         <div className="bg-emerald-50/80 border border-emerald-300 rounded-xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
           <div>
             <span className="block text-xs font-black tracking-wider text-emerald-900 uppercase mb-1.5">
-              GRAND TOTAL LCO HLAWH
+              GRAND TOTAL FOR LCO
             </span>
             <div className="text-2xl sm:text-3xl font-black text-emerald-800 tracking-tight flex items-baseline gap-1.5 font-mono">
               <span className="text-2xl sm:text-3xl font-black text-emerald-700 font-sans">₹</span>
@@ -163,7 +163,7 @@ export const GrandTotalsBar: React.FC<GrandTotalsBarProps> = ({
         <div className="bg-slate-50 border border-slate-300 rounded-xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
           <div>
             <span className="block text-xs font-black tracking-wider text-slate-700 uppercase mb-1.5">
-              GRAND TOTAL LCO SEN (MSO CUT)
+              GRAND TOTAL PORTAL (MSO CUT)
             </span>
             <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight flex items-baseline gap-1.5 font-mono">
               <span className="text-2xl sm:text-3xl font-black text-slate-600 font-sans">₹</span>

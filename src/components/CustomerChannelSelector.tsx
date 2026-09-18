@@ -912,12 +912,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                 )}
               </span>
 
-              <span className="text-slate-900 font-semibold border-l pl-3 border-slate-300 flex items-center gap-1.5">
-                <span className="text-slate-600 font-semibold">Total Price:</span>
-                <strong className="text-blue-700 font-black text-sm sm:text-base font-mono">₹ {priceEstimate.total.toFixed(2)}</strong>
-              </span>
-
-              <span title="LCO Share: BST ₹ 78.60 + Local ₹ 36.20 + 8.47% Ala-carte" className="flex items-center gap-1.5">
+              <span title="LCO Share: BST ₹ 78.60 + Local ₹ 36.20 + 8.47% Ala-carte" className="flex items-center gap-1.5 border-l pl-3 border-slate-300">
                 <span className="text-slate-600 font-semibold">LCO Hlawh:</span>
                 <strong className="text-emerald-700 font-black text-sm sm:text-base font-mono">₹ {priceEstimate.lcoHlawh.toFixed(2)}</strong>
                 <span className="text-xs text-slate-500 font-medium">
@@ -940,6 +935,11 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                 <span className="text-xs text-slate-500 font-medium">
                   ({marginAnalysis.msoCutPercent.toFixed(1)}%)
                 </span>
+              </span>
+
+              <span className="text-slate-900 font-semibold border-l pl-3 border-slate-300 flex items-center gap-1.5">
+                <span className="text-slate-600 font-semibold">Total Price:</span>
+                <strong className="text-blue-700 font-black text-sm sm:text-base font-mono">₹ {priceEstimate.total.toFixed(2)}</strong>
               </span>
 
               {/* Customer Bill Box (Green by default, Red on warning/alert) */}

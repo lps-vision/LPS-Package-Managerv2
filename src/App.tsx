@@ -1070,6 +1070,7 @@ export default function App() {
         onClose={() => setIsBillCalculatorOpen(false)}
         currentTotals={grandTotals}
         currentAlacarteSum={currentAlacarteSum}
+        customers={customers}
       />
 
       {/* Tutorial & Guide Modal */}
