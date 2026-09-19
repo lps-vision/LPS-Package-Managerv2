@@ -403,11 +403,6 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
       const cust = customers.find((c) => c.id === id);
       if (!cust) continue;
       let newChannels = [...cust.selectedChannels];
-      if (addonChannels === PRESET_60_CHANNELS) {
-        newChannels = newChannels.filter((ch) => !PRESET_100_CHANNELS.includes(ch));
-      } else if (addonChannels === PRESET_100_CHANNELS) {
-        newChannels = newChannels.filter((ch) => !PRESET_60_CHANNELS.includes(ch));
-      }
       for (const ch of addonChannels) {
         if (!newChannels.includes(ch)) newChannels.push(ch);
       }

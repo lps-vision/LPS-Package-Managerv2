@@ -422,16 +422,15 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
     return PRESET_50_CHANNELS.every((ch) => selectedChannelTags.includes(ch));
   }, [selectedChannelTags]);
 
-  // Rs. 60: SONY SPORTS TEN 1 / SONY SPORTS TEN 2 (and not HD)
+  // Rs. 60: SONY SPORTS TEN 1 / SONY SPORTS TEN 2 (can be selected together with 100 HD)
   const is60Active = useMemo(() => {
     return (
       selectedChannelTags.includes('SONY SPORTS TEN 1') &&
-      selectedChannelTags.includes('SONY SPORTS TEN 2') &&
-      !selectedChannelTags.includes('SONY SPORTS TEN 1 HD')
+      selectedChannelTags.includes('SONY SPORTS TEN 2')
     );
   }, [selectedChannelTags]);
 
-  // Rs. 100: SONY SPORTS TEN 1 HD / SONY SPORTS TEN 2 HD
+  // Rs. 100: SONY SPORTS TEN 1 HD / SONY SPORTS TEN 2 HD (can be selected together with 60 SD)
   const is100Active = useMemo(() => {
     return (
       selectedChannelTags.includes('SONY SPORTS TEN 1 HD') &&
@@ -440,10 +439,10 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
   }, [selectedChannelTags]);
 
   // Combo Active States
-  const isCombo450Active = is350Active && is100Active;
-  const isCombo360Active = is300Active && is60Active;
+  const isCombo450Active = is350Active && is100Active && !is60Active;
+  const isCombo360Active = is300Active && is60Active && !is100Active;
 
-  // Combined preset bill calculation (e.g. Rs. 350 + Rs. 100 = Rs. 450)
+  // Combined preset bill calculation (e.g. Rs. 350 + Rs. 100 = Rs. 450, or Rs. 300 + 60 + 100 = Rs. 460)
   const currentPresetBill = useMemo(() => {
     const base = is300Active ? 300 : is350Active ? 350 : 0;
     const addon = (is50Active ? 50 : 0) + (is60Active ? 60 : 0) + (is100Active ? 100 : 0);
@@ -457,7 +456,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
       const newTags = selectedChannelTags.filter(
         (ch) => ch !== 'Star Sports Select 1' && ch !== 'Star Sports Select 2' && ch !== 'Cartoon Network'
       );
-      const sportsAddon = is100Active ? 100 : is60Active ? 60 : 0;
+      const sportsAddon = (is100Active ? 100 : 0) + (is60Active ? 60 : 0);
       const newBill = (hasLocalAddon ? 225 : 154) + (is50Active ? 50 : 0) + sportsAddon;
       updateDraft(newTags, hasLocalAddon, newBill);
     } else {
@@ -468,7 +467,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
       for (const ch of PRESET_300_CHANNELS) {
         if (!newTags.includes(ch)) newTags.push(ch);
       }
-      const sportsAddon = is100Active ? 100 : is60Active ? 60 : 0;
+      const sportsAddon = (is100Active ? 100 : 0) + (is60Active ? 60 : 0);
       const newBill = 300 + (is50Active ? 50 : 0) + sportsAddon;
       updateDraft(newTags, true, newBill);
       setSaveSuccessMessage('₹ 300 SD Pack thlan a ni e. SAVE (PACK-1 (BST) + Local & Channels) button hmet la a in-save ang.');
@@ -483,7 +482,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
       const newTags = selectedChannelTags.filter(
         (ch) => ch !== 'SS Select HD-1' && ch !== 'SS Select HD-2' && ch !== 'Star Sports HD-1' && ch !== 'Cartoon Network'
       );
-      const sportsAddon = is100Active ? 100 : is60Active ? 60 : 0;
+      const sportsAddon = (is100Active ? 100 : 0) + (is60Active ? 60 : 0);
       const newBill = (hasLocalAddon ? 225 : 154) + (is50Active ? 50 : 0) + sportsAddon;
       updateDraft(newTags, hasLocalAddon, newBill);
     } else {
@@ -494,7 +493,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
       for (const ch of PRESET_350_CHANNELS) {
         if (!newTags.includes(ch)) newTags.push(ch);
       }
-      const sportsAddon = is100Active ? 100 : is60Active ? 60 : 0;
+      const sportsAddon = (is100Active ? 100 : 0) + (is60Active ? 60 : 0);
       const newBill = 350 + (is50Active ? 50 : 0) + sportsAddon;
       updateDraft(newTags, true, newBill);
       setSaveSuccessMessage('₹ 350 HD Pack thlan a ni e. SAVE (PACK-1 (BST) + Local & Channels) button hmet la a in-save ang.');
@@ -506,7 +505,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
   const handleTogglePreset50 = () => {
     let newTags: string[];
     const base = is350Active ? 350 : is300Active ? 300 : (hasLocalAddon ? 225 : 154);
-    const sportsAddon = is100Active ? 100 : is60Active ? 60 : 0;
+    const sportsAddon = (is100Active ? 100 : 0) + (is60Active ? 60 : 0);
     if (is50Active) {
       newTags = selectedChannelTags.filter((ch) => !PRESET_50_CHANNELS.includes(ch));
       const newBill = base + sportsAddon;
@@ -522,21 +521,22 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
   };
 
   // 4. Rs. 60 Sports SD Addon
-  // If 100 is active, clicking 60 REPLACES 100 completely!
+  // Can be selected together with Rs. 100 Sports HD Addon!
   const handleTogglePreset60 = () => {
     const base = is350Active ? 350 : is300Active ? 300 : (hasLocalAddon ? 225 : 154);
     const addon50 = is50Active ? 50 : 0;
+    const addon100 = is100Active ? 100 : 0;
     if (is60Active) {
       const newTags = selectedChannelTags.filter((ch) => !PRESET_60_CHANNELS.includes(ch));
-      const newBill = base + addon50;
+      const newBill = base + addon50 + addon100;
       updateDraft(newTags, hasLocalAddon, newBill);
     } else {
-      // Remove all 100 HD channels (SONY SPORTS TEN 1 HD, SONY SPORTS TEN 2 HD)
-      let newTags = selectedChannelTags.filter((ch) => !PRESET_100_CHANNELS.includes(ch));
+      // Retain any existing channels including 100 HD channels so both can be selected together
+      const newTags = [...selectedChannelTags];
       for (const ch of PRESET_60_CHANNELS) {
         if (!newTags.includes(ch)) newTags.push(ch);
       }
-      const newBill = base + addon50 + 60;
+      const newBill = base + addon50 + addon100 + 60;
       updateDraft(newTags, hasLocalAddon, newBill);
       setSaveSuccessMessage('₹ 60 Sports SD Addon thlan a ni e. SAVE button hmet la a in-save ang.');
       setTimeout(() => setSaveSuccessMessage(null), 3000);
@@ -544,21 +544,22 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
   };
 
   // 5. Rs. 100 Sports HD Addon
-  // If 60 is active, clicking 100 REPLACES 60 completely!
+  // Can be selected together with Rs. 60 Sports SD Addon!
   const handleTogglePreset100 = () => {
     const base = is350Active ? 350 : is300Active ? 300 : (hasLocalAddon ? 225 : 154);
     const addon50 = is50Active ? 50 : 0;
+    const addon60 = is60Active ? 60 : 0;
     if (is100Active) {
       const newTags = selectedChannelTags.filter((ch) => !PRESET_100_CHANNELS.includes(ch));
-      const newBill = base + addon50;
+      const newBill = base + addon50 + addon60;
       updateDraft(newTags, hasLocalAddon, newBill);
     } else {
-      // Remove all 60 SD channels (SONY SPORTS TEN 1, SONY SPORTS TEN 2)
-      let newTags = selectedChannelTags.filter((ch) => !PRESET_60_CHANNELS.includes(ch));
+      // Retain any existing channels including 60 SD channels so both can be selected together
+      const newTags = [...selectedChannelTags];
       for (const ch of PRESET_100_CHANNELS) {
         if (!newTags.includes(ch)) newTags.push(ch);
       }
-      const newBill = base + addon50 + 100;
+      const newBill = base + addon50 + addon60 + 100;
       updateDraft(newTags, hasLocalAddon, newBill);
       setSaveSuccessMessage('₹ 100 Sports HD Addon thlan a ni e. SAVE button hmet la a in-save ang.');
       setTimeout(() => setSaveSuccessMessage(null), 3000);
@@ -1294,7 +1295,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                       <button
                         type="button"
                         onClick={handleTogglePreset60}
-                        title="₹ 60 Sports SD: Sony Sports Ten 1 & 2 SD"
+                        title="₹ 60 Sports SD: Sony Sports Ten 1 & 2 SD (₹ 100 nen a kawpa thlan theih)"
                         className={`px-3 py-1.5 rounded-lg border text-xs sm:text-[13px] font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none shadow-2xs ${
                           is60Active
                             ? 'bg-emerald-50 border-emerald-500 text-emerald-900 ring-2 ring-emerald-300'
@@ -1319,7 +1320,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                       <button
                         type="button"
                         onClick={handleTogglePreset100}
-                        title="₹ 100 Sports HD: Sony Sports Ten 1 & 2 HD"
+                        title="₹ 100 Sports HD: Sony Sports Ten 1 & 2 HD (₹ 60 nen a kawpa thlan theih)"
                         className={`px-3 py-1.5 rounded-lg border text-xs sm:text-[13px] font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none shadow-2xs ${
                           is100Active
                             ? 'bg-emerald-50 border-emerald-500 text-emerald-900 ring-2 ring-emerald-300'
