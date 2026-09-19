@@ -179,7 +179,7 @@ export default function App() {
             });
             setCustomers(recalculated);
             setRawRows(saved.rawRows || []);
-            setCurrentFileName(saved.currentFileName || 'Saved_LPS_Subscribers.xls');
+            setCurrentFileName(saved.currentFileName || 'Saved_LPS_Subscribers.xlsx');
             setFileSizeText(saved.fileSizeText || 'Saved Session');
             if (saved.selectedCustomerId) {
               setSelectedCustomerId(saved.selectedCustomerId);
@@ -1060,7 +1060,7 @@ export default function App() {
         isOpen={isBulkRenewModalOpen}
         onClose={() => setIsBulkRenewModalOpen(false)}
         customers={customers}
-        fileName={currentFileName ? currentFileName.replace(/\.[^/.]+$/, '.xls') : 'BulkPackageRenew.xls'}
+        fileName={currentFileName || 'BulkPackageRenew.xls'}
         subscriptionSettings={subscriptionSettings}
       />
 

@@ -192,25 +192,23 @@ export function exportSummaryExcel(
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'LCO_Share_Summary');
 
-  // Ensure fileName has proper extension and write in BIFF8 format for .xls
-  let finalFileName = fileName;
-  if (!finalFileName.toLowerCase().endsWith('.xls') && !finalFileName.toLowerCase().endsWith('.xlsx')) {
-    finalFileName += '.xls';
-  }
-  const isXls = finalFileName.toLowerCase().endsWith('.xls');
-  XLSX.writeFile(workbook, finalFileName, { bookType: isXls ? 'biff8' : 'xlsx' });
+  const safeFileName = fileName.endsWith('.xls') || fileName.endsWith('.xlsx') ? fileName : `${fileName}.xls`;
+  const isXlsx = safeFileName.endsWith('.xlsx');
+  XLSX.writeFile(workbook, safeFileName, { bookType: isXlsx ? 'xlsx' : 'biff8' });
 }
 
 export interface BulkRenewExportOptions {
   basePackageName?: string;
+  typeHeader?: 'Type (Package/Channel)' | 'Type(Package/Channel)' | string;
+  packageChannelNameHeader?: 'PackageChannelName' | 'Name (Package/Channel)' | string;
   subscriptionTypeHeader?: 'SubscriptionType(Day/Month/Year)' | 'SubscriptionType(Day/Month)' | 'SubscriptionType(Days/Month)' | string;
+  ncfHeader?: 'NetworkCapacityFees' | 'NetworkCapacityFee' | string;
   sheetName?: string;
   localPackageName?: string;
   hdPackageName?: string;
   includeLpsHd?: 'none' | 'with-locals' | 'hd-only' | 'all';
   includeBillCollected?: boolean;
   subscriptionSettings?: SubscriptionDateSettings;
-  fileFormat?: 'xls' | 'xlsx';
 }
 
 export function exportBulkPackageRenewExcel(
@@ -223,18 +221,21 @@ export function exportBulkPackageRenewExcel(
   // 2. SubscriberCode
   // 3. STBNo
   // 4. VCNo
-  // 5. Type (Package/Channel)
-  // 6. PackageChannelName: PACK-1 (BST)
+  // 5. Type (Package/Channel) or Type(Package/Channel)
+  // 6. PackageChannelName or Name (Package/Channel): e.g. PACK-1 (BST)
   // 7. SubscriptionType(Day/Month/Year)
   // 8. SubscriptionValue
-  // 9. NetworkCapacityFee
+  // 9. NetworkCapacityFees (or NetworkCapacityFee)
   // 10. PackageDiscount
   // 11. ServiceType
   // 12. FranchiseeName
   // (Optional 13. Bill Collected)
   const basePkgName = options?.basePackageName || 'PACK-1 (BST)';
+  const typeCol = options?.typeHeader || 'Type (Package/Channel)';
+  const pkgChannelCol = options?.packageChannelNameHeader || 'PackageChannelName';
   const subTypeCol = options?.subscriptionTypeHeader || 'SubscriptionType(Day/Month/Year)';
-  const sheetName = options?.sheetName || 'BulkPackageRenew';
+  const ncfCol = options?.ncfHeader || 'NetworkCapacityFees';
+  const sheetName = options?.sheetName || 'Sheet1';
   const localPkgName = options?.localPackageName || 'LPS LOCALS';
   const hdPkgName = options?.hdPackageName || 'LPS HD';
   const includeLpsHd = options?.includeLpsHd || 'none';
@@ -262,11 +263,11 @@ export function exportBulkPackageRenewExcel(
       'SubscriberCode': c.subscriberCode,
       'STBNo': c.stbNo,
       'VCNo': c.vcNo || '',
-      'Type (Package/Channel)': 'Package',
-      'PackageChannelName': basePkgName,
+      [typeCol]: 'Package',
+      [pkgChannelCol]: basePkgName,
       [subTypeCol]: subType,
-      'SubscriptionValue': String(subVal),
-      'NetworkCapacityFee': c.networkCapacityFee ?? '0.00',
+      'SubscriptionValue': Number(subVal) || 1,
+      [ncfCol]: c.networkCapacityFee ?? '0.00',
       'PackageDiscount': c.packageDiscount ?? '0.00',
       'ServiceType': c.serviceType || 'PayTV',
       'FranchiseeName': c.franchiseeName || '',
@@ -283,11 +284,11 @@ export function exportBulkPackageRenewExcel(
         'SubscriberCode': c.subscriberCode,
         'STBNo': c.stbNo,
         'VCNo': c.vcNo || '',
-        'Type (Package/Channel)': 'Package',
-        'PackageChannelName': localPkgName,
+        [typeCol]: 'Package',
+        [pkgChannelCol]: localPkgName,
         [subTypeCol]: subType,
-        'SubscriptionValue': String(subVal),
-        'NetworkCapacityFee': c.networkCapacityFee ?? '0.00',
+        'SubscriptionValue': Number(subVal) || 1,
+        [ncfCol]: c.networkCapacityFee ?? '0.00',
         'PackageDiscount': c.packageDiscount ?? '0.00',
         'ServiceType': c.serviceType || 'PayTV',
         'FranchiseeName': c.franchiseeName || '',
@@ -314,11 +315,11 @@ export function exportBulkPackageRenewExcel(
         'SubscriberCode': c.subscriberCode,
         'STBNo': c.stbNo,
         'VCNo': c.vcNo || '',
-        'Type (Package/Channel)': 'Package',
-        'PackageChannelName': hdPkgName,
+        [typeCol]: 'Package',
+        [pkgChannelCol]: hdPkgName,
         [subTypeCol]: subType,
-        'SubscriptionValue': String(subVal),
-        'NetworkCapacityFee': c.networkCapacityFee ?? '0.00',
+        'SubscriptionValue': Number(subVal) || 1,
+        [ncfCol]: c.networkCapacityFee ?? '0.00',
         'PackageDiscount': c.packageDiscount ?? '0.00',
         'ServiceType': c.serviceType || 'PayTV',
         'FranchiseeName': c.franchiseeName || '',
@@ -345,11 +346,11 @@ export function exportBulkPackageRenewExcel(
         'SubscriberCode': c.subscriberCode,
         'STBNo': c.stbNo,
         'VCNo': c.vcNo || '',
-        'Type (Package/Channel)': 'Channel',
-        'PackageChannelName': channelName,
+        [typeCol]: 'Channel',
+        [pkgChannelCol]: channelName,
         [subTypeCol]: subType,
-        'SubscriptionValue': String(subVal),
-        'NetworkCapacityFee': c.networkCapacityFee ?? '0.00',
+        'SubscriptionValue': Number(subVal) || 1,
+        [ncfCol]: c.networkCapacityFee ?? '0.00',
         'PackageDiscount': c.packageDiscount ?? '0.00',
         'ServiceType': c.serviceType || 'PayTV',
         'FranchiseeName': c.franchiseeName || '',
@@ -366,11 +367,11 @@ export function exportBulkPackageRenewExcel(
     'SubscriberCode',
     'STBNo',
     'VCNo',
-    'Type (Package/Channel)',
-    'PackageChannelName',
+    typeCol,
+    pkgChannelCol,
     subTypeCol,
     'SubscriptionValue',
-    'NetworkCapacityFee',
+    ncfCol,
     'PackageDiscount',
     'ServiceType',
     'FranchiseeName'
@@ -390,7 +391,7 @@ export function exportBulkPackageRenewExcel(
     { wch: 30 }, // PackageChannelName
     { wch: 28 }, // SubscriptionType(Day/Month)
     { wch: 18 }, // SubscriptionValue
-    { wch: 20 }, // NetworkCapacityFee
+    { wch: 20 }, // NetworkCapacityFees
     { wch: 18 }, // PackageDiscount
     { wch: 15 }, // ServiceType
     { wch: 20 }, // FranchiseeName
@@ -404,23 +405,9 @@ export function exportBulkPackageRenewExcel(
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
 
-  const format = options?.fileFormat || (fileName.toLowerCase().endsWith('.xlsx') ? 'xlsx' : 'xls');
-  let finalFileName = fileName;
-  if (format === 'xls') {
-    if (finalFileName.toLowerCase().endsWith('.xlsx')) {
-      finalFileName = finalFileName.replace(/\.xlsx$/i, '.xls');
-    } else if (!finalFileName.toLowerCase().endsWith('.xls')) {
-      finalFileName += '.xls';
-    }
-  } else if (format === 'xlsx') {
-    if (finalFileName.toLowerCase().endsWith('.xls')) {
-      finalFileName = finalFileName.replace(/\.xls$/i, '.xlsx');
-    } else if (!finalFileName.toLowerCase().endsWith('.xlsx')) {
-      finalFileName += '.xlsx';
-    }
-  }
-  const isXls = finalFileName.toLowerCase().endsWith('.xls');
-  XLSX.writeFile(workbook, finalFileName, { bookType: isXls ? 'biff8' : 'xlsx' });
+  // LPS Portal strictly expects .xls (BIFF8 / Excel 97-2003)
+  const safeName = fileName.replace(/\.[^/.]+$/, '') + '.xls';
+  XLSX.writeFile(workbook, safeName, { bookType: 'biff8' });
 }
 
 /**
@@ -455,12 +442,8 @@ export function exportChannelRateTemplateExcel(
 
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'ChannelRates');
-
-  let finalFileName = fileName;
-  if (!finalFileName.toLowerCase().endsWith('.xls') && !finalFileName.toLowerCase().endsWith('.xlsx')) {
-    finalFileName += '.xls';
-  }
-  const isXls = finalFileName.toLowerCase().endsWith('.xls');
-  XLSX.writeFile(workbook, finalFileName, { bookType: isXls ? 'biff8' : 'xlsx' });
+  const safeFileName = fileName.endsWith('.xls') || fileName.endsWith('.xlsx') ? fileName : `${fileName}.xls`;
+  const isXlsx = safeFileName.endsWith('.xlsx');
+  XLSX.writeFile(workbook, safeFileName, { bookType: isXlsx ? 'xlsx' : 'biff8' });
 }
 

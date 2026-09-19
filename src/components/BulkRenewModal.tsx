@@ -19,9 +19,11 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
   subscriptionSettings,
 }) => {
   const [basePackageName, setBasePackageName] = useState<string>('PACK-1 (BST)');
-  const [exportFormat, setExportFormat] = useState<'xls' | 'xlsx'>('xls');
+  const [typeColHeader, setTypeColHeader] = useState<'Type (Package/Channel)' | 'Type(Package/Channel)'>('Type (Package/Channel)');
+  const [pkgColHeader, setPkgColHeader] = useState<'PackageChannelName' | 'Name (Package/Channel)'>('PackageChannelName');
   const [subTypeHeader, setSubTypeHeader] = useState<'SubscriptionType(Day/Month/Year)' | 'SubscriptionType(Day/Month)' | 'SubscriptionType(Days/Month)'>('SubscriptionType(Day/Month/Year)');
-  const [sheetName, setSheetName] = useState<string>('BulkPackageRenew');
+  const [ncfColHeader, setNcfColHeader] = useState<'NetworkCapacityFees' | 'NetworkCapacityFee'>('NetworkCapacityFees');
+  const [sheetName, setSheetName] = useState<string>('Sheet1');
   const [localPackageName, setLocalPackageName] = useState<string>('LPS LOCALS');
   const [hdPackageName, setHdPackageName] = useState<string>('LPS HD');
   const [includeLpsHd, setIncludeLpsHd] = useState<'none' | 'with-locals' | 'hd-only' | 'all'>('none');
@@ -176,18 +178,20 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
     const baseRawName = fileName
       ? fileName.replace(/\.[^/.]+$/, '')
       : 'PACK-1(BST)';
-    const defaultName = `BulkPackageRenew_${baseRawName}.${exportFormat}`;
+    const defaultName = `BulkPackageRenew_${baseRawName}.xls`;
 
     exportBulkPackageRenewExcel(customers, defaultName, {
       basePackageName,
+      typeHeader: typeColHeader,
+      packageChannelNameHeader: pkgColHeader,
       subscriptionTypeHeader: subTypeHeader,
+      ncfHeader: ncfColHeader,
       sheetName,
       localPackageName,
       hdPackageName,
       includeLpsHd,
       includeBillCollected,
       subscriptionSettings,
-      fileFormat: exportFormat,
     });
   };
 
@@ -262,6 +266,28 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
                 </span>
               </div>
               <div className="flex items-center gap-3 flex-wrap">
+                <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-300 rounded px-2.5 py-1">
+                  <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700" />
+                  <span className="text-xs text-emerald-900 font-bold">
+                    Format: .xls (Excel 97-2003 BIFF8)
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <label htmlFor="sheet-name-select" className="text-xs text-slate-600 font-medium">
+                    Sheet:
+                  </label>
+                  <select
+                    id="sheet-name-select"
+                    value={sheetName}
+                    onChange={(e) => setSheetName(e.target.value)}
+                    className="text-xs bg-white border border-slate-300 rounded px-2 py-1 font-medium text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
+                  >
+                    <option value="Sheet1">Sheet1 (Standard LPS)</option>
+                    <option value="BulkPackageRenew">BulkPackageRenew</option>
+                  </select>
+                </div>
+
                 <div className="flex items-center gap-1.5">
                   <label htmlFor="base-pkg-select" className="text-xs text-slate-600 font-medium">
                     Base:
@@ -276,6 +302,52 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
                     <option value="BST">BST</option>
                   </select>
                 </div>
+
+                <div className="flex items-center gap-1.5">
+                  <label htmlFor="col5-format-select" className="text-xs text-slate-600 font-medium">
+                    Col 5:
+                  </label>
+                  <select
+                    id="col5-format-select"
+                    value={typeColHeader}
+                    onChange={(e) => setTypeColHeader(e.target.value as any)}
+                    className="text-xs bg-white border border-slate-300 rounded px-2 py-1 font-medium text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-slate-500"
+                  >
+                    <option value="Type (Package/Channel)">Type (Package/Channel)</option>
+                    <option value="Type(Package/Channel)">Type(Package/Channel) [no space]</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <label htmlFor="col6-format-select" className="text-xs text-slate-600 font-medium">
+                    Col 6:
+                  </label>
+                  <select
+                    id="col6-format-select"
+                    value={pkgColHeader}
+                    onChange={(e) => setPkgColHeader(e.target.value as any)}
+                    className="text-xs bg-white border border-slate-300 rounded px-2 py-1 font-medium text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-slate-500"
+                  >
+                    <option value="PackageChannelName">PackageChannelName</option>
+                    <option value="Name (Package/Channel)">Name (Package/Channel)</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <label htmlFor="col9-format-select" className="text-xs text-slate-600 font-medium">
+                    Col 9:
+                  </label>
+                  <select
+                    id="col9-format-select"
+                    value={ncfColHeader}
+                    onChange={(e) => setNcfColHeader(e.target.value as any)}
+                    className="text-xs bg-white border border-emerald-400 rounded px-2 py-1 font-bold text-emerald-900 focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
+                  >
+                    <option value="NetworkCapacityFees">NetworkCapacityFees (with 's')</option>
+                    <option value="NetworkCapacityFee">NetworkCapacityFee (no 's')</option>
+                  </select>
+                </div>
+
                 <div className="flex items-center gap-1.5">
                   <label htmlFor="local-pkg-select" className="text-xs text-slate-600 font-medium">
                     Local:
@@ -339,31 +411,15 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
                   </select>
                 </div>
 
-                <div className="flex items-center gap-1.5">
-                  <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
-                  <label htmlFor="export-format-select" className="text-xs text-slate-700 font-bold">
-                    File:
-                  </label>
-                  <select
-                    id="export-format-select"
-                    value={exportFormat}
-                    onChange={(e) => setExportFormat(e.target.value as 'xls' | 'xlsx')}
-                    className="text-xs bg-emerald-50 border border-emerald-400 rounded px-2 py-1 font-bold text-emerald-900 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 cursor-pointer"
-                  >
-                    <option value="xls">.xls (LPS Portal - Recommended)</option>
-                    <option value="xlsx">.xlsx (Modern Excel)</option>
-                  </select>
-                </div>
-
                 <div className="flex items-center gap-1.5 ml-auto">
-                  <label className="flex items-center gap-1.5 cursor-pointer select-none text-xs font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-300 hover:bg-emerald-100 transition-colors">
+                  <label className="flex items-center gap-1.5 cursor-pointer select-none text-xs font-semibold text-amber-900 bg-amber-50 px-2.5 py-1 rounded border border-amber-300 hover:bg-amber-100 transition-colors">
                     <input
                       type="checkbox"
                       checked={includeBillCollected}
                       onChange={(e) => setIncludeBillCollected(e.target.checked)}
-                      className="rounded text-emerald-600 focus:ring-emerald-500 w-3.5 h-3.5 cursor-pointer"
+                      className="rounded text-amber-600 focus:ring-amber-500 w-3.5 h-3.5 cursor-pointer"
                     />
-                    <span>Include 'Bill Collected' (He Apps a upload leh nan)</span>
+                    <span>Include 'Bill Collected' (LPS upload dawn chuan tick suh)</span>
                   </label>
                 </div>
               </div>
@@ -389,11 +445,11 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
               </div>
               <div className="bg-white px-2.5 py-1.5 rounded border border-slate-200 flex items-center gap-1.5 font-mono">
                 <span className="text-slate-700 font-semibold">E.</span>
-                <span className="text-slate-800 font-bold">Type (Package/Channel)</span>
+                <span className="text-slate-800 font-bold">{typeColHeader}</span>
               </div>
               <div className="bg-white px-2.5 py-1.5 rounded border border-slate-200 flex items-center gap-1.5 font-mono">
                 <span className="text-slate-700 font-semibold">F.</span>
-                <span className="text-slate-800 font-bold">PackageChannelName</span>
+                <span className="text-slate-800 font-bold">{pkgColHeader}</span>
               </div>
               <div className="bg-blue-50 px-2.5 py-1.5 rounded border border-blue-200 flex items-center gap-1.5 font-mono">
                 <span className="text-blue-700 font-semibold">G.</span>
@@ -403,9 +459,9 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
                 <span className="text-blue-700 font-semibold">H.</span>
                 <span className="text-blue-900 font-bold">SubscriptionValue</span>
               </div>
-              <div className="bg-white px-2.5 py-1.5 rounded border border-slate-200 flex items-center gap-1.5 font-mono">
-                <span className="text-slate-700 font-semibold">I.</span>
-                <span className="text-slate-800 font-bold">NetworkCapacityFee</span>
+              <div className="bg-emerald-50 px-2.5 py-1.5 rounded border border-emerald-300 flex items-center gap-1.5 font-mono">
+                <span className="text-emerald-700 font-semibold">I.</span>
+                <span className="text-emerald-950 font-bold">{ncfColHeader}</span>
               </div>
               <div className="bg-white px-2.5 py-1.5 rounded border border-slate-200 flex items-center gap-1.5 font-mono">
                 <span className="text-slate-700 font-semibold">J.</span>
@@ -443,11 +499,11 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
                     <th className="px-3 py-2 border-r border-blue-800">SubscriberCode</th>
                     <th className="px-3 py-2 border-r border-blue-800">STBNo</th>
                     <th className="px-3 py-2 border-r border-blue-800">VCNo</th>
-                    <th className="px-3 py-2 border-r border-blue-800">Type (Package/Channel)</th>
-                    <th className="px-3 py-2 border-r border-blue-800">PackageChannelName</th>
+                    <th className="px-3 py-2 border-r border-blue-800">{typeColHeader}</th>
+                    <th className="px-3 py-2 border-r border-blue-800">{pkgColHeader}</th>
                     <th className="px-3 py-2 border-r border-blue-800 bg-blue-900">{subTypeHeader}</th>
                     <th className="px-3 py-2 border-r border-blue-800 bg-blue-900">SubscriptionValue</th>
-                    <th className="px-3 py-2 border-r border-blue-800">NetworkCapacityFee</th>
+                    <th className="px-3 py-2 border-r border-blue-800 bg-emerald-900 text-emerald-100">{ncfColHeader}</th>
                     <th className="px-3 py-2 border-r border-blue-800">PackageDiscount</th>
                     <th className="px-3 py-2 border-r border-blue-800">ServiceType</th>
                     <th className={`px-3 py-2 ${includeBillCollected ? 'border-r border-blue-800' : ''}`}>FranchiseeName</th>
@@ -494,16 +550,24 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
             </div>
           </div>
 
-          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 flex items-start gap-2.5 text-xs text-emerald-950">
-            <Info className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
-            <div>
-              <span className="font-bold">LPS Portal Compatibility:</span> LPS portal in <strong>.xls</strong> chauh a pawm avangin file format hi default-in <strong>.xls (Excel 97-2003)</strong> a ni a, LPS portal-ah buaina awm loin a import theih nghal ang. Column F ah Base package hming chu <strong>{basePackageName}</strong> tiin a chhuak bawk ang.
+          <div className="bg-emerald-50 border border-emerald-300 rounded-lg p-3.5 flex items-start gap-3 text-xs text-emerald-950">
+            <Info className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <div className="font-bold text-sm text-emerald-900">
+                LPS Operator Portal Upload Hriattur Pawimawh:
+              </div>
+              <ul className="list-disc pl-4 space-y-0.5 text-emerald-800 font-medium">
+                <li><strong>Format dik (.xls):</strong> LPS Operator Portal-in <strong>.xls (Excel 97-2003 BIFF8)</strong> chauh a pawm a, he download button hian <strong>.xls</strong> binary dik tak a pe dawn che a ni.</li>
+                <li><strong>Column 9 ({ncfColHeader}):</strong> Column header hi portal phut ang thlapin <strong>{ncfColHeader}</strong> tih a ni e.</li>
+                <li><strong>Column 12 chiah a awm tur a ni:</strong> 'Include Bill Collected' checkbox hi LPS upload dawn chuan tick miah suh (column 13 a awm chuan portal-in format not valid a ti ang).</li>
+                <li><strong>Base Package:</strong> Column F ah hian <strong>{basePackageName}</strong> tiin a chhuak e.</li>
+              </ul>
             </div>
           </div>
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between gap-3">
+        <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between flex-wrap gap-3">
           <button
             type="button"
             id="cancel-bulk-renew-btn"
@@ -512,18 +576,21 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
           >
             Cancel
           </button>
-          <button
-            type="button"
-            id="confirm-download-bulk-renew-btn"
-            onClick={() => {
-              handleDownload();
-              onClose();
-            }}
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#28a745] hover:bg-[#218838] text-white rounded-lg text-sm font-bold shadow-sm transition-all cursor-pointer"
-          >
-            <Download className="w-4 h-4" />
-            <span>Download 12-Column Bulk Renew Excel (.{exportFormat})</span>
-          </button>
+          
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              id="confirm-download-bulk-renew-btn"
+              onClick={() => {
+                handleDownload();
+                onClose();
+              }}
+              className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#28a745] hover:bg-[#218838] text-white rounded-lg text-sm font-bold shadow-sm transition-all cursor-pointer"
+            >
+              <Download className="w-4 h-4" />
+              <span>Download 12-Column Bulk Renew (.xls - LPS Portal)</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
