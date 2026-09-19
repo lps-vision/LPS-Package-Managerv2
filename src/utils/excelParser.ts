@@ -17,6 +17,11 @@ import {
   SPORTS_ADDON_PRESET,
   SILVER_PRESET,
   GOLD_PRESET,
+  PRESET_300_CHANNELS,
+  PRESET_350_CHANNELS,
+  PRESET_50_CHANNELS,
+  PRESET_60_CHANNELS,
+  PRESET_100_CHANNELS,
 } from '../data/defaultChannels';
 
 export function normalizeKey(key: string): string {
@@ -218,6 +223,204 @@ export function calculateCustomerPricing(
   };
 }
 
+export function isLpsSilverPlan(name: string): boolean {
+  const upper = (name || '').toUpperCase().trim().replace(/\s+/g, ' ');
+  if (!upper) return false;
+  if (
+    upper === 'LPS SILVER' ||
+    upper === 'SILVER PACK' ||
+    upper === 'LPS-SILVER' ||
+    upper === 'LPS_SILVER' ||
+    upper === 'LPS SILVER SD' ||
+    upper === 'LPS SILVER (SD)' ||
+    upper === 'SILVER SD' ||
+    upper === 'SILVER' ||
+    upper === '300 SD' ||
+    upper === '300 SD PLAN' ||
+    upper === '300 SD PACK' ||
+    upper.includes('LPS SILVER') ||
+    upper.includes('SILVER SD') ||
+    upper.includes('300 SD') ||
+    upper.includes('SD 300') ||
+    upper.includes('BST + LOCAL SD 300') ||
+    upper.includes('BST+LOCAL SD 300') ||
+    upper.includes('LOCAL SD 300') ||
+    upper.includes('LOCAL 300') ||
+    upper.includes('PLAN 300') ||
+    upper.includes('BILL 300') ||
+    upper.includes('300 MAN')
+  ) {
+    return true;
+  }
+  return false;
+}
+
+export function isLpsGoldPlan(name: string): boolean {
+  const upper = (name || '').toUpperCase().trim().replace(/\s+/g, ' ');
+  if (!upper) return false;
+  // Guard against Star Gold, Zee Cinema Gold, Goldmines, etc.
+  if (upper.includes('STAR GOLD') || upper.includes('ZEE') || upper.includes('GOLDMINE')) {
+    return false;
+  }
+  if (
+    upper === 'LPS GOLD' ||
+    upper === 'GOLD PACK' ||
+    upper === 'LPS-GOLD' ||
+    upper === 'LPS_GOLD' ||
+    upper === 'LPS GOLD HD' ||
+    upper === 'LPS GOLD (HD)' ||
+    upper === 'GOLD HD' ||
+    upper === 'GOLD' ||
+    upper === '350 HD' ||
+    upper === '350 HD PLAN' ||
+    upper === '350 HD PACK' ||
+    upper.includes('LPS GOLD') ||
+    upper.includes('GOLD HD') ||
+    upper.includes('350 HD') ||
+    upper.includes('HD 350') ||
+    upper.includes('BST + LOCAL SD 350') ||
+    upper.includes('BST+LOCAL SD 350') ||
+    upper.includes('LOCAL SD 350') ||
+    upper.includes('LOCAL 350') ||
+    upper.includes('PLAN 350') ||
+    upper.includes('BILL 350') ||
+    upper.includes('350 MAN')
+  ) {
+    return true;
+  }
+  return false;
+}
+
+export function isSdAddon50(name: string): boolean {
+  const upper = (name || '').toUpperCase().trim().replace(/\s+/g, ' ');
+  if (!upper) return false;
+  const key = normalizeKey(name);
+  if (upper.includes('SPORT') || upper.includes('HD') || key.includes('sport') || key.includes('hd')) {
+    return false;
+  }
+  if (
+    upper === 'SD ADD ON' ||
+    upper === 'SD ADDON' ||
+    upper === 'SD-ADDON' ||
+    upper === 'SD ADD-ON' ||
+    upper === 'ADD ON SD' ||
+    upper === 'ADDON SD' ||
+    upper === 'SD ADD ON 50' ||
+    upper === 'SD ADDON 50' ||
+    upper === '50 SD ADD ON' ||
+    upper === '50 SD ADDON' ||
+    upper === '50 ADD ON' ||
+    upper === '50 ADDON' ||
+    upper === '₹ 50 ADDON' ||
+    upper === 'RS 50 ADDON' ||
+    key === 'sdaddon' ||
+    key === 'sdaddons' ||
+    key === 'addonsd' ||
+    key === 'sdaddon50' ||
+    key === '50sdaddon' ||
+    key === '50addon' ||
+    key === 'addon50' ||
+    key.includes('sdaddon') ||
+    (key.includes('addon') && key.includes('50'))
+  ) {
+    return true;
+  }
+  return false;
+}
+
+export function isSportsAddon60(name: string): boolean {
+  const upper = (name || '').toUpperCase().trim().replace(/\s+/g, ' ');
+  if (!upper) return false;
+  const key = normalizeKey(name);
+  if (upper.includes('HD') || key.includes('hd')) {
+    return false;
+  }
+  if (
+    upper === 'ADD ON SPORTS' ||
+    upper === 'ADDON SPORTS' ||
+    upper === 'ADD-ON SPORTS' ||
+    upper === 'SPORTS ADD ON' ||
+    upper === 'SPORTS ADDON' ||
+    upper === 'SPORTS ADD-ON' ||
+    upper === 'SPORTS SD ADD ON' ||
+    upper === 'SPORTS SD ADDON' ||
+    upper === 'ADD ON SPORTS SD' ||
+    upper === 'ADDON SPORTS SD' ||
+    upper === 'ADD ON SPORTS 60' ||
+    upper === 'ADDON SPORTS 60' ||
+    upper === '60 SPORTS' ||
+    upper === '60 SPORTS SD' ||
+    upper === 'SPORTS 60' ||
+    upper === '₹ 60 SPORTS SD' ||
+    upper === '₹ 60 SPORTS' ||
+    upper === 'RS 60 SPORTS SD' ||
+    key === 'addonsports' ||
+    key === 'sportsaddon' ||
+    key === 'addonsport' ||
+    key === 'sportaddon' ||
+    key === 'sportsdaddon' ||
+    key === 'sdsportsaddon' ||
+    key === 'sportsaddon60' ||
+    key === '60sportsaddon' ||
+    key === '60sports' ||
+    key === 'sports60' ||
+    key === '60addon' ||
+    key === 'addon60' ||
+    (key.includes('sport') && key.includes('addon')) ||
+    (key.includes('sport') && key.includes('60'))
+  ) {
+    return true;
+  }
+  return false;
+}
+
+export function isHdAddon100(name: string): boolean {
+  const upper = (name || '').toUpperCase().trim().replace(/\s+/g, ' ');
+  if (!upper) return false;
+  const key = normalizeKey(name);
+  if (
+    upper === 'HD ADD ON' ||
+    upper === 'HD ADDON' ||
+    upper === 'HD-ADDON' ||
+    upper === 'HD ADD-ON' ||
+    upper === 'ADD ON HD' ||
+    upper === 'ADDON HD' ||
+    upper === 'SPORTS HD ADD ON' ||
+    upper === 'SPORTS HD ADDON' ||
+    upper === 'ADD ON SPORTS HD' ||
+    upper === 'ADDON SPORTS HD' ||
+    upper === 'HD SPORTS ADD ON' ||
+    upper === 'HD SPORTS ADDON' ||
+    upper === 'HD ADD ON 100' ||
+    upper === 'HD ADDON 100' ||
+    upper === '100 HD' ||
+    upper === 'HD 100' ||
+    upper === '100 SPORTS HD' ||
+    upper === '₹ 100 SPORTS HD' ||
+    upper === '₹ 100 HD' ||
+    upper === 'RS 100 SPORTS HD' ||
+    key === 'hdaddon' ||
+    key === 'hdaddons' ||
+    key === 'addonhd' ||
+    key === 'sportshdaddon' ||
+    key === 'hdsportsaddon' ||
+    key === 'addonsportshd' ||
+    key === 'addonhdsports' ||
+    key === 'hdaddon100' ||
+    key === '100hdaddon' ||
+    key === '100sportshd' ||
+    key === '100hd' ||
+    key === 'hd100' ||
+    key === '100addon' ||
+    key === 'addon100' ||
+    (key.includes('hd') && key.includes('addon')) ||
+    (key.includes('hd') && key.includes('100'))
+  ) {
+    return true;
+  }
+  return false;
+}
+
 export function isLpsPackageName(name: string): boolean {
   const upper = (name || '').toUpperCase().trim().replace(/\s+/g, ' ');
   if (!upper) return false;
@@ -230,6 +433,7 @@ export function isLpsPackageName(name: string): boolean {
     upper === 'BST+LOCAL' ||
     upper === 'BST + LOCALS' ||
     upper === 'BST+LOCALS' ||
+    upper === 'BST + LOCAL SD' ||
     upper === 'LPS LOCALS' ||
     upper === 'LPS LOCAL' ||
     upper === 'LOCAL' ||
@@ -238,20 +442,13 @@ export function isLpsPackageName(name: string): boolean {
     upper === 'LOCALS 1-12' ||
     upper === 'LPS HD' ||
     upper === 'LPS-HD' ||
-    upper === 'LPS GOLD' ||
-    upper === 'GOLD PACK' ||
-    upper === 'LPS-GOLD' ||
-    upper === 'LPS_GOLD' ||
-    upper === 'LPS GOLD HD' ||
-    upper === 'LPS GOLD (HD)' ||
-    upper === 'LPS SILVER' ||
-    upper === 'SILVER PACK' ||
-    upper === 'LPS-SILVER' ||
-    upper === 'LPS_SILVER' ||
-    upper === 'LPS SILVER SD' ||
-    upper === 'LPS SILVER (SD)' ||
     upper === 'GRAND TOTAL' ||
-    upper === 'TOTAL'
+    upper === 'TOTAL' ||
+    isLpsSilverPlan(upper) ||
+    isLpsGoldPlan(upper) ||
+    isSdAddon50(upper) ||
+    isSportsAddon60(upper) ||
+    isHdAddon100(upper)
   ) {
     return true;
   }
@@ -295,6 +492,10 @@ export function processRawRowsToCustomers(
     packageDiscount: string | number;
     serviceType: string;
     customBillAmount?: number;
+    detectedPlan?: 'silver_300' | 'gold_350';
+    hasSdAddon50?: boolean;
+    hasSportsAddon60?: boolean;
+    hasHdAddon100?: boolean;
   }>();
 
   const priceMap = getChannelPriceMap(customChannels);
@@ -326,6 +527,19 @@ export function processRawRowsToCustomers(
 
     // 4. Return trimmed clean input directly so unknown/new channels are never dropped
     return clean;
+  };
+
+  // Helper to add channel uniquely without duplication
+  const addChannelDeduplicated = (existing: { channels: string[] }, candidate: string) => {
+    const clean = candidate.trim();
+    if (!clean) return;
+    const canonical = findCanonicalChannelName(clean);
+    if (!canonical) return;
+    const norm = normalizeKey(canonical);
+    if (!norm) return;
+    if (!existing.channels.some((c) => normalizeKey(c) === norm)) {
+      existing.channels.push(canonical);
+    }
   };
 
   for (const row of rawRows) {
@@ -385,115 +599,134 @@ export function processRawRowsToCustomers(
       existing.customBillAmount = row.customBillAmount;
     }
 
+    // Token processor for plans, add-ons, packages, and deduplicated channels
+    const processToken = (token: string) => {
+      const cleanToken = token.trim();
+      if (!cleanToken) return;
+      const upperToken = cleanToken.toUpperCase().replace(/\s+/g, ' ').trim();
+
+      if (upperToken === 'GRAND TOTAL' || upperToken === 'TOTAL') return;
+
+      // 1. LPS SILVER: BST + Local sd 300 man
+      if (isLpsSilverPlan(upperToken)) {
+        existing!.basePackage = 'BST';
+        existing!.hasLocalAddon = true;
+        existing!.detectedPlan = 'silver_300';
+        for (const ch of PRESET_300_CHANNELS) {
+          addChannelDeduplicated(existing!, ch);
+        }
+        return;
+      }
+
+      // 2. LPS GOLD: BST + Local sd 350 man
+      if (isLpsGoldPlan(upperToken)) {
+        existing!.basePackage = 'BST';
+        existing!.hasLocalAddon = true;
+        existing!.hasLpsHd = true;
+        existing!.detectedPlan = 'gold_350';
+        for (const ch of PRESET_350_CHANNELS) {
+          addChannelDeduplicated(existing!, ch);
+        }
+        return;
+      }
+
+      // 3. SD ADD ON: 50 man
+      if (isSdAddon50(upperToken)) {
+        existing!.hasSdAddon50 = true;
+        for (const ch of PRESET_50_CHANNELS) {
+          addChannelDeduplicated(existing!, ch);
+        }
+        return;
+      }
+
+      // 4. ADD ON SPORTS: 60 man
+      if (isSportsAddon60(upperToken)) {
+        existing!.hasSportsAddon60 = true;
+        for (const ch of PRESET_60_CHANNELS) {
+          addChannelDeduplicated(existing!, ch);
+        }
+        return;
+      }
+
+      // 5. HD ADD ON: 100 man
+      if (isHdAddon100(upperToken)) {
+        existing!.hasHdAddon100 = true;
+        existing!.hasLpsHd = true;
+        for (const ch of PRESET_100_CHANNELS) {
+          addChannelDeduplicated(existing!, ch);
+        }
+        return;
+      }
+
+      // 6. Base / Local package variations
+      if (
+        upperToken === 'BST + LOCAL' ||
+        upperToken === 'BST+LOCAL' ||
+        upperToken === 'BST + LOCALS' ||
+        upperToken === 'BST+LOCALS' ||
+        upperToken === 'BST + LOCAL SD'
+      ) {
+        existing!.basePackage = 'BST';
+        existing!.hasLocalAddon = true;
+        return;
+      }
+
+      if (
+        upperToken === 'BST' ||
+        upperToken === 'BST CHAUH' ||
+        upperToken === 'BST ONLY'
+      ) {
+        existing!.basePackage = 'BST';
+        if (upperToken.includes('CHAUH') || upperToken.includes('ONLY')) {
+          existing!.hasLocalAddon = false;
+        }
+        return;
+      }
+
+      if (
+        upperToken === 'LPS LOCALS' ||
+        upperToken === 'LPS LOCAL' ||
+        upperToken === 'LOCAL' ||
+        upperToken === 'LOCALS' ||
+        upperToken === 'LOCAL 1-12' ||
+        upperToken === 'LOCALS 1-12'
+      ) {
+        existing!.hasLocalAddon = true;
+        return;
+      }
+
+      if (upperToken === 'LPS HD' || upperToken === 'LPS-HD' || (upperToken === 'HD' && row.type === 'Package')) {
+        existing!.hasLpsHd = true;
+        return;
+      }
+
+      // 7. Individual Ala-carte Channels! Deduplicated automatically
+      addChannelDeduplicated(existing!, cleanToken);
+    };
+
     // Check packageAddonInfo (from "Package / Addon" column)
     if (row.packageAddonInfo) {
-      const upperAddon = row.packageAddonInfo.toUpperCase().trim();
-      if (upperAddon.includes('CHAUH') || upperAddon.includes('ONLY') || upperAddon === 'BST') {
-        existing.hasLocalAddon = false;
-      } else if (upperAddon.includes('LOCAL')) {
-        existing.hasLocalAddon = true;
+      const addonTokens = row.packageAddonInfo.includes('•')
+        ? row.packageAddonInfo.split('•')
+        : row.packageAddonInfo.includes(',')
+        ? row.packageAddonInfo.split(',')
+        : [row.packageAddonInfo];
+
+      for (const token of addonTokens) {
+        processToken(token);
       }
     }
 
-    // 1. LPS GOLD: Sets BST, Local and HD
-    if (
-      upperRaw === 'LPS GOLD' ||
-      upperRaw === 'GOLD PACK' ||
-      upperRaw === 'LPS-GOLD' ||
-      upperRaw === 'LPS_GOLD' ||
-      upperRaw.includes('LPS GOLD HD') ||
-      upperRaw.includes('LPS GOLD (HD)') ||
-      (upperRaw.startsWith('LPS GOLD') && !upperRaw.includes('STAR GOLD') && !upperRaw.includes('ZEE'))
-    ) {
-      existing.basePackage = 'BST';
-      existing.hasLocalAddon = true;
-      existing.hasLpsHd = true;
-    }
-    // 2. LPS SILVER: BST + Local
-    else if (
-      upperRaw === 'LPS SILVER' ||
-      upperRaw === 'SILVER PACK' ||
-      upperRaw === 'LPS-SILVER' ||
-      upperRaw === 'LPS_SILVER' ||
-      upperRaw.includes('LPS SILVER SD') ||
-      upperRaw.includes('LPS SILVER (SD)')
-    ) {
-      existing.basePackage = 'BST';
-      existing.hasLocalAddon = true;
-    }
-    // 3. Combined BST + Local (e.g. from Channel thlan column when no extra channels)
-    else if (
-      upperRaw === 'BST + LOCAL' ||
-      upperRaw === 'BST+LOCAL' ||
-      upperRaw === 'BST + LOCALS' ||
-      upperRaw === 'BST+LOCALS'
-    ) {
-      existing.basePackage = 'BST';
-      existing.hasLocalAddon = true;
-    }
-    // 4. BST chauh / BST only
-    else if (
-      upperRaw === 'BST' ||
-      upperRaw === 'BST CHAUH' ||
-      upperRaw === 'BST ONLY'
-    ) {
-      existing.basePackage = 'BST';
-      if (upperRaw.includes('CHAUH') || upperRaw.includes('ONLY')) {
-        existing.hasLocalAddon = false;
-      }
-    }
-    // 5. Local package alone (LPS LOCALS, Local 1-12, etc.)
-    else if (
-      upperRaw === 'LPS LOCALS' ||
-      upperRaw === 'LPS LOCAL' ||
-      upperRaw === 'LOCAL' ||
-      upperRaw === 'LOCALS' ||
-      upperRaw === 'LOCAL 1-12' ||
-      upperRaw === 'LOCALS 1-12'
-    ) {
-      existing.hasLocalAddon = true;
-    }
-    // 6. LPS HD package specifically
-    else if (upperRaw === 'LPS HD' || upperRaw === 'LPS-HD' || (upperRaw === 'HD' && row.type === 'Package')) {
-      existing.hasLpsHd = true;
-    }
-    // 7. Individual Ala-carte Channels!
-    // Any other row is recognized as an a-la-carte channel
-    else if (rawPkgName && rawPkgName.length > 0) {
-      // Check if candidate is bullet or comma separated (e.g. copied from UI)
-      const channelCandidates = rawPkgName.includes('•')
+    // Check packageChannelName (from "PackageChannelName" or "Channel thlan" column)
+    if (rawPkgName) {
+      const pkgTokens = rawPkgName.includes('•')
         ? rawPkgName.split('•')
         : rawPkgName.includes(',')
         ? rawPkgName.split(',')
         : [rawPkgName];
 
-      for (const candidate of channelCandidates) {
-        const trimmed = candidate.trim();
-        if (!trimmed) continue;
-        const upperCand = trimmed.toUpperCase();
-
-        if (
-          upperCand === 'BST' ||
-          upperCand.includes('BST+LOCAL') ||
-          upperCand.includes('BST + LOCAL') ||
-          upperCand === 'BST CHAUH' ||
-          upperCand === 'LPS LOCALS' ||
-          upperCand === 'LOCAL 1-12' ||
-          upperCand === 'LOCAL' ||
-          upperCand === 'GRAND TOTAL'
-        ) {
-          if (upperCand.includes('LOCAL')) {
-            existing.hasLocalAddon = true;
-          } else if (upperCand.includes('CHAUH')) {
-            existing.hasLocalAddon = false;
-          }
-          continue;
-        }
-
-        const canonicalName = findCanonicalChannelName(trimmed);
-        if (canonicalName && !existing.channels.includes(canonicalName)) {
-          existing.channels.push(canonicalName);
-        }
+      for (const token of pkgTokens) {
+        processToken(token);
       }
     }
   }
@@ -501,6 +734,52 @@ export function processRawRowsToCustomers(
   const customers: CustomerSummary[] = [];
 
   for (const [code, item] of customerMap.entries()) {
+    // 1. Calculate converted bill based on user requirements:
+    // - LPS SILVER: BST + Local sd 300 man
+    // - LPS GOLD: BST + Local sd 350 man
+    // - SD ADD ON: 50 man
+    // - ADD ON SPORTS: 60 man
+    // - HD ADD ON: 100 man
+    let convertedBill: number | undefined = undefined;
+
+    if (item.detectedPlan === 'silver_300') {
+      let b = 300;
+      if (item.hasSdAddon50) b += 50;
+      if (item.hasSportsAddon60) b += 60;
+      if (item.hasHdAddon100) b += 100;
+      convertedBill = b;
+    } else if (item.detectedPlan === 'gold_350') {
+      let b = 350;
+      if (item.hasSdAddon50) b += 50;
+      if (item.hasSportsAddon60) b += 60;
+      if (item.hasHdAddon100) b += 100;
+      convertedBill = b;
+    } else if (item.hasSdAddon50 || item.hasSportsAddon60 || item.hasHdAddon100) {
+      let b = item.hasLocalAddon ? (bstPrice + localAddonPrice) : bstPrice;
+      if (item.hasSdAddon50) b += 50;
+      if (item.hasSportsAddon60) b += 60;
+      if (item.hasHdAddon100) b += 100;
+      convertedBill = b;
+    }
+
+    if (convertedBill !== undefined) {
+      if (item.customBillAmount === undefined || item.customBillAmount <= 0 || convertedBill >= item.customBillAmount) {
+        item.customBillAmount = convertedBill;
+      }
+    }
+
+    // 2. Strict channel deduplication: Double a awm chuan pakhat chauh zel lang se
+    const uniqueChannels: string[] = [];
+    const seenNorm = new Set<string>();
+    for (const ch of item.channels) {
+      const norm = normalizeKey(ch);
+      if (norm && !seenNorm.has(norm)) {
+        seenNorm.add(norm);
+        uniqueChannels.push(ch);
+      }
+    }
+    item.channels = uniqueChannels;
+
     // Check if any selected channel is HD
     const hasAnyHd = item.channels.some((chName) => {
       const cleanLower = chName.toLowerCase().trim();

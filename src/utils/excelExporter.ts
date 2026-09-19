@@ -1,6 +1,6 @@
 import * as XLSX from 'xlsx';
 import { CustomerSummary, ChannelItem, SubscriptionDateSettings } from '../types';
-import { getChannelPriceMap, calculateCustomerPricing } from './excelParser';
+import { getChannelPriceMap, calculateCustomerPricing, normalizeKey } from './excelParser';
 import {
   BST_PRICE,
   LOCAL_PRICE,
@@ -58,7 +58,18 @@ export function exportSummaryExcel(
     const totalStandardSen = Number((pricing.lcoSen * periodRatio).toFixed(2));
     const actualNetProfit = Number((billCollected - totalStandardSen).toFixed(2));
 
-    if (c.selectedChannels.length === 0) {
+    // Deduplicate channels for export so double channels never appear twice
+    const uniqueChannels: string[] = [];
+    const seenNorm = new Set<string>();
+    for (const ch of c.selectedChannels) {
+      const norm = normalizeKey(ch);
+      if (norm && !seenNorm.has(norm)) {
+        seenNorm.add(norm);
+        uniqueChannels.push(ch);
+      }
+    }
+
+    if (uniqueChannels.length === 0) {
       const channelDisplay = isLocalActive ? `BST + Local (${periodLabel})` : `BST (${periodLabel})`;
       const packageAddonDisplay = isLocalActive ? 'BST + Local' : 'BST chauh';
 
@@ -79,7 +90,7 @@ export function exportSummaryExcel(
     } else {
       const packageAddonDisplay = isLocalActive ? 'BST + Local' : 'BST chauh';
       
-      c.selectedChannels.forEach((channelName, chIdx) => {
+      uniqueChannels.forEach((channelName, chIdx) => {
         const cleanName = channelName.toLowerCase().trim();
         const rawChRate = priceMap.get(cleanName) || 0;
         const chRate = Number((rawChRate * periodRatio).toFixed(2));
@@ -309,8 +320,17 @@ export function exportBulkPackageRenewExcel(
       rawRows.push(hdRowObj);
     }
 
-    // 4. Each selected channel row
-    for (const channelName of c.selectedChannels) {
+    // 4. Each selected channel row (deduplicated so double channels never appear twice)
+    const uniqueChannels: string[] = [];
+    const seenNorm = new Set<string>();
+    for (const ch of c.selectedChannels) {
+      const norm = normalizeKey(ch);
+      if (norm && !seenNorm.has(norm)) {
+        seenNorm.add(norm);
+        uniqueChannels.push(ch);
+      }
+    }
+    for (const channelName of uniqueChannels) {
       const chRowObj: Record<string, unknown> = {
         'Name': c.name,
         'SubscriberCode': c.subscriberCode,
