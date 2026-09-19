@@ -19,6 +19,7 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
   subscriptionSettings,
 }) => {
   const [basePackageName, setBasePackageName] = useState<string>('PACK-1 (BST)');
+  const [exportFormat, setExportFormat] = useState<'xls' | 'xlsx'>('xls');
   const [subTypeHeader, setSubTypeHeader] = useState<'SubscriptionType(Day/Month/Year)' | 'SubscriptionType(Day/Month)' | 'SubscriptionType(Days/Month)'>('SubscriptionType(Day/Month/Year)');
   const [sheetName, setSheetName] = useState<string>('BulkPackageRenew');
   const [localPackageName, setLocalPackageName] = useState<string>('LPS LOCALS');
@@ -172,9 +173,10 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
   if (!isOpen) return null;
 
   const handleDownload = () => {
-    const defaultName = fileName
-      ? `BulkPackageRenew_${fileName.replace(/\.[^/.]+$/, '')}.xlsx`
-      : 'BulkPackageRenew_PACK-1(BST).xlsx';
+    const baseRawName = fileName
+      ? fileName.replace(/\.[^/.]+$/, '')
+      : 'PACK-1(BST)';
+    const defaultName = `BulkPackageRenew_${baseRawName}.${exportFormat}`;
 
     exportBulkPackageRenewExcel(customers, defaultName, {
       basePackageName,
@@ -185,6 +187,7 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
       includeLpsHd,
       includeBillCollected,
       subscriptionSettings,
+      fileFormat: exportFormat,
     });
   };
 
@@ -336,6 +339,22 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
                   </select>
                 </div>
 
+                <div className="flex items-center gap-1.5">
+                  <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+                  <label htmlFor="export-format-select" className="text-xs text-slate-700 font-bold">
+                    File:
+                  </label>
+                  <select
+                    id="export-format-select"
+                    value={exportFormat}
+                    onChange={(e) => setExportFormat(e.target.value as 'xls' | 'xlsx')}
+                    className="text-xs bg-emerald-50 border border-emerald-400 rounded px-2 py-1 font-bold text-emerald-900 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 cursor-pointer"
+                  >
+                    <option value="xls">.xls (LPS Portal - Recommended)</option>
+                    <option value="xlsx">.xlsx (Modern Excel)</option>
+                  </select>
+                </div>
+
                 <div className="flex items-center gap-1.5 ml-auto">
                   <label className="flex items-center gap-1.5 cursor-pointer select-none text-xs font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-300 hover:bg-emerald-100 transition-colors">
                     <input
@@ -475,10 +494,10 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
             </div>
           </div>
 
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-start gap-2.5 text-xs text-amber-900">
-            <Info className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 flex items-start gap-2.5 text-xs text-emerald-950">
+            <Info className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
             <div>
-              <span className="font-semibold">Note:</span> Customer pakhat in channels engemaw zat a thlan chuan line hrang theuh ah Type: Channel tiin a chhuak dawn a, PackageChannelName ah PACK-1 (BST) tih a awm bawk ang. LPS portal ah Upload nan a him thlap e.
+              <span className="font-bold">LPS Portal Compatibility:</span> LPS portal in <strong>.xls</strong> chauh a pawm avangin file format hi default-in <strong>.xls (Excel 97-2003)</strong> a ni a, LPS portal-ah buaina awm loin a import theih nghal ang. Column F ah Base package hming chu <strong>{basePackageName}</strong> tiin a chhuak bawk ang.
             </div>
           </div>
         </div>
@@ -503,7 +522,7 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
             className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#28a745] hover:bg-[#218838] text-white rounded-lg text-sm font-bold shadow-sm transition-all cursor-pointer"
           >
             <Download className="w-4 h-4" />
-            <span>Download 12-Column Bulk Renew Excel (.xlsx)</span>
+            <span>Download 12-Column Bulk Renew Excel (.{exportFormat})</span>
           </button>
         </div>
       </div>

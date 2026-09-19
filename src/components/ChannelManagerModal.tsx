@@ -110,7 +110,7 @@ export const ChannelManagerModal: React.FC<ChannelManagerModalProps> = ({
   };
 
   const handleDownloadTemplate = () => {
-    exportChannelRateTemplateExcel(channels, 'LPS_Channel_Rate_Template.xlsx');
+    exportChannelRateTemplateExcel(channels, 'LPS_Channel_Rate_Template.xls');
   };
 
   return (
@@ -210,7 +210,7 @@ export const ChannelManagerModal: React.FC<ChannelManagerModalProps> = ({
                   className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors shadow-2xs"
                 >
                   <Download className="w-3.5 h-3.5 text-gray-500" />
-                  <span>Download Template (.xlsx)</span>
+                  <span>Download Template (.xls)</span>
                 </button>
               </div>
             </div>
@@ -218,7 +218,7 @@ export const ChannelManagerModal: React.FC<ChannelManagerModalProps> = ({
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 pt-1">
               <label className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-red-600 hover:bg-red-700 text-white rounded-md cursor-pointer shadow-xs transition-colors">
                 <Upload className="w-4 h-4" />
-                <span>{isUploading ? 'Uploading...' : 'Upload Channel Price File (.xlsx)'}</span>
+                <span>{isUploading ? 'Uploading...' : 'Upload Channel Price File (.xls / .xlsx)'}</span>
                 <input
                   type="file"
                   accept=".xlsx,.xls,.csv"

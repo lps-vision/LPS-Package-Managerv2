@@ -179,7 +179,7 @@ export default function App() {
             });
             setCustomers(recalculated);
             setRawRows(saved.rawRows || []);
-            setCurrentFileName(saved.currentFileName || 'Saved_LPS_Subscribers.xlsx');
+            setCurrentFileName(saved.currentFileName || 'Saved_LPS_Subscribers.xls');
             setFileSizeText(saved.fileSizeText || 'Saved Session');
             if (saved.selectedCustomerId) {
               setSelectedCustomerId(saved.selectedCustomerId);
@@ -927,8 +927,8 @@ export default function App() {
   // Export handlers
   const handleExportSummary = () => {
     const name = currentFileName
-      ? `Final_Export_${currentFileName.replace(/\.[^/.]+$/, '')}.xlsx`
-      : 'Final_Export_LCO_Share.xlsx';
+      ? `Final_Export_${currentFileName.replace(/\.[^/.]+$/, '')}.xls`
+      : 'Final_Export_LCO_Share.xls';
     exportSummaryExcel(customers, name, availableChannels, BST_PRICE, LOCAL_PRICE, subscriptionSettings, customTotalDeposit);
   };
 
@@ -1060,7 +1060,7 @@ export default function App() {
         isOpen={isBulkRenewModalOpen}
         onClose={() => setIsBulkRenewModalOpen(false)}
         customers={customers}
-        fileName={currentFileName || 'BulkPackageRenew.xlsx'}
+        fileName={currentFileName ? currentFileName.replace(/\.[^/.]+$/, '.xls') : 'BulkPackageRenew.xls'}
         subscriptionSettings={subscriptionSettings}
       />
 

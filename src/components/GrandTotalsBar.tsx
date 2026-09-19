@@ -263,7 +263,7 @@ export const GrandTotalsBar: React.FC<GrandTotalsBarProps> = ({
           className="inline-flex items-center justify-center gap-2.5 px-6 py-3 bg-white border border-slate-400 hover:border-slate-800 hover:bg-slate-50 text-slate-900 font-bold text-sm sm:text-base rounded-xl shadow-xs transition-all cursor-pointer"
         >
           <FileSpreadsheet className="w-5 h-5 text-emerald-600" />
-          <span>Final Export Excel Siam - LCO Share nen</span>
+          <span>Final Export Excel Siam - LCO Share nen (.xls)</span>
           <Download className="w-4 h-4 ml-1 text-slate-500" />
         </button>
 
@@ -275,7 +275,7 @@ export const GrandTotalsBar: React.FC<GrandTotalsBarProps> = ({
           className="inline-flex items-center justify-center gap-2.5 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold text-sm sm:text-base rounded-xl shadow-xs transition-all cursor-pointer"
         >
           <Layers className="w-5 h-5" />
-          <span>LPS Bulk Renew Format Export (12-Columns)</span>
+          <span>LPS Bulk Renew Format Export (.xls)</span>
           <Download className="w-4 h-4 ml-1" />
         </button>
       </div>

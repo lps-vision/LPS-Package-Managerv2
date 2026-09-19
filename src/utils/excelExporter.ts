@@ -9,7 +9,7 @@ import {
 
 export function exportSummaryExcel(
   customers: CustomerSummary[],
-  fileName: string = 'Final_Export_LCO_Share.xlsx',
+  fileName: string = 'Final_Export_LCO_Share.xls',
   customChannels?: ChannelItem[],
   bstPrice: number = BST_PRICE,
   localAddonPrice: number = LOCAL_PRICE,
@@ -192,7 +192,13 @@ export function exportSummaryExcel(
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'LCO_Share_Summary');
 
-  XLSX.writeFile(workbook, fileName);
+  // Ensure fileName has proper extension and write in BIFF8 format for .xls
+  let finalFileName = fileName;
+  if (!finalFileName.toLowerCase().endsWith('.xls') && !finalFileName.toLowerCase().endsWith('.xlsx')) {
+    finalFileName += '.xls';
+  }
+  const isXls = finalFileName.toLowerCase().endsWith('.xls');
+  XLSX.writeFile(workbook, finalFileName, { bookType: isXls ? 'biff8' : 'xlsx' });
 }
 
 export interface BulkRenewExportOptions {
@@ -204,11 +210,12 @@ export interface BulkRenewExportOptions {
   includeLpsHd?: 'none' | 'with-locals' | 'hd-only' | 'all';
   includeBillCollected?: boolean;
   subscriptionSettings?: SubscriptionDateSettings;
+  fileFormat?: 'xls' | 'xlsx';
 }
 
 export function exportBulkPackageRenewExcel(
   customers: CustomerSummary[],
-  fileName: string = 'BulkPackageRenew_PACK-1(BST).xlsx',
+  fileName: string = 'BulkPackageRenew_PACK-1(BST).xls',
   options?: BulkRenewExportOptions
 ): void {
   // Exact format matching LPS Cable Bulk Renew template:
@@ -397,7 +404,23 @@ export function exportBulkPackageRenewExcel(
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
 
-  XLSX.writeFile(workbook, fileName);
+  const format = options?.fileFormat || (fileName.toLowerCase().endsWith('.xlsx') ? 'xlsx' : 'xls');
+  let finalFileName = fileName;
+  if (format === 'xls') {
+    if (finalFileName.toLowerCase().endsWith('.xlsx')) {
+      finalFileName = finalFileName.replace(/\.xlsx$/i, '.xls');
+    } else if (!finalFileName.toLowerCase().endsWith('.xls')) {
+      finalFileName += '.xls';
+    }
+  } else if (format === 'xlsx') {
+    if (finalFileName.toLowerCase().endsWith('.xls')) {
+      finalFileName = finalFileName.replace(/\.xls$/i, '.xlsx');
+    } else if (!finalFileName.toLowerCase().endsWith('.xlsx')) {
+      finalFileName += '.xlsx';
+    }
+  }
+  const isXls = finalFileName.toLowerCase().endsWith('.xls');
+  XLSX.writeFile(workbook, finalFileName, { bookType: isXls ? 'biff8' : 'xlsx' });
 }
 
 /**
@@ -405,7 +428,7 @@ export function exportBulkPackageRenewExcel(
  */
 export function exportChannelRateTemplateExcel(
   channels: ChannelItem[],
-  fileName: string = 'LPS_Channel_Rate_Template.xlsx'
+  fileName: string = 'LPS_Channel_Rate_Template.xls'
 ): void {
   const rows = channels.map((ch) => {
     const lcoShare = Number((ch.price * 0.0847).toFixed(2));
@@ -432,6 +455,12 @@ export function exportChannelRateTemplateExcel(
 
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'ChannelRates');
-  XLSX.writeFile(workbook, fileName);
+
+  let finalFileName = fileName;
+  if (!finalFileName.toLowerCase().endsWith('.xls') && !finalFileName.toLowerCase().endsWith('.xlsx')) {
+    finalFileName += '.xls';
+  }
+  const isXls = finalFileName.toLowerCase().endsWith('.xls');
+  XLSX.writeFile(workbook, finalFileName, { bookType: isXls ? 'biff8' : 'xlsx' });
 }
 

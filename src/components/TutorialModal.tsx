@@ -36,8 +36,8 @@ He application hi LPS Subscriber raw data Excel file atanga Bulk Renew Excel fil
 
 4. EXCEL EXPORT (LPS PORTAL-A HMAN TUR):
    - I duhtawka channel i thlan fel hnuah a hnuai bera button sen "LPS Bulk Renew Format Export (12-Columns)" kha hmet la.
-   - Bulk Renew preview modal a lo lang ang a, "Download 12-Column Excel File (.xlsx)" tih i hmeh khan file chu i khawl-ah a lo download ang.
-   - He file download hi LPS Operator Portal-ah "Bulk Package Renew" tih-ah upload nghal tawp tur a ni e.
+   - Bulk Renew preview modal a lo lang ang a, "Download 12-Column Bulk Renew Excel (.xls)" tih i hmeh khan file chu .xls format (LPS Portal-in a pawm theih ngei tur)-in i khawl-ah a lo download ang.
+   - He file download (.xls) hi LPS Operator Portal-ah "Bulk Package Renew" tih-ah upload/import nghal tawp tur a ni e.
 
 PRICING & SHARE LEH HLAWH CHHUT DAN:
 - BST Pack (₹ 154): LCO Share hi ₹ 78.60 a ni a, MSO Cut hi ₹ 75.40 a ni.
