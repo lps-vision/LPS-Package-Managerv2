@@ -426,6 +426,19 @@ export function isLpsPackageName(name: string): boolean {
   if (!upper) return false;
 
   if (
+    upper === 'PACK-1 (BST)' ||
+    upper === 'PACK 1 (BST)' ||
+    upper === 'PACK-1(BST)' ||
+    upper === 'PACK-1' ||
+    upper === 'PACK 1' ||
+    upper === 'PACK1' ||
+    upper === 'PACK-1 (BST) CHAUH' ||
+    upper === 'PACK-1 (BST) ONLY' ||
+    upper === 'PACK-1 (BST) + LOCAL' ||
+    upper === 'PACK-1 (BST)+LOCAL' ||
+    upper === 'PACK-1 (BST) + LOCALS' ||
+    upper === 'PACK-1 (BST)+LOCALS' ||
+    upper === 'PACK 1 (BST) + LOCAL' ||
     upper === 'BST' ||
     upper === 'BST CHAUH' ||
     upper === 'BST ONLY' ||
@@ -463,11 +476,13 @@ export function sanitizePackageName(name: string): string {
     upper.includes('ADD ON') ||
     upper.includes('ADDON') ||
     upper === 'BST+LOCAL CHAUH' ||
-    upper === 'BST + LOCAL'
+    upper === 'BST + LOCAL' ||
+    upper === 'PACK-1 (BST)+LOCAL' ||
+    upper === 'PACK-1 (BST) + LOCAL'
   ) {
-    return 'BST';
+    return 'PACK-1 (BST)';
   }
-  return name.trim() || 'BST';
+  return name.trim() || 'PACK-1 (BST)';
 }
 
 export function processRawRowsToCustomers(
@@ -572,7 +587,7 @@ export function processRawRowsToCustomers(
         stbNo: rawStb,
         vcNo: (row.vcNo || '').trim(),
         franchiseeName: (row.franchiseeName || '').trim(),
-        basePackage: 'BST',
+        basePackage: 'PACK-1 (BST)',
         hasLocalAddon: true, // Default to true (Local 1-12)
         hasLpsHd: false,
         channels: [],
@@ -607,9 +622,9 @@ export function processRawRowsToCustomers(
 
       if (upperToken === 'GRAND TOTAL' || upperToken === 'TOTAL') return;
 
-      // 1. LPS SILVER: BST + Local sd 300 man
+      // 1. LPS SILVER: PACK-1 (BST) + Local sd 300 man
       if (isLpsSilverPlan(upperToken)) {
-        existing!.basePackage = 'BST';
+        existing!.basePackage = 'PACK-1 (BST)';
         existing!.hasLocalAddon = true;
         existing!.detectedPlan = 'silver_300';
         for (const ch of PRESET_300_CHANNELS) {
@@ -618,9 +633,9 @@ export function processRawRowsToCustomers(
         return;
       }
 
-      // 2. LPS GOLD: BST + Local sd 350 man
+      // 2. LPS GOLD: PACK-1 (BST) + Local sd 350 man
       if (isLpsGoldPlan(upperToken)) {
-        existing!.basePackage = 'BST';
+        existing!.basePackage = 'PACK-1 (BST)';
         existing!.hasLocalAddon = true;
         existing!.hasLpsHd = true;
         existing!.detectedPlan = 'gold_350';
@@ -660,23 +675,36 @@ export function processRawRowsToCustomers(
 
       // 6. Base / Local package variations
       if (
+        upperToken === 'PACK-1 (BST) + LOCAL' ||
+        upperToken === 'PACK-1 (BST)+LOCAL' ||
+        upperToken === 'PACK-1 (BST) + LOCALS' ||
+        upperToken === 'PACK-1 (BST)+LOCALS' ||
+        upperToken === 'PACK 1 (BST) + LOCAL' ||
         upperToken === 'BST + LOCAL' ||
         upperToken === 'BST+LOCAL' ||
         upperToken === 'BST + LOCALS' ||
         upperToken === 'BST+LOCALS' ||
         upperToken === 'BST + LOCAL SD'
       ) {
-        existing!.basePackage = 'BST';
+        existing!.basePackage = 'PACK-1 (BST)';
         existing!.hasLocalAddon = true;
         return;
       }
 
       if (
+        upperToken === 'PACK-1 (BST)' ||
+        upperToken === 'PACK 1 (BST)' ||
+        upperToken === 'PACK-1(BST)' ||
+        upperToken === 'PACK-1' ||
+        upperToken === 'PACK 1' ||
+        upperToken === 'PACK1' ||
+        upperToken === 'PACK-1 (BST) CHAUH' ||
+        upperToken === 'PACK-1 (BST) ONLY' ||
         upperToken === 'BST' ||
         upperToken === 'BST CHAUH' ||
         upperToken === 'BST ONLY'
       ) {
-        existing!.basePackage = 'BST';
+        existing!.basePackage = 'PACK-1 (BST)';
         if (upperToken.includes('CHAUH') || upperToken.includes('ONLY')) {
           existing!.hasLocalAddon = false;
         }
@@ -814,7 +842,7 @@ export function processRawRowsToCustomers(
       stbNo: item.stbNo,
       vcNo: item.vcNo,
       franchiseeName: item.franchiseeName,
-      basePackage: 'BST',
+      basePackage: 'PACK-1 (BST)',
       hasLocalAddon: item.hasLocalAddon,
       hasLpsHd: isLpsHd,
       selectedChannels: item.channels,
@@ -974,7 +1002,7 @@ export async function parseSubscriberExcel(
       packageChannelName = packageAddonInfo;
     }
 
-    const cleanPkgName = packageChannelName.trim() || 'BST';
+    const cleanPkgName = packageChannelName.trim() || 'PACK-1 (BST)';
     const upperCleanPkg = cleanPkgName.toUpperCase();
     const upperName = name.toUpperCase().trim();
 

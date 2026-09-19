@@ -573,14 +573,14 @@ export default function App() {
           (r) => !(r.subscriberCode === uc.subscriberCode && r.stbNo === uc.stbNo)
         );
 
-        // 2. Re-add the Base Package (BST)
+        // 2. Re-add the Base Package (PACK-1 (BST))
         const bstRow: SubscriberRawRow = {
           name: uc.name,
           subscriberCode: uc.subscriberCode,
           stbNo: uc.stbNo,
           vcNo: uc.vcNo || '',
           type: 'Package',
-          packageChannelName: 'BST',
+          packageChannelName: uc.basePackage || 'PACK-1 (BST)',
           subscriptionPeriod: uc.subscriptionPeriod || 'Month',
           subscriptionCount: uc.subscriptionCount ?? 1,
           networkCapacityFee: uc.networkCapacityFee ?? '0.00',
@@ -678,7 +678,7 @@ export default function App() {
       const newAllRows: SubscriberRawRow[] = [];
       
       for (const c of customers) {
-        // 1. BST Row
+        // 1. PACK-1 (BST) Row
         const targetBill = hasExplicitBill ? customBillAmount : c.customBillAmount;
         newAllRows.push({
           name: c.name,
@@ -686,7 +686,7 @@ export default function App() {
           stbNo: c.stbNo,
           vcNo: c.vcNo || '',
           type: 'Package',
-          packageChannelName: 'BST',
+          packageChannelName: c.basePackage || 'PACK-1 (BST)',
           subscriptionPeriod: c.subscriptionPeriod || 'Month',
           subscriptionCount: c.subscriptionCount ?? 1,
           networkCapacityFee: c.networkCapacityFee ?? '0.00',
@@ -794,14 +794,14 @@ export default function App() {
 
       const newRows: SubscriberRawRow[] = [];
       for (const uc of targetCustomerList) {
-        // 1. BST Row
+        // 1. PACK-1 (BST) Row
         newRows.push({
           name: uc.name,
           subscriberCode: uc.subscriberCode,
           stbNo: uc.stbNo,
           vcNo: uc.vcNo || '',
           type: 'Package',
-          packageChannelName: 'BST',
+          packageChannelName: uc.basePackage || 'PACK-1 (BST)',
           subscriptionPeriod: uc.subscriptionPeriod || 'Month',
           subscriptionCount: uc.subscriptionCount ?? 1,
           networkCapacityFee: uc.networkCapacityFee ?? '0.00',

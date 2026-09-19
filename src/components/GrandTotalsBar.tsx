@@ -150,7 +150,7 @@ export const GrandTotalsBar: React.FC<GrandTotalsBarProps> = ({
               </span>
             </div>
             <span className="text-xs text-emerald-800 mt-2 block font-semibold">
-              BST (₹ 78.60) + Local (₹ 36.20) + Alakarte 8.47%
+              PACK-1 (BST) (₹ 78.60) + Local (₹ 36.20) + Alakarte 8.47%
             </span>
           </div>
 
@@ -175,7 +175,7 @@ export const GrandTotalsBar: React.FC<GrandTotalsBarProps> = ({
               </span>
             </div>
             <span className="text-xs text-slate-600 mt-2 block font-medium">
-              BST (₹ 75.40) + Local (₹ 34.80) + Alakarte 91.53%
+              PACK-1 (BST) (₹ 75.40) + Local (₹ 34.80) + Alakarte 91.53%
             </span>
           </div>
 

@@ -618,7 +618,7 @@ const formatDateDisplay = (isoStr: string): string => {
                   </div>
                   <div className="text-[11px] leading-relaxed pt-0.5 space-y-0.5">
                     <div className="flex items-center justify-between">
-                      <span>&bull; <strong>BST:</strong> ₹ {bstScaled}</span>
+                      <span>&bull; <strong>PACK-1 (BST):</strong> ₹ {bstScaled}</span>
                       <span className="font-mono text-emerald-800 font-bold">LCO Hlawh: ₹ {bstLco}</span>
                       <span className="font-mono text-slate-700 font-bold">MSO Cut: ₹ {bstMso}</span>
                     </div>

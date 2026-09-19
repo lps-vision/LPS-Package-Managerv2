@@ -22,7 +22,7 @@ export interface CustomerSummary {
   stbNo: string;
   vcNo: string;
   franchiseeName: string;
-  basePackage: string; // "BST"
+  basePackage: string; // "PACK-1 (BST)" or "BST"
   hasLocalAddon: boolean; // true = Local Add-on (+₹ 71) thlang tel; false = BST chauh (+₹ 0)
   hasLpsHd?: boolean; // true = LPS HD pack/line thlang tel (HD customers / LPS GOLD)
   selectedChannels: string[]; // e.g. ["Animal Planet", "Animal Planet HD"]

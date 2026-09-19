@@ -70,8 +70,8 @@ export function exportSummaryExcel(
     }
 
     if (uniqueChannels.length === 0) {
-      const channelDisplay = isLocalActive ? `BST + Local (${periodLabel})` : `BST (${periodLabel})`;
-      const packageAddonDisplay = isLocalActive ? 'BST + Local' : 'BST chauh';
+      const channelDisplay = isLocalActive ? `PACK-1 (BST) + Local (${periodLabel})` : `PACK-1 (BST) (${periodLabel})`;
+      const packageAddonDisplay = isLocalActive ? 'PACK-1 (BST) + Local' : 'PACK-1 (BST) chauh';
 
       dataRows.push({
         '#': rowNumber++,
@@ -88,7 +88,7 @@ export function exportSummaryExcel(
         'FranchiseeName': c.franchiseeName || '',
       });
     } else {
-      const packageAddonDisplay = isLocalActive ? 'BST + Local' : 'BST chauh';
+      const packageAddonDisplay = isLocalActive ? 'PACK-1 (BST) + Local' : 'PACK-1 (BST) chauh';
       
       uniqueChannels.forEach((channelName, chIdx) => {
         const cleanName = channelName.toLowerCase().trim();
@@ -196,6 +196,7 @@ export function exportSummaryExcel(
 }
 
 export interface BulkRenewExportOptions {
+  basePackageName?: string;
   subscriptionTypeHeader?: 'SubscriptionType(Day/Month/Year)' | 'SubscriptionType(Day/Month)' | 'SubscriptionType(Days/Month)' | string;
   sheetName?: string;
   localPackageName?: string;
@@ -207,7 +208,7 @@ export interface BulkRenewExportOptions {
 
 export function exportBulkPackageRenewExcel(
   customers: CustomerSummary[],
-  fileName: string = 'BulkPackageRenew_BST.xlsx',
+  fileName: string = 'BulkPackageRenew_PACK-1(BST).xlsx',
   options?: BulkRenewExportOptions
 ): void {
   // Exact format matching LPS Cable Bulk Renew template:
@@ -216,7 +217,7 @@ export function exportBulkPackageRenewExcel(
   // 3. STBNo
   // 4. VCNo
   // 5. Type (Package/Channel)
-  // 6. PackageChannelName
+  // 6. PackageChannelName: PACK-1 (BST)
   // 7. SubscriptionType(Day/Month/Year)
   // 8. SubscriptionValue
   // 9. NetworkCapacityFee
@@ -224,6 +225,7 @@ export function exportBulkPackageRenewExcel(
   // 11. ServiceType
   // 12. FranchiseeName
   // (Optional 13. Bill Collected)
+  const basePkgName = options?.basePackageName || 'PACK-1 (BST)';
   const subTypeCol = options?.subscriptionTypeHeader || 'SubscriptionType(Day/Month/Year)';
   const sheetName = options?.sheetName || 'BulkPackageRenew';
   const localPkgName = options?.localPackageName || 'LPS LOCALS';
@@ -247,14 +249,14 @@ export function exportBulkPackageRenewExcel(
 
     const billCollectedVal = c.customBillAmount !== undefined && c.customBillAmount > 0 ? c.customBillAmount : '';
 
-    // 1. Base Package row (Always 'BST')
+    // 1. Base Package row (Default 'PACK-1 (BST)')
     const bstRowObj: Record<string, unknown> = {
       'Name': c.name,
       'SubscriberCode': c.subscriberCode,
       'STBNo': c.stbNo,
       'VCNo': c.vcNo || '',
       'Type (Package/Channel)': 'Package',
-      'PackageChannelName': 'BST',
+      'PackageChannelName': basePkgName,
       [subTypeCol]: subType,
       'SubscriptionValue': String(subVal),
       'NetworkCapacityFee': c.networkCapacityFee ?? '0.00',

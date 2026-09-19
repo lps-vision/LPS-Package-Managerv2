@@ -123,7 +123,7 @@ export const ChannelManagerModal: React.FC<ChannelManagerModalProps> = ({
               LPS Channel Rate & Package Settings
             </h3>
             <p className="text-xs text-gray-400">
-              BST, Local LCO share, leh A-la-carte channel rate enfiahna & upload-na
+              PACK-1 (BST), Local LCO share, leh A-la-carte channel rate enfiahna & upload-na
             </p>
           </div>
           <button
@@ -144,7 +144,7 @@ export const ChannelManagerModal: React.FC<ChannelManagerModalProps> = ({
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-gray-700">
               <div className="bg-white p-2.5 rounded border border-amber-100">
-                <div className="font-semibold text-gray-900">1. BST (Mandatory)</div>
+                <div className="font-semibold text-gray-900">1. PACK-1 (BST) (Mandatory)</div>
                 <div className="text-gray-900 font-medium">₹ {BST_PRICE.toFixed(2)}</div>
                 <div className="text-[10px] text-gray-600 mt-0.5">LCO: ₹ 78.60 (51.04%) &bull; MSO: ₹ 75.40</div>
               </div>
@@ -160,7 +160,7 @@ export const ChannelManagerModal: React.FC<ChannelManagerModalProps> = ({
               </div>
             </div>
             <div className="text-[11px] text-amber-800 pt-1">
-              * Note: LPS Gold leh Silver a awm tawh lo a, Column F-ah automatic-in <strong>BST</strong>-ah a inthlak vek a ni. Base pack pumpui = <strong>₹ {basePrice.toFixed(2)}</strong> (BST 154 + Local 71).
+              * Note: Column F-ah automatic-in <strong>PACK-1 (BST)</strong>-ah a inthlak vek a ni. Base pack pumpui = <strong>₹ {basePrice.toFixed(2)}</strong> (PACK-1 (BST) 154 + Local 71).
             </div>
           </div>
 
@@ -168,10 +168,10 @@ export const ChannelManagerModal: React.FC<ChannelManagerModalProps> = ({
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <span className="text-sm font-semibold text-gray-900 block">
-                Base Package Rate (BST + Local)
+                Base Package Rate (PACK-1 (BST) + Local)
               </span>
               <span className="text-xs text-gray-500">
-                LPS standard base monthly rate: ₹ 154 (BST) + ₹ 71 (Local) = ₹ 225.00
+                LPS standard base monthly rate: ₹ 154 (PACK-1 (BST)) + ₹ 71 (Local) = ₹ 225.00
               </span>
             </div>
             <div className="flex items-center gap-2">

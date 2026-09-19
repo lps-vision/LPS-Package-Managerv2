@@ -174,7 +174,8 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
           : '1 Month';
 
       if (viewMode === 'consolidated') {
-        const packageLabel = isLocalActive ? `BST+Local (${periodLabel})` : `BST chauh (${periodLabel})`;
+        const basePkgName = c.basePackage || 'PACK-1 (BST)';
+        const packageLabel = isLocalActive ? `${basePkgName}+Local (${periodLabel})` : `${basePkgName} chauh (${periodLabel})`;
         const channelDisplay = c.selectedChannels.length > 0
           ? `${packageLabel} • ${c.selectedChannels.join(', ')}`
           : packageLabel;
@@ -200,9 +201,10 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
           isMultiChannelSubRow: false,
         });
       } else {
-        // Multi-line mode: Separate rows for BST, Local, and each A-la-carte channel
+        // Multi-line mode: Separate rows for PACK-1 (BST), Local, and each A-la-carte channel
         
-        // 1. Mandatory BST Row
+        // 1. Mandatory Base Package (PACK-1 (BST)) Row
+        const basePkgName = c.basePackage || 'PACK-1 (BST)';
         const bstLinePrice = Number((BST_PRICE * periodRatio).toFixed(2));
         const bstLineHlawh = Number((BST_LCO_SHARE * periodRatio).toFixed(2));
         const bstLineSen = Number(((BST_PRICE - BST_LCO_SHARE) * periodRatio).toFixed(2));
@@ -214,7 +216,7 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
           name: c.name,
           subscriberCode: c.subscriberCode,
           stbNo: c.stbNo,
-          channelName: `BST (${periodLabel})`,
+          channelName: `${basePkgName} (${periodLabel})`,
           linePrice: bstLinePrice,
           lineHlawh: bstLineHlawh,
           lineSen: bstLineSen,
@@ -912,7 +914,7 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
                     <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" />
                   </div>
                 </th>
-                <th className="py-3 px-3 text-right border-r border-slate-200" title="BST + Local + Ala-carte (8.47%)">
+                <th className="py-3 px-3 text-right border-r border-slate-200" title="PACK-1 (BST) + Local + Ala-carte (8.47%)">
                   <div className="font-extrabold text-slate-900">LCO Hlawh (₹)</div>
                   <div className="text-[11px] font-bold normal-case text-emerald-700">
                     {subscriptionSettings?.subscriptionType === 'Day'
@@ -922,14 +924,14 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
                       : 'Local 36.2 + 8.47%'}
                   </div>
                 </th>
-                <th className="py-3 px-3 text-right border-r border-slate-200" title="BST + Local + Ala-carte (91.53%)">
+                <th className="py-3 px-3 text-right border-r border-slate-200" title="PACK-1 (BST) + Local + Ala-carte (91.53%)">
                   <div className="font-extrabold text-slate-900">LCO Sen / Cut (₹)</div>
                   <div className="text-[11px] font-bold normal-case text-slate-600">
                     {subscriptionSettings?.subscriptionType === 'Day'
                       ? `MSO cut (Ni ${subscriptionSettings.subscriptionValue})`
                       : (subscriptionSettings?.subscriptionValue ?? 1) > 1
                       ? `MSO cut (Thla ${subscriptionSettings?.subscriptionValue})`
-                      : 'BST 75.4 + 91.53%'}
+                      : 'PACK-1 (BST) 75.4 + 91.53%'}
                   </div>
                 </th>
                 <th className="py-3 px-3 border-r border-slate-200">FranchiseeName</th>
@@ -1026,7 +1028,7 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
                                 ? 'bg-blue-100 text-blue-900 border-blue-300' 
                                 : 'bg-emerald-100 text-emerald-900 border-emerald-300'
                             }`}>
-                              {r.channelIndex === -2 ? 'BST' : r.channelIndex === -1 ? 'Local' : `${r.channelIndex + 1}/${r.channelTotalCount}`}
+                              {r.channelIndex === -2 ? 'PACK-1 (BST)' : r.channelIndex === -1 ? 'Local' : `${r.channelIndex + 1}/${r.channelTotalCount}`}
                             </span>
                           )}
                           {r.isModified && !r.isMultiChannelSubRow && (

@@ -471,7 +471,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
       const sportsAddon = is100Active ? 100 : is60Active ? 60 : 0;
       const newBill = 300 + (is50Active ? 50 : 0) + sportsAddon;
       updateDraft(newTags, true, newBill);
-      setSaveSuccessMessage('₹ 300 SD Pack thlan a ni e. SAVE (BST + Local & Channels) button hmet la a in-save ang.');
+      setSaveSuccessMessage('₹ 300 SD Pack thlan a ni e. SAVE (PACK-1 (BST) + Local & Channels) button hmet la a in-save ang.');
       setTimeout(() => setSaveSuccessMessage(null), 3500);
     }
   };
@@ -497,7 +497,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
       const sportsAddon = is100Active ? 100 : is60Active ? 60 : 0;
       const newBill = 350 + (is50Active ? 50 : 0) + sportsAddon;
       updateDraft(newTags, true, newBill);
-      setSaveSuccessMessage('₹ 350 HD Pack thlan a ni e. SAVE (BST + Local & Channels) button hmet la a in-save ang.');
+      setSaveSuccessMessage('₹ 350 HD Pack thlan a ni e. SAVE (PACK-1 (BST) + Local & Channels) button hmet la a in-save ang.');
       setTimeout(() => setSaveSuccessMessage(null), 3500);
     }
   };
@@ -582,7 +582,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
     }
     const newBill = 450 + (is50Active ? 50 : 0);
     updateDraft(newTags, true, newBill);
-    setSaveSuccessMessage('₹ 450 Plan (350 HD + 100 Sports HD) thlan fel a ni e! SAVE (BST + Local & Channels) button hmet la a in-save ang.');
+    setSaveSuccessMessage('₹ 450 Plan (350 HD + 100 Sports HD) thlan fel a ni e! SAVE (PACK-1 (BST) + Local & Channels) button hmet la a in-save ang.');
     setTimeout(() => setSaveSuccessMessage(null), 3500);
   };
 
@@ -604,7 +604,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
     }
     const newBill = 360 + (is50Active ? 50 : 0);
     updateDraft(newTags, true, newBill);
-    setSaveSuccessMessage('₹ 360 Plan (300 SD + 60 Sports SD) thlan fel a ni e! SAVE (BST + Local & Channels) button hmet la a in-save ang.');
+    setSaveSuccessMessage('₹ 360 Plan (300 SD + 60 Sports SD) thlan fel a ni e! SAVE (PACK-1 (BST) + Local & Channels) button hmet la a in-save ang.');
     setTimeout(() => setSaveSuccessMessage(null), 3500);
   };
 
@@ -667,7 +667,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
     const parsedBill = parseFloat(customBillInput);
     const billToSave = !isNaN(parsedBill) && parsedBill > 0 ? Number(parsedBill.toFixed(2)) : undefined;
     onSaveCustomerChannels(currentCustomer.id, selectedChannelTags, hasLocalAddon, billToSave);
-    const addonText = hasLocalAddon ? 'BST + Local Add-on' : 'BST chauh';
+    const addonText = hasLocalAddon ? 'PACK-1 (BST) + Local Add-on' : 'PACK-1 (BST) chauh';
     const billText = billToSave ? ` • Bill: ₹ ${billToSave.toFixed(2)}` : '';
     setSaveSuccessMessage(`"${currentCustomer.name}" tan ${addonText} & channels (${selectedChannelTags.length})${billText} hlawhtling takin save a ni e!`);
     setTimeout(() => {
@@ -845,7 +845,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
               <div className="leading-relaxed flex-1">
                 <span className="font-bold text-blue-900">Actived channel: </span>
                 <span className="font-extrabold text-blue-950">
-                  {currentCustomer.hasLocalAddon ? 'BST + Local Add-on' : 'BST chauh (Local tello)'}
+                  {currentCustomer.hasLocalAddon ? 'PACK-1 (BST) + Local Add-on' : 'PACK-1 (BST) chauh (Local tello)'}
                 </span>
                 {currentCustomer.selectedChannels.length > 0 ? (
                   <span className="text-blue-950">
@@ -890,8 +890,8 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
           {/* 4. Price Preview & Customer Bill for this Customer */}
           <div>
             <div className="text-xs sm:text-[13px] text-slate-800 flex flex-wrap items-center gap-x-5 gap-y-3 bg-slate-50/90 p-3.5 rounded-xl border border-slate-200/90 shadow-2xs">
-              <span title="BST ₹ 154 (LCO Share: ₹ 78.60 / 51.04%)" className="flex items-center gap-1.5">
-                <span className="text-slate-600 font-semibold">BST (Mandatory):</span>
+              <span title="PACK-1 (BST) ₹ 154 (LCO Share: ₹ 78.60 / 51.04%)" className="flex items-center gap-1.5">
+                <span className="text-slate-600 font-semibold">PACK-1 (BST):</span>
                 <strong className="text-slate-950 font-bold font-mono text-sm">₹ {bstPrice.toFixed(2)}</strong>
               </span>
 
@@ -912,7 +912,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                 )}
               </span>
 
-              <span title="LCO Share: BST ₹ 78.60 + Local ₹ 36.20 + 8.47% Ala-carte" className="flex items-center gap-1.5 border-l pl-3 border-slate-300">
+              <span title="LCO Share: PACK-1 (BST) ₹ 78.60 + Local ₹ 36.20 + 8.47% Ala-carte" className="flex items-center gap-1.5 border-l pl-3 border-slate-300">
                 <span className="text-slate-600 font-semibold">LCO Hlawh:</span>
                 <strong className="text-emerald-700 font-black text-sm sm:text-base font-mono">₹ {priceEstimate.lcoHlawh.toFixed(2)}</strong>
                 <span className="text-xs text-slate-500 font-medium">
@@ -929,7 +929,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                 </span>
               )}
 
-              <span title={marginAnalysis.hasCustom ? 'MSO 80% In Cut (Customer Bill atangin)' : 'MSO Cut: BST ₹ 75.40 + Local ₹ 34.80 + 91.53% Ala-carte'} className="flex items-center gap-1.5">
+              <span title={marginAnalysis.hasCustom ? 'MSO 80% In Cut (Customer Bill atangin)' : 'MSO Cut: PACK-1 (BST) ₹ 75.40 + Local ₹ 34.80 + 91.53% Ala-carte'} className="flex items-center gap-1.5">
                 <span className="text-slate-600 font-semibold">LCO Sen (In Cut):</span>
                 <strong className="text-slate-900 font-black text-sm sm:text-base font-mono">₹ {marginAnalysis.msoCut.toFixed(2)}</strong>
                 <span className="text-xs text-slate-500 font-medium">
@@ -1080,7 +1080,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
               <div className="mt-2.5 p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 flex items-center justify-between gap-2 text-xs sm:text-[13px]">
                 <div className="flex items-center gap-2 flex-wrap font-medium">
                   <span className="font-bold text-slate-900">Standard Package Rate:</span>
-                  <span>BST ₹ 154 (LCO: ₹ 78.60 / MSO: ₹ 75.40)</span>
+                  <span>PACK-1 (BST) ₹ 154 (LCO: ₹ 78.60 / MSO: ₹ 75.40)</span>
                   {hasLocalAddon && (
                     <>
                       <span className="text-slate-300">&bull;</span>
@@ -1216,7 +1216,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                       <button
                         type="button"
                         onClick={handleTogglePreset300}
-                        title="₹ 300 SD Pack: BST + Local + Star Sports Select 1 & 2 + Cartoon Network"
+                        title="₹ 300 SD Pack: PACK-1 (BST) + Local + Star Sports Select 1 & 2 + Cartoon Network"
                         className={`px-3 py-1.5 rounded-lg border text-xs sm:text-[13px] font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none shadow-2xs ${
                           is300Active
                             ? 'bg-emerald-50 border-emerald-500 text-emerald-900 ring-2 ring-emerald-300'
@@ -1241,7 +1241,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                       <button
                         type="button"
                         onClick={handleTogglePreset350}
-                        title="₹ 350 HD Pack: BST + Local + SS Select HD 1 & 2 + Star Sports HD-1 + Cartoon Network"
+                        title="₹ 350 HD Pack: PACK-1 (BST) + Local + SS Select HD 1 & 2 + Star Sports HD-1 + Cartoon Network"
                         className={`px-3 py-1.5 rounded-lg border text-xs sm:text-[13px] font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none shadow-2xs ${
                           is350Active
                             ? 'bg-emerald-50 border-emerald-500 text-emerald-900 ring-2 ring-emerald-300'
@@ -2343,7 +2343,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
             >
               <Save className="w-5 h-5" />
               <span>
-                SAVE (BST {hasLocalAddon ? '+ Local' : 'chauh'} & Channels
+                SAVE (PACK-1 (BST) {hasLocalAddon ? '+ Local' : 'chauh'} & Channels
                 {marginAnalysis.hasCustom ? ` • Bill: ₹ ${marginAnalysis.effectiveBill.toFixed(0)}` : ''})
               </span>
               {hasUnsavedChanges && (
@@ -2368,7 +2368,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
 
       {!currentCustomer && (
         <div className="p-4 bg-gray-50 border border-dashed border-gray-300 rounded-lg text-center text-xs text-gray-500">
-          A chunga dropdown atang khian customer thlang rawh. Chuan an BST, Local Add-on leh channel duh belh thlanna a lo lang ang.
+          A chunga dropdown atang khian customer thlang rawh. Chuan an PACK-1 (BST), Local Add-on leh channel duh belh thlanna a lo lang ang.
         </div>
       )}
     </div>

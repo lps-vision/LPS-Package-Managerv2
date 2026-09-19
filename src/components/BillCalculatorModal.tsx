@@ -214,7 +214,7 @@ export const BillCalculatorModal: React.FC<BillCalculatorModalProps> = ({
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-bold text-blue-900 flex items-center gap-1">
                     <Tv className="w-3.5 h-3.5 text-blue-700" />
-                    <span>1. BST (₹ {BST_PRICE.toFixed(0)}/-)</span>
+                    <span>1. PACK-1 (BST) (₹ {BST_PRICE.toFixed(0)}/-)</span>
                   </span>
                   <span className="text-[10px] font-bold bg-blue-200 text-blue-900 px-1.5 py-0.5 rounded">
                     Mandatory
@@ -299,10 +299,10 @@ export const BillCalculatorModal: React.FC<BillCalculatorModalProps> = ({
             </div>
             <div className="flex items-center gap-2 flex-wrap text-[11px]">
               <span className="px-2.5 py-1 rounded bg-white border border-gray-300 shadow-2xs">
-                <strong>BST Only (₹ 154)</strong>: LCO ₹ 78.60 &bull; MSO ₹ 75.40
+                <strong>PACK-1 (BST) Only (₹ 154)</strong>: LCO ₹ 78.60 &bull; MSO ₹ 75.40
               </span>
               <span className="px-2.5 py-1 rounded bg-emerald-50 border border-emerald-300 text-emerald-950 shadow-2xs">
-                <strong>BST + Local (₹ 225)</strong>: LCO ₹ 114.80 &bull; MSO ₹ 110.20
+                <strong>PACK-1 (BST) + Local (₹ 225)</strong>: LCO ₹ 114.80 &bull; MSO ₹ 110.20
               </span>
             </div>
           </div>
@@ -347,7 +347,7 @@ export const BillCalculatorModal: React.FC<BillCalculatorModalProps> = ({
               {/* Box 1: BST */}
               <div className="bg-slate-50/70 border border-slate-200 rounded-xl p-3 shadow-2xs">
                 <label className="block text-xs font-bold text-gray-800 mb-1">
-                  1. Total Subscribers zat (BST)
+                  1. Total Subscribers zat (PACK-1 (BST))
                 </label>
                 <input
                   type="number"
@@ -442,7 +442,7 @@ export const BillCalculatorModal: React.FC<BillCalculatorModalProps> = ({
                     ₹ {calculation.grandTotalPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                   <span className="text-[10px] text-gray-400 mt-0.5 block">
-                    BST + Local + Ala-carte
+                    PACK-1 (BST) + Local + Ala-carte
                   </span>
                 </div>
 
@@ -458,7 +458,7 @@ export const BillCalculatorModal: React.FC<BillCalculatorModalProps> = ({
                     ₹ {calculation.grandLcoShare.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                   <span className="text-[10px] text-emerald-200/80 mt-0.5 block">
-                    51.04% BST + 50.99% Local + 8.47% Ala-carte
+                    51.04% PACK-1 (BST) + 50.99% Local + 8.47% Ala-carte
                   </span>
                 </div>
 
@@ -474,7 +474,7 @@ export const BillCalculatorModal: React.FC<BillCalculatorModalProps> = ({
                     ₹ {calculation.grandMsoCut.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                   <span className="text-[10px] text-rose-200/80 mt-0.5 block">
-                    48.96% BST + 49.01% Local + 91.53% Ala-carte
+                    48.96% PACK-1 (BST) + 49.01% Local + 91.53% Ala-carte
                   </span>
                 </div>
               </div>
@@ -482,7 +482,7 @@ export const BillCalculatorModal: React.FC<BillCalculatorModalProps> = ({
               {/* Detailed Split Breakdown Row */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 text-xs">
                 <div className="text-gray-300">
-                  <div className="font-semibold text-gray-400">BST ({calculation.subs} subs):</div>
+                  <div className="font-semibold text-gray-400">PACK-1 (BST) ({calculation.subs} subs):</div>
                   <div className="font-mono text-[11px]">
                     LCO: <span className="text-emerald-400 font-bold">₹ {calculation.bstLcoShareTotal.toFixed(2)}</span> &bull; MSO: <span className="text-rose-400">₹ {calculation.bstMsoCutTotal.toFixed(2)}</span>
                   </div>

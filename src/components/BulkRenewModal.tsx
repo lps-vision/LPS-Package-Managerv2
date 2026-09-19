@@ -18,6 +18,7 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
   fileName,
   subscriptionSettings,
 }) => {
+  const [basePackageName, setBasePackageName] = useState<string>('PACK-1 (BST)');
   const [subTypeHeader, setSubTypeHeader] = useState<'SubscriptionType(Day/Month/Year)' | 'SubscriptionType(Day/Month)' | 'SubscriptionType(Days/Month)'>('SubscriptionType(Day/Month/Year)');
   const [sheetName, setSheetName] = useState<string>('BulkPackageRenew');
   const [localPackageName, setLocalPackageName] = useState<string>('LPS LOCALS');
@@ -88,14 +89,14 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
               (ch) => ch.toUpperCase().includes(' HD') || ch.toUpperCase().endsWith('-HD')
             )));
 
-      // 1. Base Package row (BST)
+      // 1. Base Package row (PACK-1 (BST))
       rows.push({
         name: c.name,
         subscriberCode: c.subscriberCode,
         stbNo: c.stbNo,
         vcNo: c.vcNo || '',
         type: 'Package',
-        packageChannelName: 'BST',
+        packageChannelName: basePackageName,
         subType: subscriptionSettings?.subscriptionType || c.subscriptionPeriod || 'Month',
         subValue: subscriptionSettings?.subscriptionValue ?? c.subscriptionCount ?? 1,
         ncf: c.networkCapacityFee ?? '0.00',
@@ -166,16 +167,17 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
     }
 
     return rows.slice(0, 15);
-  }, [customers, localPackageName, hdPackageName, includeLpsHd]);
+  }, [customers, basePackageName, localPackageName, hdPackageName, includeLpsHd]);
 
   if (!isOpen) return null;
 
   const handleDownload = () => {
     const defaultName = fileName
       ? `BulkPackageRenew_${fileName.replace(/\.[^/.]+$/, '')}.xlsx`
-      : 'BulkPackageRenew_BST.xlsx';
+      : 'BulkPackageRenew_PACK-1(BST).xlsx';
 
     exportBulkPackageRenewExcel(customers, defaultName, {
+      basePackageName,
       subscriptionTypeHeader: subTypeHeader,
       sheetName,
       localPackageName,
@@ -226,7 +228,7 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
               <span className="text-lg font-bold text-gray-900">{stats.totalCustomers}</span>
             </div>
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-2.5">
-              <span className="text-[11px] text-blue-700 font-medium block">BST Rows</span>
+              <span className="text-[11px] text-blue-700 font-medium block">PACK-1 (BST) Rows</span>
               <span className="text-lg font-bold text-blue-900">{stats.totalCustomers}</span>
             </div>
             <div className="bg-teal-50 border border-teal-200 rounded-lg p-2.5">
@@ -257,6 +259,20 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
                 </span>
               </div>
               <div className="flex items-center gap-3 flex-wrap">
+                <div className="flex items-center gap-1.5">
+                  <label htmlFor="base-pkg-select" className="text-xs text-slate-600 font-medium">
+                    Base:
+                  </label>
+                  <select
+                    id="base-pkg-select"
+                    value={basePackageName}
+                    onChange={(e) => setBasePackageName(e.target.value)}
+                    className="text-xs bg-white border border-slate-300 rounded px-2 py-1 font-medium text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
+                  >
+                    <option value="PACK-1 (BST)">PACK-1 (BST)</option>
+                    <option value="BST">BST</option>
+                  </select>
+                </div>
                 <div className="flex items-center gap-1.5">
                   <label htmlFor="local-pkg-select" className="text-xs text-slate-600 font-medium">
                     Local:
@@ -462,7 +478,7 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-start gap-2.5 text-xs text-amber-900">
             <Info className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
             <div>
-              <span className="font-semibold">Note:</span> Customer pakhat in channels engemaw zat a thlan chuan line hrang theuh ah Type: Channel tiin a chhuak dawn a, PackageChannelName ah BST tih a awm bawk ang. LPS portal ah Upload nan a him thlap e.
+              <span className="font-semibold">Note:</span> Customer pakhat in channels engemaw zat a thlan chuan line hrang theuh ah Type: Channel tiin a chhuak dawn a, PackageChannelName ah PACK-1 (BST) tih a awm bawk ang. LPS portal ah Upload nan a him thlap e.
             </div>
           </div>
         </div>
