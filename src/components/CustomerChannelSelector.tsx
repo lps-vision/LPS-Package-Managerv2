@@ -460,7 +460,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
   const handleTogglePreset300 = () => {
     if (is300Active) {
       const newTags = selectedChannelTags.filter(
-        (ch) => ch !== 'Star Sports Select 1' && ch !== 'Star Sports Select 2' && ch !== 'Cartoon Network'
+        (ch) => ch !== 'Star Sports 1' && ch !== 'Star Sports Select 1' && ch !== 'Star Sports Select 2' && ch !== 'Cartoon Network'
       );
       const sportsAddon = (is100Active ? 100 : 0) + (is60Active ? 60 : 0);
       const newBill = (hasLocalAddon ? 225 : 154) + (is50Active ? 50 : 0) + sportsAddon;
@@ -492,9 +492,9 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
       const newBill = (hasLocalAddon ? 225 : 154) + (is50Active ? 50 : 0) + sportsAddon;
       updateDraft(newTags, hasLocalAddon, newBill);
     } else {
-      // Remove all 300 SD channels (Star Sports Select 1, Star Sports Select 2)
+      // Remove all 300 SD channels (Star Sports 1, Star Sports Select 1, Star Sports Select 2)
       let newTags = selectedChannelTags.filter(
-        (ch) => ch !== 'Star Sports Select 1' && ch !== 'Star Sports Select 2'
+        (ch) => ch !== 'Star Sports 1' && ch !== 'Star Sports Select 1' && ch !== 'Star Sports Select 2'
       );
       for (const ch of PRESET_350_CHANNELS) {
         if (!newTags.includes(ch)) newTags.push(ch);
@@ -577,6 +577,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
   const handleSetPlan450 = () => {
     let newTags = selectedChannelTags.filter(
       (ch) =>
+        ch !== 'Star Sports 1' &&
         ch !== 'Star Sports Select 1' &&
         ch !== 'Star Sports Select 2' &&
         !PRESET_60_CHANNELS.includes(ch)
@@ -1256,7 +1257,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                       <button
                         type="button"
                         onClick={handleTogglePreset300}
-                        title="₹ 300 SD Pack: PACK-1 (BST) + Local + Star Sports Select 1 & 2 + Cartoon Network"
+                        title="₹ 300 SD Pack: PACK-1 (BST) + Local + Star Sports 1 + Star Sports Select 1 & 2 + Cartoon Network"
                         className={`px-3 py-1.5 rounded-lg border text-xs sm:text-[13px] font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none shadow-2xs ${
                           is300Active
                             ? 'bg-emerald-50 border-emerald-500 text-emerald-900 ring-2 ring-emerald-300'

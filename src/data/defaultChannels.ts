@@ -95,8 +95,9 @@ export const SILVER_PRESET: AddonPresetChannel[] = [
 ];
 
 // Quick Preset Plan Channels (Rs. 300, Rs. 350, Rs. 50, Rs. 60, Rs. 100)
-// Rs. 300 SD: BST + LPS LOCALS + Star Sports Select 1 / Star Sports Select 2 / Cartoon Network
+// Rs. 300 SD: BST + LPS LOCALS + Star Sports 1 / Star Sports Select 1 / Star Sports Select 2 / Cartoon Network
 export const PRESET_300_CHANNELS: string[] = [
+  'Star Sports 1',
   'Star Sports Select 1',
   'Star Sports Select 2',
   'Cartoon Network',

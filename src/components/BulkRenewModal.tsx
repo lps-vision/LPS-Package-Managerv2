@@ -567,7 +567,6 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
               </div>
               <ul className="list-disc pl-4 space-y-0.5 text-emerald-800 font-medium">
                 <li><strong>Format dik (.xls):</strong> LPS Operator Portal-in <strong>.xls (Excel 97-2003 BIFF8)</strong> chauh a pawm a, he download button hian <strong>.xls</strong> binary dik tak a pe dawn che a ni.</li>
-                <li><strong>Column 9 ({ncfColHeader}):</strong> Column header hi portal phut ang thlapin <strong>{ncfColHeader}</strong> tih a ni e.</li>
                 <li><strong>Column 12 chiah a awm tur a ni:</strong> 'Include Bill Collected' checkbox hi LPS upload dawn chuan tick miah suh (column 13 a awm chuan portal-in format not valid a ti ang).</li>
                 <li><strong>Base Package:</strong> Column F ah hian <strong>{basePackageName}</strong> tiin a chhuak e.</li>
               </ul>

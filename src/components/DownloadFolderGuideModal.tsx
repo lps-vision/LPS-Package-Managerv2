@@ -62,13 +62,13 @@ export const DownloadFolderGuideModal: React.FC<DownloadFolderGuideModalProps> =
             <Info className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
             <div className="space-y-1.5">
               <div className="font-bold text-amber-900 text-sm">
-                I computer-ah a awm a, computer dangah a awm loh chhan:
+                I browser download folder a awm loh chhan:
               </div>
               <p className="text-amber-900 leading-relaxed font-medium">
                 <strong>Google Chrome</strong> leh <strong>Microsoft Edge</strong> desktop version thar chauhvin website chhung atanga direct-a Windows / Mac Folder thlanna (File System Access API) hi an support a. Computer dangah <em>Firefox, Safari, emaw browser hlui</em> an hman chuan, browser-in a phal loh avangin an computer-a <strong>Downloads</strong> folder-ah a in-save tlang nghal mai thin a ni.
               </p>
               <p className="text-amber-900 leading-relaxed font-medium">
-                Mahse, <strong>computer engpawh</strong> ah Minute 1 pawh tling lovah an browser-ah <strong>"Ask where to save each file"</strong> tih hi an ON chuan, file download rual apiangin khawi folder-ah nge dah tur (Desktop, D Drive, LPS folder, etc.) tih a zawt ziah tawh dawn a ni!
+                Mahse, <strong>browser engah</strong> pawh <strong>"Ask where to save each file"</strong> tih hi an ON chuan, file download rual apiangin khawi folder-ah nge dah tur (Desktop, D Drive, LPS folder, etc.) tih a zawt ziah tawh dawn a ni!
               </p>
             </div>
           </div>
@@ -76,7 +76,7 @@ export const DownloadFolderGuideModal: React.FC<DownloadFolderGuideModalProps> =
           {/* Browser Selection Tabs */}
           <div>
             <label className="block text-xs font-bold text-slate-600 mb-2 uppercase tracking-wider">
-              Khawi browser nge an hman thlang rawh:
+              I browser hman thlang rawh:
             </label>
             <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
               <button
@@ -136,7 +136,7 @@ export const DownloadFolderGuideModal: React.FC<DownloadFolderGuideModalProps> =
                   <div className="leading-relaxed">
                     Google Chrome chung dinglam kil-a <strong>chhunhan thum (⋮)</strong> kha click la, <strong>Settings</strong> ah lut rawh.
                     <div className="text-slate-500 text-xs mt-0.5">
-                      (A rang zawngin: Chrome address bar-ah <code className="bg-slate-200 px-1.5 py-0.5 rounded text-blue-700 font-mono">chrome://settings/downloads</code> chhu la Enter hmet rawh).
+                      (Hetiang hian: Chrome address bar-ah <code className="bg-slate-200 px-1.5 py-0.5 rounded text-blue-700 font-mono">chrome://settings/downloads</code> chhu la Enter hmet rawh).
                     </div>
                   </div>
                 </li>
@@ -286,7 +286,7 @@ export const DownloadFolderGuideModal: React.FC<DownloadFolderGuideModalProps> =
             onClick={onClose}
             className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs sm:text-sm font-bold shadow-xs transition-colors cursor-pointer"
           >
-            Ka Hrethiam E (Close)
+            Close
           </button>
         </div>
       </div>
