@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { X, Download, FileSpreadsheet, CheckCircle2, Sliders, Table, Info } from 'lucide-react';
+import { X, Download, FileSpreadsheet, CheckCircle2, Sliders, Table, Info, FolderDown } from 'lucide-react';
 import { CustomerSummary, SubscriptionDateSettings } from '../types';
 import { exportBulkPackageRenewExcel } from '../utils/excelExporter';
 
@@ -174,13 +174,13 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     const baseRawName = fileName
       ? fileName.replace(/\.[^/.]+$/, '')
       : 'PACK-1(BST)';
     const defaultName = `BulkPackageRenew_${baseRawName}.xls`;
 
-    exportBulkPackageRenewExcel(customers, defaultName, {
+    const result = await exportBulkPackageRenewExcel(customers, defaultName, {
       basePackageName,
       typeHeader: typeColHeader,
       packageChannelNameHeader: pkgColHeader,
@@ -193,6 +193,10 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
       includeBillCollected,
       subscriptionSettings,
     });
+
+    if (result.method !== 'cancelled') {
+      onClose();
+    }
   };
 
   return (
@@ -577,20 +581,16 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
             Cancel
           </button>
           
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              id="confirm-download-bulk-renew-btn"
-              onClick={() => {
-                handleDownload();
-                onClose();
-              }}
-              className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#28a745] hover:bg-[#218838] text-white rounded-lg text-sm font-bold shadow-sm transition-all cursor-pointer"
-            >
-              <Download className="w-4 h-4" />
-              <span>Download 12-Column Bulk Renew (.xls - LPS Portal)</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            id="confirm-download-bulk-renew-btn"
+            onClick={handleDownload}
+            className="inline-flex items-center gap-2 px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-bold shadow-sm transition-all cursor-pointer"
+            title="Folder thlangin Bulk Renew Excel file save rawh"
+          >
+            <FolderDown className="w-4 h-4" />
+            <span>Download 12-Column Bulk Renew (.xls - LPS Portal)</span>
+          </button>
         </div>
       </div>
     </div>

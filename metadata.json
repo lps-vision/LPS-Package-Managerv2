@@ -1,6 +1,6 @@
 {
   "name": "LPS Package Manager",
-  "description": "LPS Cable TV customer package and channel manager with Excel upload, customer channel selection, LCO commission calculation, and Excel export.",
+  "description": "LPS Cable TV customer package and channel manager with Excel upload, customer channel selection, LCO commission calculation, folder selection Save As, and Excel export.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

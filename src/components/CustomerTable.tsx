@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Edit3, Trash2, ArrowUpDown, Filter, X, List, Rows } from 'lucide-react';
+import { Search, Edit3, Trash2, ArrowUpDown, Filter, X, List, Rows, RotateCcw, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { CustomerSummary, ChannelItem, SubscriptionDateSettings } from '../types';
 import { SubscriptionCalendarPicker } from './SubscriptionCalendarPicker';
 import { getChannelPriceMap, normalizeKey } from '../utils/excelParser';
@@ -22,6 +22,8 @@ interface CustomerTableProps {
   onSelectCustomer: (customerId: string) => void;
   onDeleteLine?: (customerId: string, channelIndex?: number, channelName?: string) => void;
   onDeleteCustomer?: (customerId: string) => void;
+  onBatchDeleteCustomers?: (customerIds: string[]) => void;
+  onRestoreCustomers?: (restoredCustomers: CustomerSummary[]) => void;
   selectedCustomerId: string | null;
   basePrice?: number;
   availableChannels?: ChannelItem[];
@@ -66,11 +68,19 @@ interface LineToDeleteInfo {
   isChannelLine: boolean;
 }
 
+interface DeletedBatch {
+  id: string;
+  customers: CustomerSummary[];
+  time: string;
+}
+
 export const CustomerTable: React.FC<CustomerTableProps> = ({
   customers,
   onSelectCustomer,
   onDeleteLine,
   onDeleteCustomer,
+  onBatchDeleteCustomers,
+  onRestoreCustomers,
   selectedCustomerId,
   basePrice = DEFAULT_BASE_PRICE,
   availableChannels = [],
@@ -91,6 +101,18 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
   const [selectedCustomerIds, setSelectedCustomerIds] = useState<Set<string>>(new Set());
   const [batchSuccessMessage, setBatchSuccessMessage] = useState<string | null>(null);
   const [appliedActions, setAppliedActions] = useState<Set<string>>(new Set());
+  const [isBatchDeleteModalOpen, setIsBatchDeleteModalOpen] = useState<boolean>(false);
+  const [deletedHistory, setDeletedHistory] = useState<DeletedBatch[]>([]);
+  const [restoreSuccessMessage, setRestoreSuccessMessage] = useState<string | null>(null);
+
+  const totalDeletedCount = useMemo(() => {
+    return deletedHistory.reduce((sum, b) => sum + b.customers.length, 0);
+  }, [deletedHistory]);
+
+  const selectedCustomersPreview = useMemo(() => {
+    if (selectedCustomerIds.size === 0) return [];
+    return customers.filter((c) => selectedCustomerIds.has(c.id)).slice(0, 8);
+  }, [customers, selectedCustomerIds]);
 
   const priceMap = useMemo(() => {
     return getChannelPriceMap(availableChannels);
@@ -433,6 +455,61 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
     }, 4500);
   };
 
+  // Batch Delete handler (Essy Selection Package)
+  const handleConfirmBatchDelete = () => {
+    if (selectedCustomerIds.size === 0) {
+      setIsBatchDeleteModalOpen(false);
+      return;
+    }
+    const toDelete = customers.filter((c) => selectedCustomerIds.has(c.id));
+    if (toDelete.length === 0) {
+      setIsBatchDeleteModalOpen(false);
+      return;
+    }
+
+    const batch: DeletedBatch = {
+      id: `${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      customers: toDelete,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+
+    setDeletedHistory((prev) => [batch, ...prev]);
+
+    if (onBatchDeleteCustomers) {
+      onBatchDeleteCustomers(Array.from(selectedCustomerIds));
+    } else if (onDeleteCustomer) {
+      for (const id of selectedCustomerIds) {
+        onDeleteCustomer(id);
+      }
+    }
+
+    setSelectedCustomerIds(new Set());
+    setIsBatchDeleteModalOpen(false);
+    setRestoreSuccessMessage(null);
+    setBatchSuccessMessage(
+      `Subscribers ${toDelete.length} hlawhtling taka paih (delete) an ni ta e.`
+    );
+  };
+
+  // Restore deleted customers handler
+  const handleRestoreDeleted = () => {
+    if (deletedHistory.length === 0) return;
+    const [lastBatch, ...remaining] = deletedHistory;
+
+    if (onRestoreCustomers) {
+      onRestoreCustomers(lastBatch.customers);
+    }
+
+    setDeletedHistory(remaining);
+    setBatchSuccessMessage(null);
+    setRestoreSuccessMessage(
+      `Subscribers ${lastBatch.customers.length} hlawhtling taka restore a ni e!`
+    );
+    setTimeout(() => {
+      setRestoreSuccessMessage(null);
+    }, 4500);
+  };
+
   return (
     <div className="space-y-3">
       {/* Table Top Controls & Info */}
@@ -599,6 +676,19 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
               </span>
             </div>
 
+            {/* Restore button if items were deleted and toggle is switched OFF */}
+            {totalDeletedCount > 0 && !isEssySelectionActive && (
+              <button
+                type="button"
+                onClick={handleRestoreDeleted}
+                className="px-2.5 py-1 text-xs font-black text-amber-950 bg-amber-200 hover:bg-amber-300 border border-amber-400 rounded-lg cursor-pointer transition-all shadow-2xs flex items-center gap-1.5"
+                title="Tih sual palh a customer paih tawhte restore-na"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-amber-900" />
+                <span>Restore ({totalDeletedCount})</span>
+              </button>
+            )}
+
             <span className="text-xs font-semibold text-emerald-100 font-mono">
               Total {tableRows.length} items{activeFranchisee ? ` • ${activeFranchisee}` : ''}
             </span>
@@ -619,7 +709,7 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
                 </span>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <button
                   type="button"
                   onClick={handleSelectAll}
@@ -634,6 +724,32 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
                     className="px-2.5 py-1 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg cursor-pointer transition-colors shadow-2xs"
                   >
                     Clear
+                  </button>
+                )}
+
+                {/* DELETE BUTTON: Appears as soon as items are selected */}
+                {selectedCustomerIds.size > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setIsBatchDeleteModalOpen(true)}
+                    className="px-3 py-1 text-xs font-black text-white bg-red-600 hover:bg-red-700 active:scale-95 border border-red-700 rounded-lg cursor-pointer transition-all shadow-xs flex items-center gap-1.5 animate-in fade-in"
+                    title="Select zawng zawng hi paih (delete) rawh"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Selected ({selectedCustomerIds.size})</span>
+                  </button>
+                )}
+
+                {/* RESTORE BUTTON: Appears as soon as items are deleted */}
+                {totalDeletedCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleRestoreDeleted}
+                    className="px-3 py-1 text-xs font-black text-amber-950 bg-amber-200 hover:bg-amber-300 active:scale-95 border border-amber-400 rounded-lg cursor-pointer transition-all shadow-xs flex items-center gap-1.5 animate-in fade-in"
+                    title="Tih sual palh a customer paih tawhte restore-na"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5 text-amber-900" />
+                    <span>Restore Deleted ({totalDeletedCount})</span>
                   </button>
                 )}
               </div>
@@ -822,14 +938,32 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
           </div>
         )}
 
-        {/* Batch Success Message */}
-        {batchSuccessMessage && (
-          <div className="bg-emerald-600 text-white px-4 py-2 text-xs sm:text-sm font-bold flex items-center justify-between gap-2 shadow-inner">
-            <span>🎉 {batchSuccessMessage}</span>
+        {/* Batch Success / Action Banner with Inline Restore */}
+        {(batchSuccessMessage || restoreSuccessMessage) && (
+          <div className={`px-4 py-2.5 text-xs sm:text-sm font-bold flex items-center justify-between gap-3 shadow-inner flex-wrap ${
+            restoreSuccessMessage ? 'bg-blue-600 text-white' : 'bg-emerald-700 text-white'
+          }`}>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span>{restoreSuccessMessage ? '🔄' : '✓'}</span>
+              <span>{restoreSuccessMessage || batchSuccessMessage}</span>
+              {totalDeletedCount > 0 && !restoreSuccessMessage && (
+                <button
+                  type="button"
+                  onClick={handleRestoreDeleted}
+                  className="ml-2 px-2.5 py-0.5 rounded-md bg-amber-300 hover:bg-amber-200 text-amber-950 font-black text-xs inline-flex items-center gap-1 shadow-xs cursor-pointer transition-colors"
+                >
+                  <RotateCcw className="w-3 h-3 text-amber-900" />
+                  <span>Restore Now</span>
+                </button>
+              )}
+            </div>
             <button
               type="button"
-              onClick={() => setBatchSuccessMessage(null)}
-              className="text-white hover:text-emerald-100 font-black cursor-pointer text-base"
+              onClick={() => {
+                setBatchSuccessMessage(null);
+                setRestoreSuccessMessage(null);
+              }}
+              className="text-white hover:text-slate-200 font-black cursor-pointer text-base px-1"
             >
               ✕
             </button>
@@ -1195,6 +1329,22 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
                   } else if (onDeleteCustomer) {
                     onDeleteCustomer(lineToDelete.customerId);
                   }
+                  if (!lineToDelete.isChannelLine) {
+                    const cust = customers.find((c) => c.id === lineToDelete.customerId);
+                    if (cust) {
+                      setDeletedHistory((prev) => [
+                        {
+                          id: `${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+                          customers: [cust],
+                          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                        },
+                        ...prev,
+                      ]);
+                      setBatchSuccessMessage(
+                        `Customer ${cust.name} paih (delete) a ni ta e.`
+                      );
+                    }
+                  }
                   setLineToDelete(null);
                 }}
                 className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors cursor-pointer shadow-xs flex items-center gap-1.5"
@@ -1204,6 +1354,112 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Batch Delete Confirmation Modal with Yes Button */}
+      {isBatchDeleteModalOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150"
+          onClick={() => setIsBatchDeleteModalOpen(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border border-slate-200 animate-in zoom-in-95 duration-150 space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-start gap-3.5">
+              <div className="w-11 h-11 rounded-full bg-red-100 flex items-center justify-center shrink-0 border border-red-200">
+                <Trash2 className="w-5 h-5 text-red-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-base font-black text-slate-900">
+                  Selected Subscribers Paih (Delete) Rawh le?
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Subscribers <span className="font-bold text-red-600">{selectedCustomerIds.size}</span> thlante hi Customer Channel & Rate List atangin paih a ni dawn e.
+                </p>
+              </div>
+            </div>
+
+            {/* Preview of Customers to be deleted */}
+            <div className="bg-red-50/70 border border-red-200 rounded-xl p-3.5 text-xs text-red-950 space-y-2">
+              <div className="font-bold text-red-900 flex items-center justify-between">
+                <span>Paih tur Subscribers List:</span>
+                <span className="font-mono text-[11px] bg-red-200/80 px-2 py-0.5 rounded font-black text-red-950">
+                  Total: {selectedCustomerIds.size}
+                </span>
+              </div>
+              <div className="max-h-36 overflow-y-auto divide-y divide-red-200/60 pr-1 space-y-1">
+                {selectedCustomersPreview.map((cust) => (
+                  <div key={cust.id} className="pt-1 first:pt-0 flex items-center justify-between text-[11px]">
+                    <span className="font-semibold text-slate-900 truncate max-w-[200px]">
+                      {cust.name}
+                    </span>
+                    <span className="font-mono text-slate-600 bg-white/80 px-1.5 py-0.5 rounded border border-red-100 shrink-0">
+                      {cust.subscriberCode}
+                    </span>
+                  </div>
+                ))}
+                {selectedCustomerIds.size > selectedCustomersPreview.length && (
+                  <div className="pt-1.5 text-center text-[11px] font-bold text-red-700 italic">
+                    ... leh midang {selectedCustomerIds.size - selectedCustomersPreview.length} te
+                  </div>
+                )}
+              </div>
+              <div className="text-[11px] text-red-800/90 pt-1.5 border-t border-red-200 flex items-center gap-1.5 font-medium">
+                <AlertTriangle className="w-3.5 h-3.5 text-red-600 shrink-0" />
+                <span>Tih sual palh anih pawhin a hnuah <strong>Restore</strong> button hmangin i ko kir leh thei ang.</span>
+              </div>
+            </div>
+
+            {/* Footer Buttons with prominent Yes Button */}
+            <div className="flex items-center justify-end gap-2.5 pt-1">
+              <button
+                type="button"
+                onClick={() => setIsBatchDeleteModalOpen(false)}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 transition-colors cursor-pointer"
+              >
+                Aih / Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmBatchDelete}
+                className="px-5 py-2 rounded-xl text-xs font-black text-white bg-red-600 hover:bg-red-700 active:scale-95 transition-all cursor-pointer shadow-md flex items-center gap-1.5"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Yes, Delete ({selectedCustomerIds.size})</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Quick Action Bar when items are selected in Essy Selection mode */}
+      {isEssySelectionActive && selectedCustomerIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-slate-900/95 text-white px-5 py-2.5 rounded-2xl shadow-2xl border border-slate-700 flex items-center gap-3.5 backdrop-blur-md animate-in slide-in-from-bottom-5">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-xs sm:text-sm font-bold">
+              <span className="text-emerald-400 font-extrabold font-mono text-sm">{selectedCustomerIds.size}</span> thlan a ni
+            </span>
+          </div>
+          <div className="h-4 w-px bg-slate-700" />
+          <button
+            type="button"
+            onClick={() => setSelectedCustomerIds(new Set())}
+            className="text-xs text-slate-300 hover:text-white px-2 py-1 rounded hover:bg-slate-800 transition-colors cursor-pointer"
+          >
+            Clear
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsBatchDeleteModalOpen(true)}
+            className="px-3.5 py-1.5 bg-red-600 hover:bg-red-700 active:scale-95 text-white rounded-xl text-xs font-black shadow-md flex items-center gap-1.5 cursor-pointer transition-all"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>Delete Selected ({selectedCustomerIds.size})</span>
+          </button>
         </div>
       )}
     </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, FileSpreadsheet, Layers, RotateCcw, ArrowRight } from 'lucide-react';
+import { Download, FileSpreadsheet, Layers, RotateCcw, ArrowRight, FolderDown } from 'lucide-react';
 import { GrandTotals } from '../types';
 
 interface GrandTotalsBarProps {
@@ -255,16 +255,17 @@ export const GrandTotalsBar: React.FC<GrandTotalsBarProps> = ({
 
       {/* Export Action Buttons */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 pt-2">
-        {/* Main Export Button matching Screenshot 1 */}
+        {/* Main Export Button - Directly prompts folder to save */}
         <button
           type="button"
           id="export-lco-share-btn"
           onClick={onExportSummary}
-          className="inline-flex items-center justify-center gap-2.5 px-6 py-3 bg-white border border-slate-400 hover:border-slate-800 hover:bg-slate-50 text-slate-900 font-bold text-sm sm:text-base rounded-xl shadow-xs transition-all cursor-pointer"
+          className="inline-flex items-center justify-center gap-2.5 px-6 py-3 bg-white border-2 border-emerald-600 hover:bg-emerald-50 text-emerald-950 font-bold text-sm sm:text-base rounded-xl shadow-xs transition-all cursor-pointer"
+          title="Folder thlangin Excel file save rawh"
         >
-          <FileSpreadsheet className="w-5 h-5 text-emerald-600" />
-          <span>Final Export Excel Siam - LCO Share nen (.xls)</span>
-          <Download className="w-4 h-4 ml-1 text-slate-500" />
+          <FolderDown className="w-5 h-5 text-emerald-600 shrink-0" />
+          <span>Final Export Excel Siam - LCO Share nen</span>
+          <Download className="w-4 h-4 ml-1 text-emerald-700" />
         </button>
 
         {/* LPS BulkPackageRenew Format Export */}
@@ -273,9 +274,10 @@ export const GrandTotalsBar: React.FC<GrandTotalsBarProps> = ({
           id="export-bulk-renew-btn"
           onClick={onExportBulkRenew}
           className="inline-flex items-center justify-center gap-2.5 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold text-sm sm:text-base rounded-xl shadow-xs transition-all cursor-pointer"
+          title="LPS Portal 12-column upload format"
         >
-          <Layers className="w-5 h-5" />
-          <span>LPS Bulk Renew Format Export (.xls)</span>
+          <Layers className="w-5 h-5 shrink-0" />
+          <span>LPS Bulk Renew Format Export (12-Columns)</span>
           <Download className="w-4 h-4 ml-1" />
         </button>
       </div>

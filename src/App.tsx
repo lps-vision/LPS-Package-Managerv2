@@ -480,6 +480,78 @@ export default function App() {
     }
   };
 
+  // Batch delete customers (Essy Selection Package)
+  const handleBatchDeleteCustomers = (customerIds: string[]) => {
+    if (!customerIds || customerIds.length === 0) return;
+    const targetSet = new Set(customerIds);
+    const targets = customers.filter((c) => targetSet.has(c.id));
+    const targetSubCodes = new Set(targets.map((t) => t.subscriberCode));
+    const targetStbNos = new Set(targets.map((t) => t.stbNo));
+
+    setCustomers((prev) => prev.filter((c) => !targetSet.has(c.id)));
+    setRawRows((prev) =>
+      prev.filter(
+        (r) =>
+          !targetSubCodes.has(r.subscriberCode) && !targetStbNos.has(r.stbNo)
+      )
+    );
+    if (selectedCustomerId && targetSet.has(selectedCustomerId)) {
+      const remaining = customers.filter((c) => !targetSet.has(c.id));
+      setSelectedCustomerId(remaining[0]?.id || null);
+    }
+  };
+
+  // Restore deleted customers
+  const handleRestoreCustomers = (restoredCustomers: CustomerSummary[]) => {
+    if (!restoredCustomers || restoredCustomers.length === 0) return;
+    setCustomers((prev) => {
+      const existingIds = new Set(prev.map((c) => c.id));
+      const toAdd = restoredCustomers.filter((c) => !existingIds.has(c.id));
+      return [...prev, ...toAdd];
+    });
+
+    // Also reconstruct raw rows for these customers so summary & renewals remain complete
+    setRawRows((prev) => {
+      const existingCodes = new Set(prev.map((r) => r.subscriberCode));
+      const newRows: SubscriberRawRow[] = [];
+      for (const c of restoredCustomers) {
+        if (!existingCodes.has(c.subscriberCode)) {
+          newRows.push({
+            name: c.name,
+            subscriberCode: c.subscriberCode,
+            stbNo: c.stbNo,
+            vcNo: c.vcNo || '',
+            type: 'Package',
+            packageChannelName: c.basePackage || 'PACK-1 (BST)',
+            subscriptionPeriod: c.subscriptionPeriod || 'Month',
+            subscriptionCount: c.subscriptionCount ?? 1,
+            networkCapacityFee: c.networkCapacityFee ?? '0.00',
+            packageDiscount: c.packageDiscount ?? '0.00',
+            serviceType: c.serviceType || 'PayTV',
+            franchiseeName: c.franchiseeName || '',
+          });
+          for (const ch of c.selectedChannels) {
+            newRows.push({
+              name: c.name,
+              subscriberCode: c.subscriberCode,
+              stbNo: c.stbNo,
+              vcNo: c.vcNo || '',
+              type: 'Channel',
+              packageChannelName: ch,
+              subscriptionPeriod: c.subscriptionPeriod || 'Month',
+              subscriptionCount: c.subscriptionCount ?? 1,
+              networkCapacityFee: c.networkCapacityFee ?? '0.00',
+              packageDiscount: c.packageDiscount ?? '0.00',
+              serviceType: c.serviceType || 'PayTV',
+              franchiseeName: c.franchiseeName || '',
+            });
+          }
+        }
+      }
+      return [...prev, ...newRows];
+    });
+  };
+
   // Upload new Excel file
   const handleFileUpload = async (file: File) => {
     setIsLoading(true);
@@ -925,11 +997,19 @@ export default function App() {
   }, [customers, availableChannels]);
 
   // Export handlers
-  const handleExportSummary = () => {
+  const handleExportSummary = async () => {
     const name = currentFileName
       ? `Final_Export_${currentFileName.replace(/\.[^/.]+$/, '')}.xls`
       : 'Final_Export_LCO_Share.xls';
-    exportSummaryExcel(customers, name, availableChannels, BST_PRICE, LOCAL_PRICE, subscriptionSettings, customTotalDeposit);
+    await exportSummaryExcel(
+      customers,
+      name,
+      availableChannels,
+      BST_PRICE,
+      LOCAL_PRICE,
+      subscriptionSettings,
+      customTotalDeposit
+    );
   };
 
   const handleExportBulkRenew = () => {
@@ -1024,6 +1104,8 @@ export default function App() {
               }}
               onDeleteLine={handleDeleteLine}
               onDeleteCustomer={handleDeleteCustomer}
+              onBatchDeleteCustomers={handleBatchDeleteCustomers}
+              onRestoreCustomers={handleRestoreCustomers}
               selectedCustomerId={selectedCustomerId}
               basePrice={basePrice}
               availableChannels={availableChannels}

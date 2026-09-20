@@ -7,15 +7,18 @@ import {
   ALACARTE_LCO_COMMISSION_PERCENT,
 } from '../data/defaultChannels';
 
-export function exportSummaryExcel(
+export async function exportSummaryExcel(
   customers: CustomerSummary[],
   fileName: string = 'Final_Export_LCO_Share.xls',
   customChannels?: ChannelItem[],
   bstPrice: number = BST_PRICE,
   localAddonPrice: number = LOCAL_PRICE,
   subscriptionSettings?: SubscriptionDateSettings,
-  customTotalDeposit?: number | null
-): void {
+  customTotalDeposit?: number | null,
+  options?: {
+    forceDirectDownload?: boolean;
+  }
+): Promise<SaveFileResult> {
   // Format matching Official LPS Bill Formula:
   // 1. BST Rs 154: LCO Share Rs 78.60 (51.04%), MSO Cut Rs 75.40 (48.96%)
   // 2. Local Rs 71: LCO Share Rs 36.20 (50.99%), MSO Cut Rs 34.80 (49.01%)
@@ -194,7 +197,137 @@ export function exportSummaryExcel(
 
   const safeFileName = fileName.endsWith('.xls') || fileName.endsWith('.xlsx') ? fileName : `${fileName}.xls`;
   const isXlsx = safeFileName.endsWith('.xlsx');
-  XLSX.writeFile(workbook, safeFileName, { bookType: isXlsx ? 'xlsx' : 'biff8' });
+  return await saveWorkbookWithFolderPicker(workbook, safeFileName, isXlsx, options);
+}
+
+export interface SaveFileResult {
+  success: boolean;
+  method: 'picker' | 'download' | 'cancelled';
+  fileName: string;
+  error?: string;
+  isIframe?: boolean;
+}
+
+/**
+ * Save an Excel workbook by prompting user to select destination folder
+ * via window.showSaveFilePicker() (File System Access API).
+ * If showSaveFilePicker is not supported or restricted (e.g. inside an iframe),
+ * it seamlessly falls back to standard browser download.
+ */
+export async function saveWorkbookWithFolderPicker(
+  workbook: XLSX.WorkBook,
+  suggestedFileName: string,
+  isXlsx: boolean = false,
+  options?: {
+    forceDirectDownload?: boolean;
+  }
+): Promise<SaveFileResult> {
+  const safeFileName =
+    suggestedFileName.endsWith('.xls') || suggestedFileName.endsWith('.xlsx')
+      ? suggestedFileName
+      : `${suggestedFileName}.${isXlsx ? 'xlsx' : 'xls'}`;
+
+  // Direct download if requested
+  if (options?.forceDirectDownload) {
+    downloadViaBlob(workbook, safeFileName, isXlsx);
+    return { success: true, method: 'download', fileName: safeFileName };
+  }
+
+  const isIframe = typeof window !== 'undefined' && window.self !== window.top;
+
+  // Modern File System Access API: window.showSaveFilePicker
+  // Opens native OS Save As dialog to choose folder!
+  if (typeof window !== 'undefined' && 'showSaveFilePicker' in window) {
+    try {
+      const mimeType = isXlsx
+        ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        : 'application/vnd.ms-excel';
+      const ext = isXlsx ? '.xlsx' : '.xls';
+
+      const fileHandle = await (window as unknown as {
+        showSaveFilePicker: (opts: unknown) => Promise<{
+          name: string;
+          createWritable: () => Promise<{
+            write: (data: unknown) => Promise<void>;
+            close: () => Promise<void>;
+          }>;
+        }>;
+      }).showSaveFilePicker({
+        suggestedName: safeFileName,
+        types: [
+          {
+            description: isXlsx
+              ? 'Excel Workbook (*.xlsx)'
+              : 'Excel 97-2003 Workbook (*.xls)',
+            accept: {
+              [mimeType]: [ext],
+            },
+          },
+        ],
+      });
+
+      const writable = await fileHandle.createWritable();
+      const wbout = XLSX.write(workbook, {
+        bookType: isXlsx ? 'xlsx' : 'biff8',
+        type: 'array',
+      });
+      await writable.write(new Uint8Array(wbout));
+      await writable.close();
+
+      return {
+        success: true,
+        method: 'picker',
+        fileName: fileHandle.name || safeFileName,
+      };
+    } catch (err: unknown) {
+      const errorObj = err as { name?: string; message?: string };
+      if (errorObj?.name === 'AbortError') {
+        // User clicked "Cancel" in the native folder / save dialog
+        return {
+          success: false,
+          method: 'cancelled',
+          fileName: safeFileName,
+        };
+      }
+      // If blocked in iframe or unsupported, fallback to standard download
+      console.warn('showSaveFilePicker not permitted or failed, falling back to download:', err);
+    }
+  }
+
+  // Fallback to standard browser download
+  downloadViaBlob(workbook, safeFileName, isXlsx);
+  return {
+    success: true,
+    method: 'download',
+    fileName: safeFileName,
+    isIframe,
+  };
+}
+
+function downloadViaBlob(
+  workbook: XLSX.WorkBook,
+  fileName: string,
+  isXlsx: boolean
+): void {
+  const wbout = XLSX.write(workbook, {
+    bookType: isXlsx ? 'xlsx' : 'biff8',
+    type: 'array',
+  });
+  const mimeType = isXlsx
+    ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    : 'application/vnd.ms-excel';
+  const blob = new Blob([wbout], { type: mimeType });
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 1000);
 }
 
 export interface BulkRenewExportOptions {
@@ -211,11 +344,13 @@ export interface BulkRenewExportOptions {
   subscriptionSettings?: SubscriptionDateSettings;
 }
 
-export function exportBulkPackageRenewExcel(
+export async function exportBulkPackageRenewExcel(
   customers: CustomerSummary[],
   fileName: string = 'BulkPackageRenew_PACK-1(BST).xls',
-  options?: BulkRenewExportOptions
-): void {
+  options?: BulkRenewExportOptions & {
+    forceDirectDownload?: boolean;
+  }
+): Promise<SaveFileResult> {
   // Exact format matching LPS Cable Bulk Renew template:
   // 1. Name
   // 2. SubscriberCode
@@ -407,16 +542,19 @@ export function exportBulkPackageRenewExcel(
 
   // LPS Portal strictly expects .xls (BIFF8 / Excel 97-2003)
   const safeName = fileName.replace(/\.[^/.]+$/, '') + '.xls';
-  XLSX.writeFile(workbook, safeName, { bookType: 'biff8' });
+  return await saveWorkbookWithFolderPicker(workbook, safeName, false, options);
 }
 
 /**
  * Generate a pre-filled Excel template for Channel Rates so user can fill and upload
  */
-export function exportChannelRateTemplateExcel(
+export async function exportChannelRateTemplateExcel(
   channels: ChannelItem[],
-  fileName: string = 'LPS_Channel_Rate_Template.xls'
-): void {
+  fileName: string = 'LPS_Channel_Rate_Template.xls',
+  options?: {
+    forceDirectDownload?: boolean;
+  }
+): Promise<SaveFileResult> {
   const rows = channels.map((ch) => {
     const lcoShare = Number((ch.price * 0.0847).toFixed(2));
     const msoCut = Number((ch.price - lcoShare).toFixed(2));
@@ -444,6 +582,6 @@ export function exportChannelRateTemplateExcel(
   XLSX.utils.book_append_sheet(workbook, worksheet, 'ChannelRates');
   const safeFileName = fileName.endsWith('.xls') || fileName.endsWith('.xlsx') ? fileName : `${fileName}.xls`;
   const isXlsx = safeFileName.endsWith('.xlsx');
-  XLSX.writeFile(workbook, safeFileName, { bookType: isXlsx ? 'xlsx' : 'biff8' });
+  return await saveWorkbookWithFolderPicker(workbook, safeFileName, isXlsx, options);
 }
 

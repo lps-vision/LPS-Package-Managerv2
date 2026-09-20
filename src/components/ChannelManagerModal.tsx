@@ -109,8 +109,8 @@ export const ChannelManagerModal: React.FC<ChannelManagerModalProps> = ({
     }
   };
 
-  const handleDownloadTemplate = () => {
-    exportChannelRateTemplateExcel(channels, 'LPS_Channel_Rate_Template.xls');
+  const handleDownloadTemplate = async () => {
+    await exportChannelRateTemplateExcel(channels, 'LPS_Channel_Rate_Template.xls');
   };
 
   return (
