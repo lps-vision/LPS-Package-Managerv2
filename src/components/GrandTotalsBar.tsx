@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, FileSpreadsheet, Layers, RotateCcw, ArrowRight, FolderDown } from 'lucide-react';
+import { Download, FileSpreadsheet, Layers, RotateCcw, ArrowRight, FolderDown, HelpCircle } from 'lucide-react';
 import { GrandTotals } from '../types';
 
 interface GrandTotalsBarProps {
@@ -8,6 +8,7 @@ interface GrandTotalsBarProps {
   onExportBulkRenew: () => void;
   customTotalDeposit?: number | null;
   onUpdateDeposit?: (val: number | null) => void;
+  onOpenDownloadGuide?: () => void;
 }
 
 export const GrandTotalsBar: React.FC<GrandTotalsBarProps> = ({
@@ -16,6 +17,7 @@ export const GrandTotalsBar: React.FC<GrandTotalsBarProps> = ({
   onExportBulkRenew,
   customTotalDeposit,
   onUpdateDeposit,
+  onOpenDownloadGuide,
 }) => {
   // Local input string for seamless typing and editing
   const [localInput, setLocalInput] = useState<string>(() => {
@@ -280,6 +282,19 @@ export const GrandTotalsBar: React.FC<GrandTotalsBarProps> = ({
           <span>LPS Bulk Renew Format Export (12-Columns)</span>
           <Download className="w-4 h-4 ml-1" />
         </button>
+
+        {/* Folder Selection (Save As) Help Button */}
+        {onOpenDownloadGuide && (
+          <button
+            type="button"
+            onClick={onOpenDownloadGuide}
+            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-3 bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 font-bold text-xs sm:text-sm rounded-xl transition-colors cursor-pointer shrink-0"
+            title="Computer danga Folder thlanna (Save As) a awm ve theih dan"
+          >
+            <HelpCircle className="w-4 h-4 text-amber-700 shrink-0" />
+            <span>Folder thlanna awm lohva siam dan</span>
+          </button>
+        )}
       </div>
     </div>
   );

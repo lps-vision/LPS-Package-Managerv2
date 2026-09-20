@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { FileSpreadsheet } from 'lucide-react';
-import { CustomerSummary, SubscriberRawRow, ChannelItem, GrandTotals, SubscriptionDateSettings } from './types';
+import { FileSpreadsheet, FolderDown, CheckCircle2, X } from 'lucide-react';
+import { CustomerSummary, SubscriberRawRow, ChannelItem, GrandTotals, SubscriptionDateSettings, DocumentTab } from './types';
 import {
   DEFAULT_BASE_PRICE,
   DEFAULT_CHANNELS,
@@ -15,7 +15,7 @@ import {
   getChannelPriceMap,
   normalizeKey,
 } from './utils/excelParser';
-import { exportSummaryExcel } from './utils/excelExporter';
+import { exportSummaryExcel, SaveFileResult } from './utils/excelExporter';
 import { savePersistedData, loadPersistedData, clearPersistedData } from './utils/storage';
 import { Header } from './components/Header';
 import { ExcelUpload } from './components/ExcelUpload';
@@ -26,6 +26,7 @@ import { ChannelManagerModal } from './components/ChannelManagerModal';
 import { BulkRenewModal } from './components/BulkRenewModal';
 import { BillCalculatorModal } from './components/BillCalculatorModal';
 import { TutorialModal } from './components/TutorialModal';
+import { DownloadFolderGuideModal } from './components/DownloadFolderGuideModal';
 
 export default function App() {
   const [basePrice, setBasePrice] = useState<number>(DEFAULT_BASE_PRICE);
@@ -69,6 +70,14 @@ export default function App() {
     }
     return DEFAULT_CHANNELS;
   });
+
+  const [tabs, setTabs] = useState<DocumentTab[]>([]);
+  const [activeTabId, setActiveTabId] = useState<string>('');
+  const [isDownloadGuideOpen, setIsDownloadGuideOpen] = useState<boolean>(false);
+  const [downloadNotice, setDownloadNotice] = useState<{
+    fileName: string;
+    method: 'picker' | 'download';
+  } | null>(null);
 
   const [rawRows, setRawRows] = useState<SubscriberRawRow[]>([]);
   const [currentFileName, setCurrentFileName] = useState<string | null>(null);
@@ -120,11 +129,48 @@ export default function App() {
         if (isMounted && saved) {
           const priceMap = getChannelPriceMap(availableChannels);
 
-          let customersToUse: CustomerSummary[] = [];
+          if (saved.tabs && Array.isArray(saved.tabs) && saved.tabs.length > 0) {
+            // Restore multiple tabs
+            const restoredTabs: DocumentTab[] = saved.tabs.map((tab, idx) => {
+              const recalculated = (tab.customers || []).map((c) => {
+                const pricing = calculateCustomerPricing(
+                  c.selectedChannels || [],
+                  c.hasLocalAddon !== false,
+                  BST_PRICE,
+                  LOCAL_PRICE,
+                  ALACARTE_LCO_COMMISSION_PERCENT,
+                  priceMap
+                );
+                return {
+                  ...c,
+                  channelPrice: pricing.price,
+                  lcoHlawh: pricing.lcoHlawh,
+                  lcoSen: pricing.lcoSen,
+                };
+              });
+              return {
+                ...tab,
+                id: tab.id || `tab_${idx + 1}`,
+                name: tab.name || tab.fileName || `Tab ${idx + 1}`,
+                customers: recalculated,
+                rawRows: tab.rawRows || [],
+              };
+            });
 
-          if (saved.customers && saved.customers.length > 0) {
-            // Always respect the saved customer state directly - do NOT wipe with raw rows
-            customersToUse = saved.customers.map((c) => {
+            setTabs(restoredTabs);
+
+            const active =
+              restoredTabs.find((t) => t.id === saved.activeTabId) || restoredTabs[0];
+            setActiveTabId(active.id);
+            setCustomers(active.customers);
+            setRawRows(active.rawRows || []);
+            setCurrentFileName(active.fileName);
+            setFileSizeText(active.fileSizeText || 'Saved Session');
+            setCustomTotalDeposit(active.customTotalDeposit ?? null);
+            setSelectedCustomerId(active.selectedCustomerId || active.customers[0]?.id || null);
+          } else if (saved.customers && saved.customers.length > 0) {
+            // Legacy single-tab fallback
+            const customersToUse: CustomerSummary[] = saved.customers.map((c) => {
               const hasLocal = c.hasLocalAddon !== false;
               const channels = c.selectedChannels || [];
               const pricing = calculateCustomerPricing(
@@ -148,44 +194,28 @@ export default function App() {
                 isModified: c.isModified ?? false,
               };
             });
-          } else if (saved.rawRows && saved.rawRows.length > 0) {
-            // Fallback: only if saved.customers was empty, process from rawRows
-            customersToUse = processRawRowsToCustomers(
-              saved.rawRows,
-              availableChannels,
-              BST_PRICE,
-              LOCAL_PRICE
-            );
-          }
 
-          if (customersToUse.length > 0) {
-            // Force re-calculate pricing based on current availableChannels to ensure consistency
-            const priceMap = getChannelPriceMap(availableChannels);
-            const recalculated = customersToUse.map((c) => {
-              const pricing = calculateCustomerPricing(
-                c.selectedChannels,
-                c.hasLocalAddon !== false,
-                BST_PRICE,
-                LOCAL_PRICE,
-                ALACARTE_LCO_COMMISSION_PERCENT,
-                priceMap
-              );
-              return {
-                ...c,
-                channelPrice: pricing.price,
-                lcoHlawh: pricing.lcoHlawh,
-                lcoSen: pricing.lcoSen,
-              };
-            });
-            setCustomers(recalculated);
+            const initialTabId = 'tab_1';
+            const fileName = saved.currentFileName || 'Saved_LPS_Subscribers.xlsx';
+            const initialTab: DocumentTab = {
+              id: initialTabId,
+              name: fileName,
+              fileName: fileName,
+              fileSizeText: saved.fileSizeText || 'Saved Session',
+              customers: customersToUse,
+              rawRows: saved.rawRows || [],
+              customTotalDeposit: null,
+              selectedCustomerId: saved.selectedCustomerId || customersToUse[0]?.id || null,
+              createdAt: new Date().toISOString(),
+            };
+
+            setTabs([initialTab]);
+            setActiveTabId(initialTabId);
+            setCustomers(customersToUse);
             setRawRows(saved.rawRows || []);
-            setCurrentFileName(saved.currentFileName || 'Saved_LPS_Subscribers.xlsx');
-            setFileSizeText(saved.fileSizeText || 'Saved Session');
-            if (saved.selectedCustomerId) {
-              setSelectedCustomerId(saved.selectedCustomerId);
-            } else {
-              setSelectedCustomerId(customersToUse[0]?.id || null);
-            }
+            setCurrentFileName(fileName);
+            setFileSizeText(initialTab.fileSizeText);
+            setSelectedCustomerId(initialTab.selectedCustomerId || null);
           }
         }
       } catch (err) {
@@ -202,23 +232,71 @@ export default function App() {
     };
   }, []);
 
+  // Keep active tab state synchronized within the tabs array
+  useEffect(() => {
+    if (isRestoring || !activeTabId) return;
+    setTabs((prevTabs) => {
+      if (!prevTabs.some((t) => t.id === activeTabId)) return prevTabs;
+      return prevTabs.map((t) => {
+        if (t.id === activeTabId) {
+          return {
+            ...t,
+            customers,
+            rawRows,
+            fileName: currentFileName || t.fileName,
+            fileSizeText: fileSizeText || t.fileSizeText,
+            selectedCustomerId,
+            customTotalDeposit,
+          };
+        }
+        return t;
+      });
+    });
+  }, [customers, rawRows, currentFileName, fileSizeText, selectedCustomerId, customTotalDeposit, activeTabId, isRestoring]);
+
   // Automatically persist uploaded data & saved channels whenever changes happen
   useEffect(() => {
     if (isRestoring) return;
 
-    if (customers.length > 0) {
+    if (tabs.length > 0 && customers.length > 0) {
       savePersistedData({
+        tabs,
+        activeTabId,
         customers,
         rawRows,
         currentFileName,
         fileSizeText,
         selectedCustomerId,
+        customTotalDeposit,
+        savedAt: new Date().toISOString(),
+      });
+    } else if (customers.length > 0) {
+      const fallbackTab: DocumentTab = {
+        id: activeTabId || 'tab_1',
+        name: currentFileName || 'Excel Tab',
+        fileName: currentFileName || 'Excel Tab',
+        fileSizeText: fileSizeText || '',
+        customers,
+        rawRows,
+        customTotalDeposit,
+        selectedCustomerId,
+        createdAt: new Date().toISOString(),
+      };
+      savePersistedData({
+        tabs: [fallbackTab],
+        activeTabId: fallbackTab.id,
+        customers,
+        rawRows,
+        currentFileName,
+        fileSizeText,
+        selectedCustomerId,
+        customTotalDeposit,
         savedAt: new Date().toISOString(),
       });
     } else {
       clearPersistedData();
     }
-  }, [customers, rawRows, currentFileName, fileSizeText, selectedCustomerId, isRestoring]);
+  }, [tabs, activeTabId, customers, rawRows, currentFileName, fileSizeText, selectedCustomerId, customTotalDeposit, isRestoring]);
 
   // Save custom channels to local storage when changed
   useEffect(() => {
@@ -552,13 +630,35 @@ export default function App() {
     });
   };
 
-  // Upload new Excel file
+  // Upload new Excel file (replaces current tab or creates the first tab)
   const handleFileUpload = async (file: File) => {
     setIsLoading(true);
     try {
       const sizeKb = (file.size / 1024).toFixed(1) + 'KB';
       const result = await parseSubscriberExcel(file, availableChannels);
 
+      const tabId = activeTabId || `tab_${Date.now()}`;
+      const newTab: DocumentTab = {
+        id: tabId,
+        name: file.name,
+        fileName: file.name,
+        fileSizeText: sizeKb,
+        customers: result.customers,
+        rawRows: result.rawRows,
+        customTotalDeposit: null,
+        selectedCustomerId: result.customers[0]?.id || null,
+        createdAt: new Date().toISOString(),
+      };
+
+      setTabs((prev) => {
+        const exists = prev.some((t) => t.id === tabId);
+        if (exists) {
+          return prev.map((t) => (t.id === tabId ? newTab : t));
+        }
+        return [...prev, newTab];
+      });
+
+      setActiveTabId(tabId);
       setRawRows(result.rawRows);
       setCustomers(result.customers);
       setCustomTotalDeposit(null);
@@ -577,14 +677,133 @@ export default function App() {
     }
   };
 
+  // Upload into a Brand New Tab (+)
+  const handleUploadNewTab = async (file: File) => {
+    setIsLoading(true);
+    try {
+      const sizeKb = (file.size / 1024).toFixed(1) + 'KB';
+      const result = await parseSubscriberExcel(file, availableChannels);
+
+      const newTabId = `tab_${Date.now()}`;
+      const newTab: DocumentTab = {
+        id: newTabId,
+        name: file.name,
+        fileName: file.name,
+        fileSizeText: sizeKb,
+        customers: result.customers,
+        rawRows: result.rawRows,
+        customTotalDeposit: null,
+        selectedCustomerId: result.customers[0]?.id || null,
+        createdAt: new Date().toISOString(),
+      };
+
+      setTabs((prev) => {
+        const updated = prev.map((t) =>
+          t.id === activeTabId
+            ? {
+                ...t,
+                customers,
+                rawRows,
+                fileName: currentFileName || t.fileName,
+                fileSizeText: fileSizeText || t.fileSizeText,
+                selectedCustomerId,
+                customTotalDeposit,
+              }
+            : t
+        );
+        return [...updated, newTab];
+      });
+
+      setActiveTabId(newTabId);
+      setCustomers(result.customers);
+      setRawRows(result.rawRows);
+      setCurrentFileName(file.name);
+      setFileSizeText(sizeKb);
+      setCustomTotalDeposit(null);
+      setSelectedCustomerId(result.customers[0]?.id || null);
+    } catch (err) {
+      alert('File chhiar theih a ni lo: ' + (err as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Switch between open tabs
+  const handleSelectTab = (targetTabId: string) => {
+    if (targetTabId === activeTabId) return;
+
+    // Snapshot current active tab state first
+    const currentTabToSave = tabs.find((t) => t.id === activeTabId);
+    let updatedTabs = tabs;
+    if (currentTabToSave) {
+      updatedTabs = tabs.map((t) =>
+        t.id === activeTabId
+          ? {
+              ...t,
+              customers,
+              rawRows,
+              fileName: currentFileName || t.fileName,
+              fileSizeText: fileSizeText || t.fileSizeText,
+              selectedCustomerId,
+              customTotalDeposit,
+            }
+          : t
+      );
+      setTabs(updatedTabs);
+    }
+
+    const targetTab = updatedTabs.find((t) => t.id === targetTabId);
+    if (!targetTab) return;
+
+    setActiveTabId(targetTab.id);
+    setCustomers(targetTab.customers);
+    setRawRows(targetTab.rawRows || []);
+    setCurrentFileName(targetTab.fileName);
+    setFileSizeText(targetTab.fileSizeText || '');
+    setCustomTotalDeposit(targetTab.customTotalDeposit ?? null);
+    setSelectedCustomerId(targetTab.selectedCustomerId || targetTab.customers[0]?.id || null);
+  };
+
+  // Close a specific tab
+  const handleCloseTab = (tabIdToClose: string) => {
+    const tabToClose = tabs.find((t) => t.id === tabIdToClose);
+    if (!tabToClose) return;
+
+    if (tabs.length <= 1) {
+      handleClearFile();
+      return;
+    }
+
+    const confirmClose = window.confirm(
+      `'${tabToClose.fileName}' tab hi khar (close) i duh chiang em?`
+    );
+    if (!confirmClose) return;
+
+    const remainingTabs = tabs.filter((t) => t.id !== tabIdToClose);
+    setTabs(remainingTabs);
+
+    if (activeTabId === tabIdToClose) {
+      const nextTab = remainingTabs[0];
+      setActiveTabId(nextTab.id);
+      setCustomers(nextTab.customers);
+      setRawRows(nextTab.rawRows || []);
+      setCurrentFileName(nextTab.fileName);
+      setFileSizeText(nextTab.fileSizeText || '');
+      setCustomTotalDeposit(nextTab.customTotalDeposit ?? null);
+      setSelectedCustomerId(nextTab.selectedCustomerId || nextTab.customers[0]?.id || null);
+    }
+  };
+
   const handleClearFile = async () => {
-    if (customers.length > 0) {
+    if (customers.length > 0 || tabs.length > 0) {
       const confirmClear = window.confirm(
         'Uploaded Excel data leh subscriber channel save sa zawng zawng hi paih (remove) i duh chiang chiah em?'
       );
       if (!confirmClear) return;
     }
 
+    setTabs([]);
+    setActiveTabId('');
     setRawRows([]);
     setCustomers([]);
     setCustomTotalDeposit(null);
@@ -997,11 +1216,25 @@ export default function App() {
   }, [customers, availableChannels]);
 
   // Export handlers
+  const handleExportSuccess = (res: SaveFileResult) => {
+    if (res.method === 'picker') {
+      setDownloadNotice({
+        fileName: res.fileName,
+        method: 'picker',
+      });
+    } else if (res.method === 'download') {
+      setDownloadNotice({
+        fileName: res.fileName,
+        method: 'download',
+      });
+    }
+  };
+
   const handleExportSummary = async () => {
     const name = currentFileName
       ? `Final_Export_${currentFileName.replace(/\.[^/.]+$/, '')}.xls`
       : 'Final_Export_LCO_Share.xls';
-    await exportSummaryExcel(
+    const result = await exportSummaryExcel(
       customers,
       name,
       availableChannels,
@@ -1010,6 +1243,9 @@ export default function App() {
       subscriptionSettings,
       customTotalDeposit
     );
+    if (result.method !== 'cancelled') {
+      handleExportSuccess(result);
+    }
   };
 
   const handleExportBulkRenew = () => {
@@ -1024,6 +1260,40 @@ export default function App() {
     if (!selectedCustomerId) return null;
     return customers.find((c) => c.id === selectedCustomerId) || null;
   }, [customers, selectedCustomerId]);
+
+  // Reference other open tab to cross-reference (entawn)
+  const otherTab = useMemo(() => {
+    return tabs.find((t) => t.id !== activeTabId) || null;
+  }, [tabs, activeTabId]);
+
+  const referenceCustomer = useMemo(() => {
+    if (!selectedCustomerId || !otherTab) return null;
+    const currentCust = customers.find((c) => c.id === selectedCustomerId);
+    if (!currentCust) return null;
+
+    const code = currentCust.subscriberCode ? currentCust.subscriberCode.trim().toLowerCase() : '';
+    const stb = currentCust.stbNo ? currentCust.stbNo.trim().toLowerCase() : '';
+    const name = currentCust.name ? currentCust.name.trim().toLowerCase() : '';
+
+    return (
+      otherTab.customers.find((c) => {
+        if (code && c.subscriberCode && c.subscriberCode.trim().toLowerCase() === code) return true;
+        if (stb && c.stbNo && c.stbNo.trim().toLowerCase() === stb) return true;
+        if (name && c.name && c.name.trim().toLowerCase() === name) return true;
+        return false;
+      }) || null
+    );
+  }, [selectedCustomerId, customers, otherTab]);
+
+  const handleCopyFromReference = () => {
+    if (!referenceCustomer || !selectedCustomerId) return;
+    handleSaveCustomerChannels(
+      selectedCustomerId,
+      referenceCustomer.selectedChannels || [],
+      referenceCustomer.hasLocalAddon !== false,
+      referenceCustomer.customBillAmount
+    );
+  };
 
   const handleScrollToCustomerSelector = () => {
     const el = document.getElementById('customer-channel-selector-section');
@@ -1057,8 +1327,13 @@ export default function App() {
             currentFileName={currentFileName}
             fileSizeText={fileSizeText}
             onFileUpload={handleFileUpload}
+            onUploadNewTab={handleUploadNewTab}
             onClearFile={handleClearFile}
             isLoading={isLoading}
+            tabs={tabs}
+            activeTabId={activeTabId}
+            onSelectTab={handleSelectTab}
+            onCloseTab={handleCloseTab}
           />
 
           <hr className="border-gray-200" />
@@ -1075,6 +1350,9 @@ export default function App() {
                 onApplyChannelsToAll={handleApplyChannelsToAll}
                 bstPrice={BST_PRICE}
                 localAddonPrice={LOCAL_PRICE}
+                referenceCustomer={referenceCustomer}
+                referenceTabName={otherTab?.fileName || otherTab?.name || 'Other Tab'}
+                onCopyFromReference={handleCopyFromReference}
               />
             </div>
           ) : (
@@ -1121,6 +1399,7 @@ export default function App() {
               onExportBulkRenew={handleExportBulkRenew}
               customTotalDeposit={customTotalDeposit}
               onUpdateDeposit={setCustomTotalDeposit}
+              onOpenDownloadGuide={() => setIsDownloadGuideOpen(true)}
             />
           </div>
         )}
@@ -1144,6 +1423,8 @@ export default function App() {
         customers={customers}
         fileName={currentFileName || 'BulkPackageRenew.xls'}
         subscriptionSettings={subscriptionSettings}
+        onExportSuccess={handleExportSuccess}
+        onOpenDownloadGuide={() => setIsDownloadGuideOpen(true)}
       />
 
       {/* LPS Bill Chhut Dan & Calculator Modal */}
@@ -1160,6 +1441,79 @@ export default function App() {
         isOpen={isTutorialOpen}
         onClose={() => setIsTutorialOpen(false)}
       />
+
+      {/* Download Folder (Save As) Guide Modal */}
+      <DownloadFolderGuideModal
+        isOpen={isDownloadGuideOpen}
+        onClose={() => setIsDownloadGuideOpen(false)}
+      />
+
+      {/* Download Notification Toast */}
+      {downloadNotice && (
+        <div
+          id="download-notification-toast"
+          className="fixed bottom-5 right-5 z-50 max-w-md w-[92vw] bg-white border border-slate-300 rounded-2xl shadow-2xl p-4 animate-in slide-in-from-bottom-5 duration-200"
+        >
+          <div className="flex items-start gap-3">
+            <div
+              className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                downloadNotice.method === 'picker'
+                  ? 'bg-emerald-100 text-emerald-700'
+                  : 'bg-amber-100 text-amber-800'
+              }`}
+            >
+              {downloadNotice.method === 'picker' ? (
+                <CheckCircle2 className="w-5 h-5" />
+              ) : (
+                <FolderDown className="w-5 h-5" />
+              )}
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-bold text-slate-900">
+                  {downloadNotice.method === 'picker'
+                    ? 'Excel File Saved!'
+                    : 'Excel File Downloaded!'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setDownloadNotice(null)}
+                  className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <p className="text-xs text-slate-600 mt-0.5 truncate font-mono">
+                {downloadNotice.fileName}
+              </p>
+
+              {downloadNotice.method === 'picker' ? (
+                <p className="text-xs text-emerald-800 mt-1 font-medium">
+                  I thlan folder-ah hlawhtling takin a in-save e.
+                </p>
+              ) : (
+                <div className="mt-1.5 space-y-1.5">
+                  <p className="text-xs text-slate-700 font-medium">
+                    I computer <strong>Downloads</strong> folder-ah a in-save e.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDownloadNotice(null);
+                      setIsDownloadGuideOpen(true);
+                    }}
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-900 bg-amber-100 hover:bg-amber-200 px-2.5 py-1 rounded-md transition-colors cursor-pointer"
+                  >
+                    <span>💡 Computer danga Folder thlan theih dan en rawh</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <footer className="bg-[#212529] border-t border-[#343a40] py-3.5 px-4 text-center text-xs text-gray-400 font-medium">

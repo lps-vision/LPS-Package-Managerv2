@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { X, Download, FileSpreadsheet, CheckCircle2, Sliders, Table, Info, FolderDown } from 'lucide-react';
+import { X, Download, FileSpreadsheet, CheckCircle2, Sliders, Table, Info, FolderDown, HelpCircle } from 'lucide-react';
 import { CustomerSummary, SubscriptionDateSettings } from '../types';
-import { exportBulkPackageRenewExcel } from '../utils/excelExporter';
+import { exportBulkPackageRenewExcel, SaveFileResult } from '../utils/excelExporter';
 
 interface BulkRenewModalProps {
   isOpen: boolean;
@@ -9,6 +9,8 @@ interface BulkRenewModalProps {
   customers: CustomerSummary[];
   fileName?: string;
   subscriptionSettings?: SubscriptionDateSettings;
+  onExportSuccess?: (res: SaveFileResult) => void;
+  onOpenDownloadGuide?: () => void;
 }
 
 export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
@@ -17,6 +19,8 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
   customers,
   fileName,
   subscriptionSettings,
+  onExportSuccess,
+  onOpenDownloadGuide,
 }) => {
   const [basePackageName, setBasePackageName] = useState<string>('PACK-1 (BST)');
   const [typeColHeader, setTypeColHeader] = useState<'Type (Package/Channel)' | 'Type(Package/Channel)'>('Type (Package/Channel)');
@@ -195,6 +199,7 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
     });
 
     if (result.method !== 'cancelled') {
+      onExportSuccess?.(result);
       onClose();
     }
   };
@@ -572,14 +577,27 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
 
         {/* Modal Footer */}
         <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between flex-wrap gap-3">
-          <button
-            type="button"
-            id="cancel-bulk-renew-btn"
-            onClick={onClose}
-            className="px-4 py-2.5 bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-          >
-            Cancel
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              id="cancel-bulk-renew-btn"
+              onClick={onClose}
+              className="px-4 py-2.5 bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            {onOpenDownloadGuide && (
+              <button
+                type="button"
+                onClick={onOpenDownloadGuide}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-lg transition-colors cursor-pointer"
+                title="Folder thlanna (Save As) a awm ve theih dan"
+              >
+                <HelpCircle className="w-3.5 h-3.5 text-amber-700" />
+                <span>Folder thlanna awm lohva siam dan</span>
+              </button>
+            )}
+          </div>
           
           <button
             type="button"

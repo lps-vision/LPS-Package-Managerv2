@@ -1,11 +1,14 @@
-import { CustomerSummary, SubscriberRawRow } from '../types';
+import { CustomerSummary, SubscriberRawRow, DocumentTab } from '../types';
 
 export interface PersistedLpsData {
+  tabs?: DocumentTab[];
+  activeTabId?: string;
   customers: CustomerSummary[];
   rawRows: SubscriberRawRow[];
   currentFileName: string | null;
   fileSizeText: string;
   selectedCustomerId: string | null;
+  customTotalDeposit?: number | null;
   savedAt: string;
 }
 
@@ -61,7 +64,11 @@ export async function loadPersistedData(): Promise<PersistedLpsData | null> {
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => reject(req.error);
     });
-    if (result && Array.isArray(result.customers) && result.customers.length > 0) {
+    if (
+      result &&
+      ((Array.isArray(result.tabs) && result.tabs.length > 0) ||
+        (Array.isArray(result.customers) && result.customers.length > 0))
+    ) {
       return result;
     }
   } catch (err) {
@@ -72,7 +79,11 @@ export async function loadPersistedData(): Promise<PersistedLpsData | null> {
     const backup = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (backup) {
       const parsed = JSON.parse(backup) as PersistedLpsData;
-      if (parsed && Array.isArray(parsed.customers) && parsed.customers.length > 0) {
+      if (
+        parsed &&
+        ((Array.isArray(parsed.tabs) && parsed.tabs.length > 0) ||
+          (Array.isArray(parsed.customers) && parsed.customers.length > 0))
+      ) {
         return parsed;
       }
     }

@@ -69,3 +69,15 @@ export interface SubscriptionDateSettings {
   subscriptionValue: number;
   totalDays: number;
 }
+
+export interface DocumentTab {
+  id: string;
+  name: string; // e.g. "Tab 1", "Nov 2026", or fileName
+  fileName: string;
+  fileSizeText: string;
+  customers: CustomerSummary[];
+  rawRows: SubscriberRawRow[];
+  customTotalDeposit?: number | null;
+  selectedCustomerId?: string | null;
+  createdAt: string;
+}

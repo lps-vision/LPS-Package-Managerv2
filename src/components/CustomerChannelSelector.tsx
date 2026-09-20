@@ -92,6 +92,9 @@ interface CustomerChannelSelectorProps {
   ) => void;
   bstPrice?: number;
   localAddonPrice?: number;
+  referenceCustomer?: CustomerSummary | null;
+  referenceTabName?: string;
+  onCopyFromReference?: () => void;
 }
 
 export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = ({
@@ -103,6 +106,9 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
   onApplyChannelsToAll,
   bstPrice = BST_PRICE,
   localAddonPrice = LOCAL_PRICE,
+  referenceCustomer,
+  referenceTabName,
+  onCopyFromReference,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [channelSearchTerm, setChannelSearchTerm] = useState('');
@@ -863,6 +869,39 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                 )}
               </div>
             </div>
+
+            {/* Reference comparison with other open Excel tab (Entawnna) */}
+            {referenceCustomer && (
+              <div className="pt-2 border-t border-blue-200/80 flex items-center justify-between flex-wrap gap-2 text-xs bg-amber-50/70 p-2.5 rounded-lg border border-amber-300/80">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-extrabold bg-amber-200 text-amber-950 px-2 py-0.5 rounded text-[11px] border border-amber-300">
+                    Entawnna: {referenceTabName || 'Other Tab'}
+                  </span>
+                  <span className="font-semibold text-amber-950">
+                    He customer hian tab lehlamah <strong>{referenceCustomer.selectedChannels.length} channels</strong> a nei
+                    ({referenceCustomer.hasLocalAddon !== false ? 'Local tel' : 'BST chauh'}
+                    {referenceCustomer.customBillAmount ? ` • Bill: ₹ ${referenceCustomer.customBillAmount}` : ''}):
+                  </span>
+                  {referenceCustomer.selectedChannels.length > 0 ? (
+                    <span className="text-amber-900 font-medium">
+                      {referenceCustomer.selectedChannels.join(', ')}
+                    </span>
+                  ) : (
+                    <span className="italic text-amber-700">A-la-carte channel ala thlang lo</span>
+                  )}
+                </div>
+                {onCopyFromReference && (
+                  <button
+                    type="button"
+                    onClick={onCopyFromReference}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-700 hover:bg-amber-800 text-white font-bold text-xs rounded-md shadow-xs transition-colors cursor-pointer shrink-0 ml-auto"
+                    title="He customer-a channel te hi tab lehlam atangin copy rawh"
+                  >
+                    <span>Copy Channels</span>
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Unsaved Draft Status & Warning Bar */}
             {hasUnsavedChanges && (
