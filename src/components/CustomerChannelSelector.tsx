@@ -477,25 +477,33 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
 
     setSaveSuccessMessage(
       nextVal
-        ? 'Local Add-on (₹ 71) chu thlan leh a ni e (PACK-1 BST + Local). SAVE button hmet la a in-save ang.'
-        : 'Local Add-on (₹ 71) chu Untick a ni e (Base Pack: PACK-1 BST ₹ 154 chauh). 300/350 thlan sa a la in-tick reng e. SAVE button hmet la a in-save ang.'
+        ? '✓ Local Add-on (₹ 71) chu thlan & save nghal a ni e!'
+        : '✓ Local Add-on (₹ 71) chu Untick & save nghal a ni e (PACK-1 BST chauh)!'
     );
     setTimeout(() => setSaveSuccessMessage(null), 3500);
+
+    if (currentCustomer) {
+      const curBill = parseFloat(customBillInput);
+      const billToSave = !isNaN(curBill) && curBill > 0 ? Number(curBill.toFixed(2)) : undefined;
+      onSaveCustomerChannels(currentCustomer.id, selectedChannelTags, nextVal, billToSave);
+    }
   };
 
   // 1. Rs. 300 SD Pack
   // When clicked: Replaces 350 HD channels completely! Preserves hasLocalAddon status!
   const handleTogglePreset300 = () => {
+    let newTags: string[];
+    let newBill: number;
     if (is300Active) {
-      const newTags = selectedChannelTags.filter(
+      newTags = selectedChannelTags.filter(
         (ch) => ch !== 'Star Sports 1' && ch !== 'Star Sports Select 1' && ch !== 'Star Sports Select 2' && ch !== 'Cartoon Network'
       );
       const sportsAddon = (is100Active ? 100 : 0) + (is60Active ? 60 : 0);
-      const newBill = (hasLocalAddon ? 225 : 154) + (is50Active ? 50 : 0) + sportsAddon;
+      newBill = (hasLocalAddon ? 225 : 154) + (is50Active ? 50 : 0) + sportsAddon;
       updateDraft(newTags, hasLocalAddon, newBill);
     } else {
       // Remove all 350 HD channels (SS Select HD-1, SS Select HD-2, Star Sports HD-1)
-      let newTags = selectedChannelTags.filter(
+      newTags = selectedChannelTags.filter(
         (ch) => ch !== 'SS Select HD-1' && ch !== 'SS Select HD-2' && ch !== 'Star Sports HD-1'
       );
       for (const ch of PRESET_300_CHANNELS) {
@@ -503,30 +511,37 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
       }
       const sportsAddon = (is100Active ? 100 : 0) + (is60Active ? 60 : 0);
       const baseBill = hasLocalAddon ? 300 : 300 - 71;
-      const newBill = baseBill + (is50Active ? 50 : 0) + sportsAddon;
+      newBill = baseBill + (is50Active ? 50 : 0) + sportsAddon;
       updateDraft(newTags, hasLocalAddon, newBill);
-      setSaveSuccessMessage(
-        hasLocalAddon
-          ? '₹ 300 SD Pack thlan a ni e. SAVE button hmet la a in-save ang.'
-          : '₹ 300 SD Pack (Local untick sa - ₹ 229) thlan a ni e. SAVE button hmet la a in-save ang.'
-      );
-      setTimeout(() => setSaveSuccessMessage(null), 3500);
     }
+
+    if (currentCustomer) {
+      onSaveCustomerChannels(currentCustomer.id, newTags, hasLocalAddon, newBill);
+    }
+
+    setSaveSuccessMessage(
+      hasLocalAddon
+        ? '✓ ₹ 300 SD Pack thlan & save nghal a ni e!'
+        : '✓ ₹ 300 SD Pack (Local untick - ₹ 229) thlan & save nghal a ni e!'
+    );
+    setTimeout(() => setSaveSuccessMessage(null), 3500);
   };
 
   // 2. Rs. 350 HD Pack
   // When clicked: Replaces 300 SD channels completely! Preserves hasLocalAddon status!
   const handleTogglePreset350 = () => {
+    let newTags: string[];
+    let newBill: number;
     if (is350Active) {
-      const newTags = selectedChannelTags.filter(
+      newTags = selectedChannelTags.filter(
         (ch) => ch !== 'SS Select HD-1' && ch !== 'SS Select HD-2' && ch !== 'Star Sports HD-1' && ch !== 'Cartoon Network'
       );
       const sportsAddon = (is100Active ? 100 : 0) + (is60Active ? 60 : 0);
-      const newBill = (hasLocalAddon ? 225 : 154) + (is50Active ? 50 : 0) + sportsAddon;
+      newBill = (hasLocalAddon ? 225 : 154) + (is50Active ? 50 : 0) + sportsAddon;
       updateDraft(newTags, hasLocalAddon, newBill);
     } else {
       // Remove all 300 SD channels (Star Sports 1, Star Sports Select 1, Star Sports Select 2)
-      let newTags = selectedChannelTags.filter(
+      newTags = selectedChannelTags.filter(
         (ch) => ch !== 'Star Sports 1' && ch !== 'Star Sports Select 1' && ch !== 'Star Sports Select 2'
       );
       for (const ch of PRESET_350_CHANNELS) {
@@ -534,15 +549,20 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
       }
       const sportsAddon = (is100Active ? 100 : 0) + (is60Active ? 60 : 0);
       const baseBill = hasLocalAddon ? 350 : 350 - 71;
-      const newBill = baseBill + (is50Active ? 50 : 0) + sportsAddon;
+      newBill = baseBill + (is50Active ? 50 : 0) + sportsAddon;
       updateDraft(newTags, hasLocalAddon, newBill);
-      setSaveSuccessMessage(
-        hasLocalAddon
-          ? '₹ 350 HD Pack thlan a ni e. SAVE button hmet la a in-save ang.'
-          : '₹ 350 HD Pack (Local untick sa - ₹ 279) thlan a ni e. SAVE button hmet la a in-save ang.'
-      );
-      setTimeout(() => setSaveSuccessMessage(null), 3500);
     }
+
+    if (currentCustomer) {
+      onSaveCustomerChannels(currentCustomer.id, newTags, hasLocalAddon, newBill);
+    }
+
+    setSaveSuccessMessage(
+      hasLocalAddon
+        ? '✓ ₹ 350 HD Pack thlan & save nghal a ni e!'
+        : '✓ ₹ 350 HD Pack (Local untick - ₹ 279) thlan & save nghal a ni e!'
+    );
+    setTimeout(() => setSaveSuccessMessage(null), 3500);
   };
 
   // 3. Rs. 50 Addon
@@ -554,18 +574,26 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
       ? (hasLocalAddon ? 300 : 300 - 71)
       : (hasLocalAddon ? 225 : 154);
     const sportsAddon = (is100Active ? 100 : 0) + (is60Active ? 60 : 0);
+    let newBill: number;
     if (is50Active) {
       newTags = selectedChannelTags.filter((ch) => !PRESET_50_CHANNELS.includes(ch));
-      const newBill = base + sportsAddon;
+      newBill = base + sportsAddon;
       updateDraft(newTags, hasLocalAddon, newBill);
     } else {
       newTags = [...selectedChannelTags];
       for (const ch of PRESET_50_CHANNELS) {
         if (!newTags.includes(ch)) newTags.push(ch);
       }
-      const newBill = base + 50 + sportsAddon;
+      newBill = base + 50 + sportsAddon;
       updateDraft(newTags, hasLocalAddon, newBill);
     }
+
+    if (currentCustomer) {
+      onSaveCustomerChannels(currentCustomer.id, newTags, hasLocalAddon, newBill);
+    }
+
+    setSaveSuccessMessage('✓ ₹ 50 Addon save nghal a ni e!');
+    setTimeout(() => setSaveSuccessMessage(null), 3000);
   };
 
   // 4. Rs. 60 Sports SD Addon
@@ -578,21 +606,27 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
       : (hasLocalAddon ? 225 : 154);
     const addon50 = is50Active ? 50 : 0;
     const addon100 = is100Active ? 100 : 0;
+    let newTags: string[];
+    let newBill: number;
     if (is60Active) {
-      const newTags = selectedChannelTags.filter((ch) => !PRESET_60_CHANNELS.includes(ch));
-      const newBill = base + addon50 + addon100;
+      newTags = selectedChannelTags.filter((ch) => !PRESET_60_CHANNELS.includes(ch));
+      newBill = base + addon50 + addon100;
       updateDraft(newTags, hasLocalAddon, newBill);
     } else {
-      // Retain any existing channels including 100 HD channels so both can be selected together
-      const newTags = [...selectedChannelTags];
+      newTags = [...selectedChannelTags];
       for (const ch of PRESET_60_CHANNELS) {
         if (!newTags.includes(ch)) newTags.push(ch);
       }
-      const newBill = base + addon50 + addon100 + 60;
+      newBill = base + addon50 + addon100 + 60;
       updateDraft(newTags, hasLocalAddon, newBill);
-      setSaveSuccessMessage('₹ 60 Sports SD Addon thlan a ni e. SAVE button hmet la a in-save ang.');
-      setTimeout(() => setSaveSuccessMessage(null), 3000);
     }
+
+    if (currentCustomer) {
+      onSaveCustomerChannels(currentCustomer.id, newTags, hasLocalAddon, newBill);
+    }
+
+    setSaveSuccessMessage('✓ ₹ 60 Sports SD Addon save nghal a ni e!');
+    setTimeout(() => setSaveSuccessMessage(null), 3000);
   };
 
   // 5. Rs. 100 Sports HD Addon
@@ -605,21 +639,27 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
       : (hasLocalAddon ? 225 : 154);
     const addon50 = is50Active ? 50 : 0;
     const addon60 = is60Active ? 60 : 0;
+    let newTags: string[];
+    let newBill: number;
     if (is100Active) {
-      const newTags = selectedChannelTags.filter((ch) => !PRESET_100_CHANNELS.includes(ch));
-      const newBill = base + addon50 + addon60;
+      newTags = selectedChannelTags.filter((ch) => !PRESET_100_CHANNELS.includes(ch));
+      newBill = base + addon50 + addon60;
       updateDraft(newTags, hasLocalAddon, newBill);
     } else {
-      // Retain any existing channels including 60 SD channels so both can be selected together
-      const newTags = [...selectedChannelTags];
+      newTags = [...selectedChannelTags];
       for (const ch of PRESET_100_CHANNELS) {
         if (!newTags.includes(ch)) newTags.push(ch);
       }
-      const newBill = base + addon50 + addon60 + 100;
+      newBill = base + addon50 + addon60 + 100;
       updateDraft(newTags, hasLocalAddon, newBill);
-      setSaveSuccessMessage('₹ 100 Sports HD Addon thlan a ni e. SAVE button hmet la a in-save ang.');
-      setTimeout(() => setSaveSuccessMessage(null), 3000);
     }
+
+    if (currentCustomer) {
+      onSaveCustomerChannels(currentCustomer.id, newTags, hasLocalAddon, newBill);
+    }
+
+    setSaveSuccessMessage('✓ ₹ 100 Sports HD Addon save nghal a ni e!');
+    setTimeout(() => setSaveSuccessMessage(null), 3000);
   };
 
   // 6. Direct Combo: Rs. 450 Plan (350 HD + 100 Sports HD)
@@ -641,7 +681,12 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
     const baseBill = hasLocalAddon ? 450 : 450 - 71;
     const newBill = baseBill + (is50Active ? 50 : 0);
     updateDraft(newTags, hasLocalAddon, newBill);
-    setSaveSuccessMessage('₹ 450 Plan (350 HD + 100 Sports HD) thlan fel a ni e! SAVE button hmet la a in-save ang.');
+
+    if (currentCustomer) {
+      onSaveCustomerChannels(currentCustomer.id, newTags, hasLocalAddon, newBill);
+    }
+
+    setSaveSuccessMessage('✓ ₹ 450 Plan (350 HD + 100 Sports HD) save fel nghal a ni e!');
     setTimeout(() => setSaveSuccessMessage(null), 3500);
   };
 
@@ -664,7 +709,12 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
     const baseBill = hasLocalAddon ? 360 : 360 - 71;
     const newBill = baseBill + (is50Active ? 50 : 0);
     updateDraft(newTags, hasLocalAddon, newBill);
-    setSaveSuccessMessage('₹ 360 Plan (300 SD + 60 Sports SD) thlan fel a ni e! SAVE button hmet la a in-save ang.');
+
+    if (currentCustomer) {
+      onSaveCustomerChannels(currentCustomer.id, newTags, hasLocalAddon, newBill);
+    }
+
+    setSaveSuccessMessage('✓ ₹ 360 Plan (300 SD + 60 Sports SD) save fel nghal a ni e!');
     setTimeout(() => setSaveSuccessMessage(null), 3500);
   };
 
@@ -898,29 +948,41 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
         <>
           {/* 3. A hmaa save tawh */}
           <div className="bg-blue-50/90 border border-blue-200/90 rounded-xl p-3.5 text-sm text-blue-950 flex flex-col gap-2.5 shadow-2xs">
-            <div className="flex items-start gap-2.5">
-              <div className="text-blue-600 mt-0.5 shrink-0">
-                <Tv2 className="w-5 h-5" />
-              </div>
-              <div className="leading-relaxed flex-1">
-                <span className="font-bold text-blue-900">Actived channel: </span>
-                <span className="font-extrabold text-blue-950">
-                  {currentCustomer.hasLocalAddon ? 'PACK-1 (BST) + Local Add-on' : 'PACK-1 (BST) chauh (Local tello)'}
-                </span>
-                {currentCustomer.selectedChannels.length > 0 ? (
-                  <span className="text-blue-950">
-                    {' '}+ A-la-carte ({currentCustomer.selectedChannels.length}):{' '}
-                    <strong className="text-blue-950 font-extrabold">{currentCustomer.selectedChannels.join(', ')}</strong>
+            <div className="flex items-start justify-between gap-3 flex-wrap">
+              <div className="flex items-start gap-2.5 flex-1 min-w-[280px]">
+                <div className="text-blue-600 mt-0.5 shrink-0">
+                  <Tv2 className="w-5 h-5" />
+                </div>
+                <div className="leading-relaxed flex-1">
+                  <span className="font-bold text-blue-900">Actived channel: </span>
+                  <span className="font-extrabold text-blue-950">
+                    {currentCustomer.hasLocalAddon ? 'PACK-1 (BST) + Local Add-on' : 'PACK-1 (BST) chauh (Local tello)'}
                   </span>
-                ) : (
-                  <span className="italic text-blue-700 font-medium"> (a-la-carte channel thlan ala awm lo)</span>
-                )}
-                {currentCustomer.customBillAmount !== undefined && currentCustomer.customBillAmount > 0 && (
-                  <span className="ml-2 font-bold text-emerald-800 bg-emerald-100/90 border border-emerald-300 px-2 py-0.5 rounded text-xs">
-                    Saved Bill: ₹ {currentCustomer.customBillAmount.toFixed(0)}
-                  </span>
-                )}
+                  {currentCustomer.selectedChannels.length > 0 ? (
+                    <span className="text-blue-950">
+                      {' '}+ A-la-carte ({currentCustomer.selectedChannels.length}):{' '}
+                      <strong className="text-blue-950 font-extrabold">{currentCustomer.selectedChannels.join(', ')}</strong>
+                    </span>
+                  ) : (
+                    <span className="italic text-blue-700 font-medium"> (a-la-carte channel thlan ala awm lo)</span>
+                  )}
+                  {currentCustomer.customBillAmount !== undefined && currentCustomer.customBillAmount > 0 && (
+                    <span className="ml-2 font-bold text-emerald-800 bg-emerald-100/90 border border-emerald-300 px-2 py-0.5 rounded text-xs">
+                      Saved Bill: ₹ {currentCustomer.customBillAmount.toFixed(0)}
+                    </span>
+                  )}
+                </div>
               </div>
+              <button
+                type="button"
+                id="top-save-customer-btn"
+                onClick={handleSave}
+                className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs rounded-lg shadow-sm cursor-pointer flex items-center gap-1.5 transition-all shrink-0"
+                title="Customer channel leh pack save rawh"
+              >
+                <Save className="w-4 h-4" />
+                <span>SAVE</span>
+              </button>
             </div>
 
             {/* Reference comparison with other open Excel tab (Entawnna) */}

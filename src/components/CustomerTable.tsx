@@ -1160,7 +1160,12 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
                               {r.channelIndex === -2 ? 'PACK-1 (BST)' : r.channelIndex === -1 ? 'Local' : `${r.channelIndex + 1}/${r.channelTotalCount}`}
                             </span>
                           )}
-                          {r.isModified && !r.isMultiChannelSubRow && (
+                          {r.originalCustomer?.userEdited && !r.isMultiChannelSubRow && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded font-extrabold bg-purple-100 text-purple-900 border border-purple-300" title="User Edited">
+                              Edited
+                            </span>
+                          )}
+                          {r.isModified && !r.isMultiChannelSubRow && !r.originalCustomer?.userEdited && (
                             <span className="inline-block w-2 h-2 rounded-full bg-emerald-600 shrink-0 shadow-2xs" title="Modified" />
                           )}
                         </div>

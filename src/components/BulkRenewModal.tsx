@@ -37,33 +37,16 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
   const [editOnly, setEditOnly] = useState<boolean>(false);
   const [noEditWarning, setNoEditWarning] = useState<boolean>(false);
 
-  // Filter customers to only those actually edited or with modified packs by the user
+  // Filter customers to strictly those actually edited or with modified packs by the user
   const isEditedCustomer = (c: CustomerSummary) => {
-    // 1. Direct match in explicitly tracked editedCustomerIds Set
-    if (editedCustomerIds && editedCustomerIds.size > 0) {
-      return editedCustomerIds.has(c.id);
-    }
-
-    // 2. Explicitly flagged with userEdited
+    // 1. Explicitly flagged with userEdited
     if (c.userEdited === true) {
       return true;
     }
 
-    // 3. Fallback for sessions loaded before this update:
-    // If not all customers in the list have isModified === true (i.e. only some were modified)
-    const allModified = customers.length > 0 && customers.every((x) => x.isModified);
-    if (!allModified && c.isModified) {
+    // 2. Direct match in explicitly tracked editedCustomerIds Set
+    if (editedCustomerIds && editedCustomerIds.has(c.id)) {
       return true;
-    }
-
-    // 4. Fallback if user edited pack/channels/bill while all customers had isModified due to parser bug:
-    const hasChannels = Boolean(c.selectedChannels && c.selectedChannels.length > 0);
-    const hasCustomBill = Boolean(c.customBillAmount !== undefined && c.customBillAmount > 0);
-    if (hasChannels || hasCustomBill) {
-      const allHaveChannels = customers.length > 0 && customers.every((x) => x.selectedChannels?.length > 0);
-      if (!allHaveChannels) {
-        return true;
-      }
     }
 
     return false;
@@ -573,22 +556,36 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
                   </span>
                 </div>
                 {effectiveCustomers.length > 0 ? (
-                  <p className="text-xs text-emerald-800 leading-relaxed">
-                    Vawiin a i edit / pack i thlak te chauh hi Excel file ah download a ni dawn e:{' '}
-                    <span className="font-bold text-emerald-950">
-                      {effectiveCustomers
-                        .map((c) => `${c.name} (${c.subscriberCode})`)
-                        .slice(0, 6)
-                        .join(', ')}
-                      {effectiveCustomers.length > 6
-                        ? ` leh midang ${effectiveCustomers.length - 6}...`
-                        : ''}
-                    </span>
-                  </p>
+                  <div className="space-y-1.5">
+                    <p className="text-xs text-emerald-800 leading-relaxed font-medium">
+                      Vawiin a i edit / pack i thlak te chauh hi Excel file ah download a ni dawn e:
+                    </p>
+                    <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto pr-1">
+                      {effectiveCustomers.map((c) => (
+                        <span
+                          key={c.id}
+                          className="inline-flex items-center gap-1.5 bg-white border border-emerald-300 text-emerald-950 text-[11px] font-semibold px-2 py-0.5 rounded-md shadow-2xs"
+                        >
+                          <span className="font-bold">{c.name}</span>
+                          <span className="text-[10px] text-emerald-700 font-mono">({c.subscriberCode})</span>
+                          {c.customBillAmount !== undefined && c.customBillAmount > 0 ? (
+                            <span className="text-[10px] bg-emerald-100 text-emerald-900 px-1 rounded font-mono font-bold">
+                              ₹{c.customBillAmount}
+                            </span>
+                          ) : null}
+                          {c.selectedChannels.length > 0 ? (
+                            <span className="text-[10px] text-emerald-700">
+                              +{c.selectedChannels.length} ch
+                            </span>
+                          ) : null}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 ) : (
-                  <p className="text-xs text-amber-800 leading-relaxed">
-                    Vawiin ah customer pack thlak emaw edit an la awm lo. Edit Only hi off la emaw,
-                    customer thlangin pack pe phawt rawh.
+                  <p className="text-xs text-amber-800 leading-relaxed font-semibold">
+                    Vawiin ah customer pack thlak emaw edit an la awm lo (0 Subscribers). Edit Only hi off la emaw,
+                    customer list atangin pack/channel thlak phawt rawh.
                   </p>
                 )}
               </div>
@@ -729,11 +726,17 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
                   }`}
                 />
               </span>
-              {editOnly && (
-                <span className="text-[11px] font-mono px-1.5 py-0.2 rounded bg-emerald-200 text-emerald-900 font-extrabold">
-                  {effectiveCustomers.length}
-                </span>
-              )}
+              <span
+                className={`text-[11px] font-mono px-1.5 py-0.5 rounded font-extrabold ${
+                  editOnly
+                    ? effectiveCustomers.length > 0
+                      ? 'bg-emerald-200 text-emerald-950'
+                      : 'bg-amber-200 text-amber-950'
+                    : 'bg-slate-200 text-slate-700'
+                }`}
+              >
+                {editOnly ? `${effectiveCustomers.length} edit` : `${customers.length} all`}
+              </span>
             </button>
 
             {onOpenDownloadGuide && (

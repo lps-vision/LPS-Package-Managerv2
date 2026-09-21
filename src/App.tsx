@@ -171,29 +171,25 @@ export default function App() {
             setCustomTotalDeposit(active.customTotalDeposit ?? null);
             setSelectedCustomerId(active.selectedCustomerId || active.customers[0]?.id || null);
 
-            // Restore or detect edited customer IDs
-            if (active.editedCustomerIds && Array.isArray(active.editedCustomerIds) && active.editedCustomerIds.length > 0) {
-              setEditedCustomerIds(new Set(active.editedCustomerIds));
-            } else {
-              const detectedIds = new Set<string>();
-              const userEditedList = active.customers.filter((c) => c.userEdited);
-              if (userEditedList.length > 0) {
-                userEditedList.forEach((c) => detectedIds.add(c.id));
-              } else {
-                const allModified = active.customers.length > 0 && active.customers.every((c) => c.isModified);
-                if (!allModified) {
-                  active.customers.filter((c) => c.isModified).forEach((c) => detectedIds.add(c.id));
-                } else {
-                  const changed = active.customers.filter(
-                    (c) => (c.selectedChannels && c.selectedChannels.length > 0) || (c.customBillAmount && c.customBillAmount > 0)
-                  );
-                  if (changed.length > 0 && changed.length < active.customers.length) {
-                    changed.forEach((c) => detectedIds.add(c.id));
-                  }
+            // Restore or detect edited customer IDs - STRICT RULE: Only customers with userEdited === true
+            const validEditedIds = new Set<string>();
+            const userEditedList = active.customers.filter((c) => Boolean(c.userEdited));
+            userEditedList.forEach((c) => validEditedIds.add(c.id));
+
+            if (
+              active.editedCustomerIds &&
+              Array.isArray(active.editedCustomerIds) &&
+              active.editedCustomerIds.length > 0 &&
+              active.editedCustomerIds.length < active.customers.length
+            ) {
+              active.editedCustomerIds.forEach((id) => {
+                const found = active.customers.find((c) => c.id === id);
+                if (found && found.userEdited) {
+                  validEditedIds.add(id);
                 }
-              }
-              setEditedCustomerIds(detectedIds);
+              });
             }
+            setEditedCustomerIds(validEditedIds);
           } else if (saved.customers && saved.customers.length > 0) {
             // Legacy single-tab fallback
             const customersToUse: CustomerSummary[] = saved.customers.map((c) => {
@@ -243,24 +239,10 @@ export default function App() {
             setFileSizeText(initialTab.fileSizeText);
             setSelectedCustomerId(initialTab.selectedCustomerId || null);
 
-            const detectedIds = new Set<string>();
-            const userEditedList = customersToUse.filter((c) => c.userEdited);
-            if (userEditedList.length > 0) {
-              userEditedList.forEach((c) => detectedIds.add(c.id));
-            } else {
-              const allModified = customersToUse.length > 0 && customersToUse.every((c) => c.isModified);
-              if (!allModified) {
-                customersToUse.filter((c) => c.isModified).forEach((c) => detectedIds.add(c.id));
-              } else {
-                const changed = customersToUse.filter(
-                  (c) => (c.selectedChannels && c.selectedChannels.length > 0) || (c.customBillAmount && c.customBillAmount > 0)
-                );
-                if (changed.length > 0 && changed.length < customersToUse.length) {
-                  changed.forEach((c) => detectedIds.add(c.id));
-                }
-              }
-            }
-            setEditedCustomerIds(detectedIds);
+            const validEditedIds = new Set<string>();
+            const userEditedList = customersToUse.filter((c) => Boolean(c.userEdited));
+            userEditedList.forEach((c) => validEditedIds.add(c.id));
+            setEditedCustomerIds(validEditedIds);
           }
         }
       } catch (err) {
@@ -843,7 +825,19 @@ export default function App() {
     setFileSizeText(targetTab.fileSizeText || '');
     setCustomTotalDeposit(targetTab.customTotalDeposit ?? null);
     setSelectedCustomerId(targetTab.selectedCustomerId || targetTab.customers[0]?.id || null);
-    setEditedCustomerIds(new Set(targetTab.editedCustomerIds || []));
+    const targetEdited = new Set<string>();
+    targetTab.customers.filter((c) => Boolean(c.userEdited)).forEach((c) => targetEdited.add(c.id));
+    if (
+      targetTab.editedCustomerIds &&
+      Array.isArray(targetTab.editedCustomerIds) &&
+      targetTab.editedCustomerIds.length < targetTab.customers.length
+    ) {
+      targetTab.editedCustomerIds.forEach((id) => {
+        const c = targetTab.customers.find((cust) => cust.id === id);
+        if (c && c.userEdited) targetEdited.add(id);
+      });
+    }
+    setEditedCustomerIds(targetEdited);
   };
 
   // Close a specific tab
@@ -873,7 +867,19 @@ export default function App() {
       setFileSizeText(nextTab.fileSizeText || '');
       setCustomTotalDeposit(nextTab.customTotalDeposit ?? null);
       setSelectedCustomerId(nextTab.selectedCustomerId || nextTab.customers[0]?.id || null);
-      setEditedCustomerIds(new Set(nextTab.editedCustomerIds || []));
+      const targetEdited = new Set<string>();
+      nextTab.customers.filter((c) => Boolean(c.userEdited)).forEach((c) => targetEdited.add(c.id));
+      if (
+        nextTab.editedCustomerIds &&
+        Array.isArray(nextTab.editedCustomerIds) &&
+        nextTab.editedCustomerIds.length < nextTab.customers.length
+      ) {
+        nextTab.editedCustomerIds.forEach((id) => {
+          const c = nextTab.customers.find((cust) => cust.id === id);
+          if (c && c.userEdited) targetEdited.add(id);
+        });
+      }
+      setEditedCustomerIds(targetEdited);
     }
   };
 
