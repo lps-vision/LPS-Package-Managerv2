@@ -403,25 +403,23 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
   };
 
   // --- QUICK PRESETS (Rs. 300, Rs. 350, Rs. 50, Rs. 60, Rs. 100) ---
-  // Rs. 300 SD: BST + LPS LOCALS + Star Sports Select 1 / Star Sports Select 2 / Cartoon Network
+  // Rs. 300 SD: BST + Star Sports Select 1 / Star Sports Select 2 / Cartoon Network (Local ₹ 71 is optional)
   const is300Active = useMemo(() => {
     return (
-      hasLocalAddon &&
       selectedChannelTags.includes('Star Sports Select 1') &&
       selectedChannelTags.includes('Star Sports Select 2') &&
       !selectedChannelTags.includes('Star Sports HD-1')
     );
-  }, [selectedChannelTags, hasLocalAddon]);
+  }, [selectedChannelTags]);
 
-  // Rs. 350 HD: BST + LPS LOCALS + SS Select HD-1 / SS Select HD-2 / Star Sports HD-1 / Cartoon Network
+  // Rs. 350 HD: BST + SS Select HD-1 / SS Select HD-2 / Star Sports HD-1 / Cartoon Network (Local ₹ 71 is optional)
   const is350Active = useMemo(() => {
     return (
-      hasLocalAddon &&
       selectedChannelTags.includes('Star Sports HD-1') &&
       selectedChannelTags.includes('SS Select HD-1') &&
       selectedChannelTags.includes('SS Select HD-2')
     );
-  }, [selectedChannelTags, hasLocalAddon]);
+  }, [selectedChannelTags]);
 
   // Rs. 50: Nick Junior / Movies Now / MNX / NG Wild / SM SELECT / VH1
   const is50Active = useMemo(() => {
@@ -450,13 +448,43 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
 
   // Combined preset bill calculation (e.g. Rs. 350 + Rs. 100 = Rs. 450, or Rs. 300 + 60 + 100 = Rs. 460)
   const currentPresetBill = useMemo(() => {
-    const base = is300Active ? 300 : is350Active ? 350 : 0;
+    const base = is300Active
+      ? (hasLocalAddon ? 300 : 300 - 71)
+      : is350Active
+      ? (hasLocalAddon ? 350 : 350 - 71)
+      : 0;
     const addon = (is50Active ? 50 : 0) + (is60Active ? 60 : 0) + (is100Active ? 100 : 0);
     return base > 0 ? base + addon : addon > 0 ? (hasLocalAddon ? 225 : 154) + addon : 0;
   }, [is300Active, is350Active, is50Active, is60Active, is100Active, hasLocalAddon]);
 
+  // Toggle Local Channels Add-on (₹ 71)
+  // When unticked: Base Pack is PACK-1 (BST ₹ 154) only, and 300 or 350 pack remains active/ticked!
+  const handleToggleLocalAddon = (nextVal: boolean) => {
+    setHasLocalAddon(nextVal);
+
+    if (customBillInput && !isNaN(Number(customBillInput))) {
+      const curBill = Number(customBillInput);
+      if (nextVal && !hasLocalAddon) {
+        setCustomBillInput((curBill + 71).toString());
+      } else if (!nextVal && hasLocalAddon) {
+        setCustomBillInput((Math.max(154, curBill - 71)).toString());
+      }
+    } else if (is300Active || is350Active) {
+      const base = is300Active ? (nextVal ? 300 : 229) : (nextVal ? 350 : 279);
+      const addon = (is50Active ? 50 : 0) + (is60Active ? 60 : 0) + (is100Active ? 100 : 0);
+      setCustomBillInput((base + addon).toString());
+    }
+
+    setSaveSuccessMessage(
+      nextVal
+        ? 'Local Add-on (₹ 71) chu thlan leh a ni e (PACK-1 BST + Local). SAVE button hmet la a in-save ang.'
+        : 'Local Add-on (₹ 71) chu Untick a ni e (Base Pack: PACK-1 BST ₹ 154 chauh). 300/350 thlan sa a la in-tick reng e. SAVE button hmet la a in-save ang.'
+    );
+    setTimeout(() => setSaveSuccessMessage(null), 3500);
+  };
+
   // 1. Rs. 300 SD Pack
-  // When clicked: Replaces 350 HD channels completely!
+  // When clicked: Replaces 350 HD channels completely! Preserves hasLocalAddon status!
   const handleTogglePreset300 = () => {
     if (is300Active) {
       const newTags = selectedChannelTags.filter(
@@ -474,15 +502,20 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
         if (!newTags.includes(ch)) newTags.push(ch);
       }
       const sportsAddon = (is100Active ? 100 : 0) + (is60Active ? 60 : 0);
-      const newBill = 300 + (is50Active ? 50 : 0) + sportsAddon;
-      updateDraft(newTags, true, newBill);
-      setSaveSuccessMessage('₹ 300 SD Pack thlan a ni e. SAVE (PACK-1 (BST) + Local & Channels) button hmet la a in-save ang.');
+      const baseBill = hasLocalAddon ? 300 : 300 - 71;
+      const newBill = baseBill + (is50Active ? 50 : 0) + sportsAddon;
+      updateDraft(newTags, hasLocalAddon, newBill);
+      setSaveSuccessMessage(
+        hasLocalAddon
+          ? '₹ 300 SD Pack thlan a ni e. SAVE button hmet la a in-save ang.'
+          : '₹ 300 SD Pack (Local untick sa - ₹ 229) thlan a ni e. SAVE button hmet la a in-save ang.'
+      );
       setTimeout(() => setSaveSuccessMessage(null), 3500);
     }
   };
 
   // 2. Rs. 350 HD Pack
-  // When clicked: Replaces 300 SD channels completely!
+  // When clicked: Replaces 300 SD channels completely! Preserves hasLocalAddon status!
   const handleTogglePreset350 = () => {
     if (is350Active) {
       const newTags = selectedChannelTags.filter(
@@ -500,9 +533,14 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
         if (!newTags.includes(ch)) newTags.push(ch);
       }
       const sportsAddon = (is100Active ? 100 : 0) + (is60Active ? 60 : 0);
-      const newBill = 350 + (is50Active ? 50 : 0) + sportsAddon;
-      updateDraft(newTags, true, newBill);
-      setSaveSuccessMessage('₹ 350 HD Pack thlan a ni e. SAVE (PACK-1 (BST) + Local & Channels) button hmet la a in-save ang.');
+      const baseBill = hasLocalAddon ? 350 : 350 - 71;
+      const newBill = baseBill + (is50Active ? 50 : 0) + sportsAddon;
+      updateDraft(newTags, hasLocalAddon, newBill);
+      setSaveSuccessMessage(
+        hasLocalAddon
+          ? '₹ 350 HD Pack thlan a ni e. SAVE button hmet la a in-save ang.'
+          : '₹ 350 HD Pack (Local untick sa - ₹ 279) thlan a ni e. SAVE button hmet la a in-save ang.'
+      );
       setTimeout(() => setSaveSuccessMessage(null), 3500);
     }
   };
@@ -510,7 +548,11 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
   // 3. Rs. 50 Addon
   const handleTogglePreset50 = () => {
     let newTags: string[];
-    const base = is350Active ? 350 : is300Active ? 300 : (hasLocalAddon ? 225 : 154);
+    const base = is350Active
+      ? (hasLocalAddon ? 350 : 350 - 71)
+      : is300Active
+      ? (hasLocalAddon ? 300 : 300 - 71)
+      : (hasLocalAddon ? 225 : 154);
     const sportsAddon = (is100Active ? 100 : 0) + (is60Active ? 60 : 0);
     if (is50Active) {
       newTags = selectedChannelTags.filter((ch) => !PRESET_50_CHANNELS.includes(ch));
@@ -529,7 +571,11 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
   // 4. Rs. 60 Sports SD Addon
   // Can be selected together with Rs. 100 Sports HD Addon!
   const handleTogglePreset60 = () => {
-    const base = is350Active ? 350 : is300Active ? 300 : (hasLocalAddon ? 225 : 154);
+    const base = is350Active
+      ? (hasLocalAddon ? 350 : 350 - 71)
+      : is300Active
+      ? (hasLocalAddon ? 300 : 300 - 71)
+      : (hasLocalAddon ? 225 : 154);
     const addon50 = is50Active ? 50 : 0;
     const addon100 = is100Active ? 100 : 0;
     if (is60Active) {
@@ -552,7 +598,11 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
   // 5. Rs. 100 Sports HD Addon
   // Can be selected together with Rs. 60 Sports SD Addon!
   const handleTogglePreset100 = () => {
-    const base = is350Active ? 350 : is300Active ? 300 : (hasLocalAddon ? 225 : 154);
+    const base = is350Active
+      ? (hasLocalAddon ? 350 : 350 - 71)
+      : is300Active
+      ? (hasLocalAddon ? 300 : 300 - 71)
+      : (hasLocalAddon ? 225 : 154);
     const addon50 = is50Active ? 50 : 0;
     const addon60 = is60Active ? 60 : 0;
     if (is100Active) {
@@ -588,9 +638,10 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
     for (const ch of PRESET_100_CHANNELS) {
       if (!newTags.includes(ch)) newTags.push(ch);
     }
-    const newBill = 450 + (is50Active ? 50 : 0);
-    updateDraft(newTags, true, newBill);
-    setSaveSuccessMessage('₹ 450 Plan (350 HD + 100 Sports HD) thlan fel a ni e! SAVE (PACK-1 (BST) + Local & Channels) button hmet la a in-save ang.');
+    const baseBill = hasLocalAddon ? 450 : 450 - 71;
+    const newBill = baseBill + (is50Active ? 50 : 0);
+    updateDraft(newTags, hasLocalAddon, newBill);
+    setSaveSuccessMessage('₹ 450 Plan (350 HD + 100 Sports HD) thlan fel a ni e! SAVE button hmet la a in-save ang.');
     setTimeout(() => setSaveSuccessMessage(null), 3500);
   };
 
@@ -610,9 +661,10 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
     for (const ch of PRESET_60_CHANNELS) {
       if (!newTags.includes(ch)) newTags.push(ch);
     }
-    const newBill = 360 + (is50Active ? 50 : 0);
-    updateDraft(newTags, true, newBill);
-    setSaveSuccessMessage('₹ 360 Plan (300 SD + 60 Sports SD) thlan fel a ni e! SAVE (PACK-1 (BST) + Local & Channels) button hmet la a in-save ang.');
+    const baseBill = hasLocalAddon ? 360 : 360 - 71;
+    const newBill = baseBill + (is50Active ? 50 : 0);
+    updateDraft(newTags, hasLocalAddon, newBill);
+    setSaveSuccessMessage('₹ 360 Plan (300 SD + 60 Sports SD) thlan fel a ni e! SAVE button hmet la a in-save ang.');
     setTimeout(() => setSaveSuccessMessage(null), 3500);
   };
 
@@ -1257,7 +1309,11 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                       <button
                         type="button"
                         onClick={handleTogglePreset300}
-                        title="₹ 300 SD Pack: PACK-1 (BST) + Local + Star Sports 1 + Star Sports Select 1 & 2 + Cartoon Network"
+                        title={
+                          hasLocalAddon
+                            ? "₹ 300 SD Pack: PACK-1 (BST) + Local (₹ 71) + Star Sports Select 1 & 2 + Cartoon Network"
+                            : "₹ 300 SD Pack (Local untick sa - ₹ 229): PACK-1 (BST) + Star Sports Select 1 & 2 + Cartoon Network"
+                        }
                         className={`px-3 py-1.5 rounded-lg border text-xs sm:text-[13px] font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none shadow-2xs ${
                           is300Active
                             ? 'bg-emerald-50 border-emerald-500 text-emerald-900 ring-2 ring-emerald-300'
@@ -1282,7 +1338,11 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                       <button
                         type="button"
                         onClick={handleTogglePreset350}
-                        title="₹ 350 HD Pack: PACK-1 (BST) + Local + SS Select HD 1 & 2 + Star Sports HD-1 + Cartoon Network"
+                        title={
+                          hasLocalAddon
+                            ? "₹ 350 HD Pack: PACK-1 (BST) + Local (₹ 71) + SS Select HD 1 & 2 + Star Sports HD-1 + Cartoon Network"
+                            : "₹ 350 HD Pack (Local untick sa - ₹ 279): PACK-1 (BST) + SS Select HD 1 & 2 + Star Sports HD-1 + Cartoon Network"
+                        }
                         className={`px-3 py-1.5 rounded-lg border text-xs sm:text-[13px] font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none shadow-2xs ${
                           is350Active
                             ? 'bg-emerald-50 border-emerald-500 text-emerald-900 ring-2 ring-emerald-300'
@@ -1300,6 +1360,35 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                         </span>
                         <span className={is350Active ? 'text-emerald-800 font-black font-mono' : 'text-amber-900 font-bold font-mono'}>
                           ₹ 350
+                        </span>
+                      </button>
+
+                      {/* Local (₹ 71) Add-on Toggle Button */}
+                      <button
+                        type="button"
+                        onClick={() => handleToggleLocalAddon(!hasLocalAddon)}
+                        title={
+                          hasLocalAddon
+                            ? "Local Add-on (₹ 71) hi untick rawh (300/350 pack la in-tick reng chungin Local ₹ 71 hi a in-cut ang)"
+                            : "Local Add-on (₹ 71) hi tick leh rawh"
+                        }
+                        className={`px-3 py-1.5 rounded-lg border text-xs sm:text-[13px] font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none shadow-2xs ${
+                          hasLocalAddon
+                            ? 'bg-emerald-50 border-emerald-500 text-emerald-900 ring-2 ring-emerald-300'
+                            : 'bg-amber-50 border-amber-400 text-amber-950 hover:bg-amber-100/70'
+                        }`}
+                      >
+                        <span
+                          className={`w-4 h-4 rounded-sm flex items-center justify-center border transition-colors ${
+                            hasLocalAddon
+                              ? 'bg-white border-emerald-500 text-red-600'
+                              : 'bg-white border-amber-400 text-transparent'
+                          }`}
+                        >
+                          {hasLocalAddon && <span className="text-red-600 font-black text-xs leading-none">✓</span>}
+                        </span>
+                        <span className={hasLocalAddon ? 'text-emerald-800 font-black font-mono' : 'text-amber-950 font-bold line-through font-mono'}>
+                          Local (₹ 71)
                         </span>
                       </button>
 
@@ -1908,7 +1997,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                     <div className="space-y-3 pt-1">
                       {/* Tick tur Pakhat (Single master checkbox for Local Pack) */}
                       <div
-                        onClick={() => setHasLocalAddon(!hasLocalAddon)}
+                        onClick={() => handleToggleLocalAddon(!hasLocalAddon)}
                         className={`p-3.5 rounded-lg border cursor-pointer transition-all ${
                           hasLocalAddon
                             ? 'bg-emerald-50/90 border-emerald-400 shadow-2xs'
@@ -1921,7 +2010,7 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                               type="checkbox"
                               id="local-addon-master-tick"
                               checked={hasLocalAddon}
-                              onChange={(e) => setHasLocalAddon(e.target.checked)}
+                              onChange={(e) => handleToggleLocalAddon(e.target.checked)}
                               onClick={(e) => e.stopPropagation()}
                               className="w-5 h-5 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500 cursor-pointer"
                             />
@@ -1935,14 +2024,16 @@ export const CustomerChannelSelector: React.FC<CustomerChannelSelectorProps> = (
                                   className={`text-[11px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
                                     hasLocalAddon
                                       ? 'bg-emerald-200 text-emerald-900'
-                                      : 'bg-gray-200 text-gray-700'
+                                      : 'bg-amber-100 text-amber-900 border border-amber-300'
                                   }`}
                                 >
-                                  {hasLocalAddon ? 'Add-on Ticked (Hring / Active)' : 'Unticked (Off)'}
+                                  {hasLocalAddon ? 'Add-on Ticked (Hring / Active)' : 'Unticked (Off - BST ₹ 154 chauh)'}
                                 </span>
                               </label>
                               <p className="text-xs text-gray-600 mt-0.5">
-                                Tick chuan Local tab a hring ang a, LPS 1 atanga LPS 12 leh LPS HD channel list thlan sa in a tel nghal ang. <strong className="text-emerald-800">LCO Share: ₹ 36.20 (50.99%) &bull; MSO Cut: ₹ 34.80 (49.01%)</strong> a ni.
+                                {hasLocalAddon
+                                  ? 'Tick chuan Local tab a hring ang a, LPS 1 atanga LPS 12 leh LPS HD channel list thlan sa in a tel nghal ang. LCO Share: ₹ 36.20 (50.99%) • MSO Cut: ₹ 34.80 (49.01%) a ni.'
+                                  : 'Untick a ni: Base pack (PACK-1 BST ₹ 154) chauh a ni ang a, ₹ 300 emaw ₹ 350 pack la in-tick reng chungin Local ₹ 71 a in-cut ang.'}
                               </p>
                             </div>
                           </div>
