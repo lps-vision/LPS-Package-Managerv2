@@ -95,6 +95,8 @@ export default function App() {
   const [isBillCalculatorOpen, setIsBillCalculatorOpen] = useState<boolean>(false);
   const [isTutorialOpen, setIsTutorialOpen] = useState<boolean>(false);
   const [customTotalDeposit, setCustomTotalDeposit] = useState<number | null>(null);
+  // Track customer IDs explicitly edited by the user in this session/tab
+  const [editedCustomerIds, setEditedCustomerIds] = useState<Set<string>>(new Set());
 
   // Subscription Date Settings for Excel Export
   const [subscriptionSettings, setSubscriptionSettings] = useState<SubscriptionDateSettings>(() => {
@@ -168,6 +170,30 @@ export default function App() {
             setFileSizeText(active.fileSizeText || 'Saved Session');
             setCustomTotalDeposit(active.customTotalDeposit ?? null);
             setSelectedCustomerId(active.selectedCustomerId || active.customers[0]?.id || null);
+
+            // Restore or detect edited customer IDs
+            if (active.editedCustomerIds && Array.isArray(active.editedCustomerIds) && active.editedCustomerIds.length > 0) {
+              setEditedCustomerIds(new Set(active.editedCustomerIds));
+            } else {
+              const detectedIds = new Set<string>();
+              const userEditedList = active.customers.filter((c) => c.userEdited);
+              if (userEditedList.length > 0) {
+                userEditedList.forEach((c) => detectedIds.add(c.id));
+              } else {
+                const allModified = active.customers.length > 0 && active.customers.every((c) => c.isModified);
+                if (!allModified) {
+                  active.customers.filter((c) => c.isModified).forEach((c) => detectedIds.add(c.id));
+                } else {
+                  const changed = active.customers.filter(
+                    (c) => (c.selectedChannels && c.selectedChannels.length > 0) || (c.customBillAmount && c.customBillAmount > 0)
+                  );
+                  if (changed.length > 0 && changed.length < active.customers.length) {
+                    changed.forEach((c) => detectedIds.add(c.id));
+                  }
+                }
+              }
+              setEditedCustomerIds(detectedIds);
+            }
           } else if (saved.customers && saved.customers.length > 0) {
             // Legacy single-tab fallback
             const customersToUse: CustomerSummary[] = saved.customers.map((c) => {
@@ -216,6 +242,25 @@ export default function App() {
             setCurrentFileName(fileName);
             setFileSizeText(initialTab.fileSizeText);
             setSelectedCustomerId(initialTab.selectedCustomerId || null);
+
+            const detectedIds = new Set<string>();
+            const userEditedList = customersToUse.filter((c) => c.userEdited);
+            if (userEditedList.length > 0) {
+              userEditedList.forEach((c) => detectedIds.add(c.id));
+            } else {
+              const allModified = customersToUse.length > 0 && customersToUse.every((c) => c.isModified);
+              if (!allModified) {
+                customersToUse.filter((c) => c.isModified).forEach((c) => detectedIds.add(c.id));
+              } else {
+                const changed = customersToUse.filter(
+                  (c) => (c.selectedChannels && c.selectedChannels.length > 0) || (c.customBillAmount && c.customBillAmount > 0)
+                );
+                if (changed.length > 0 && changed.length < customersToUse.length) {
+                  changed.forEach((c) => detectedIds.add(c.id));
+                }
+              }
+            }
+            setEditedCustomerIds(detectedIds);
           }
         }
       } catch (err) {
@@ -247,12 +292,13 @@ export default function App() {
             fileSizeText: fileSizeText || t.fileSizeText,
             selectedCustomerId,
             customTotalDeposit,
+            editedCustomerIds: Array.from(editedCustomerIds),
           };
         }
         return t;
       });
     });
-  }, [customers, rawRows, currentFileName, fileSizeText, selectedCustomerId, customTotalDeposit, activeTabId, isRestoring]);
+  }, [customers, rawRows, currentFileName, fileSizeText, selectedCustomerId, customTotalDeposit, activeTabId, isRestoring, editedCustomerIds]);
 
   // Automatically persist uploaded data & saved channels whenever changes happen
   useEffect(() => {
@@ -389,6 +435,11 @@ export default function App() {
       // Deleting BST row = Deleting the whole customer
       setCustomers((prev) => prev.filter((c) => c.id !== customerId));
       setRawRows((prev) => prev.filter((r) => !(r.subscriberCode === target.subscriberCode && r.stbNo === target.stbNo)));
+      setEditedCustomerIds((prev) => {
+        const next = new Set(prev);
+        next.delete(customerId);
+        return next;
+      });
       return;
     }
 
@@ -405,6 +456,7 @@ export default function App() {
         priceMap
       );
 
+      setEditedCustomerIds((prev) => new Set(prev).add(customerId));
       setCustomers((prev) =>
         prev.map((c) =>
           c.id === customerId
@@ -415,6 +467,8 @@ export default function App() {
                 lcoHlawh: pricing.lcoHlawh,
                 lcoSen: pricing.lcoSen,
                 isModified: true,
+                userEdited: true,
+                editedAt: new Date().toISOString(),
               }
             : c
         )
@@ -453,6 +507,7 @@ export default function App() {
         ? Number((target.customBillAmount! - pricing.lcoSen).toFixed(2))
         : pricing.lcoHlawh;
 
+      setEditedCustomerIds((prev) => new Set(prev).add(customerId));
       setCustomers((prev) =>
         prev.map((c) =>
           c.id === customerId
@@ -463,6 +518,8 @@ export default function App() {
                 lcoHlawh: effectiveLcoHlawh,
                 lcoSen: effectiveLcoSen,
                 isModified: true,
+                userEdited: true,
+                editedAt: new Date().toISOString(),
               }
             : c
         )
@@ -496,6 +553,7 @@ export default function App() {
         priceMap
       );
 
+      setEditedCustomerIds((prev) => new Set(prev).add(customerId));
       setCustomers((prev) =>
         prev.map((c) =>
           c.id === customerId
@@ -506,6 +564,8 @@ export default function App() {
                 lcoHlawh: pricing.lcoHlawh,
                 lcoSen: pricing.lcoSen,
                 isModified: true,
+                userEdited: true,
+                editedAt: new Date().toISOString(),
               }
             : c
         )
@@ -533,6 +593,11 @@ export default function App() {
           r.stbNo !== target.stbNo
       )
     );
+    setEditedCustomerIds((prev) => {
+      const next = new Set(prev);
+      next.delete(customerId);
+      return next;
+    });
     if (selectedCustomerId === customerId) {
       const remaining = customers.filter((c) => c.id !== customerId);
       setSelectedCustomerId(remaining[0]?.id || null);
@@ -543,6 +608,11 @@ export default function App() {
   const handleDeleteCustomer = (customerId: string) => {
     const target = customers.find((c) => c.id === customerId);
     setCustomers((prev) => prev.filter((c) => c.id !== customerId));
+    setEditedCustomerIds((prev) => {
+      const next = new Set(prev);
+      next.delete(customerId);
+      return next;
+    });
     if (target) {
       setRawRows((prev) =>
         prev.filter(
@@ -567,6 +637,11 @@ export default function App() {
     const targetStbNos = new Set(targets.map((t) => t.stbNo));
 
     setCustomers((prev) => prev.filter((c) => !targetSet.has(c.id)));
+    setEditedCustomerIds((prev) => {
+      const next = new Set(prev);
+      customerIds.forEach((id) => next.delete(id));
+      return next;
+    });
     setRawRows((prev) =>
       prev.filter(
         (r) =>
@@ -647,6 +722,7 @@ export default function App() {
         rawRows: result.rawRows,
         customTotalDeposit: null,
         selectedCustomerId: result.customers[0]?.id || null,
+        editedCustomerIds: [],
         createdAt: new Date().toISOString(),
       };
 
@@ -664,6 +740,7 @@ export default function App() {
       setCustomTotalDeposit(null);
       setCurrentFileName(file.name);
       setFileSizeText(sizeKb);
+      setEditedCustomerIds(new Set());
 
       if (result.customers.length > 0) {
         setSelectedCustomerId(result.customers[0].id);
@@ -694,6 +771,7 @@ export default function App() {
         rawRows: result.rawRows,
         customTotalDeposit: null,
         selectedCustomerId: result.customers[0]?.id || null,
+        editedCustomerIds: [],
         createdAt: new Date().toISOString(),
       };
 
@@ -708,6 +786,7 @@ export default function App() {
                 fileSizeText: fileSizeText || t.fileSizeText,
                 selectedCustomerId,
                 customTotalDeposit,
+                editedCustomerIds: Array.from(editedCustomerIds),
               }
             : t
         );
@@ -721,6 +800,7 @@ export default function App() {
       setFileSizeText(sizeKb);
       setCustomTotalDeposit(null);
       setSelectedCustomerId(result.customers[0]?.id || null);
+      setEditedCustomerIds(new Set());
     } catch (err) {
       alert('File chhiar theih a ni lo: ' + (err as Error).message);
     } finally {
@@ -746,6 +826,7 @@ export default function App() {
               fileSizeText: fileSizeText || t.fileSizeText,
               selectedCustomerId,
               customTotalDeposit,
+              editedCustomerIds: Array.from(editedCustomerIds),
             }
           : t
       );
@@ -762,6 +843,7 @@ export default function App() {
     setFileSizeText(targetTab.fileSizeText || '');
     setCustomTotalDeposit(targetTab.customTotalDeposit ?? null);
     setSelectedCustomerId(targetTab.selectedCustomerId || targetTab.customers[0]?.id || null);
+    setEditedCustomerIds(new Set(targetTab.editedCustomerIds || []));
   };
 
   // Close a specific tab
@@ -791,6 +873,7 @@ export default function App() {
       setFileSizeText(nextTab.fileSizeText || '');
       setCustomTotalDeposit(nextTab.customTotalDeposit ?? null);
       setSelectedCustomerId(nextTab.selectedCustomerId || nextTab.customers[0]?.id || null);
+      setEditedCustomerIds(new Set(nextTab.editedCustomerIds || []));
     }
   };
 
@@ -810,6 +893,7 @@ export default function App() {
     setCurrentFileName(null);
     setFileSizeText('');
     setSelectedCustomerId(null);
+    setEditedCustomerIds(new Set());
     await clearPersistedData();
   };
 
@@ -832,6 +916,7 @@ export default function App() {
 
     let updatedCustomer: CustomerSummary | undefined;
 
+    setEditedCustomerIds((prev) => new Set(prev).add(customerId));
     setCustomers((prev) =>
       prev.map((c) => {
         if (c.id === customerId) {
@@ -846,6 +931,8 @@ export default function App() {
             lcoHlawh: pricing.lcoHlawh,
             lcoSen: pricing.lcoSen,
             isModified: true,
+            userEdited: true,
+            editedAt: new Date().toISOString(),
           };
           updatedCustomer = newCust;
           return newCust;
@@ -942,6 +1029,7 @@ export default function App() {
 
     const hasExplicitBill = customBillAmount !== undefined && customBillAmount > 0;
 
+    setEditedCustomerIds(new Set(customers.map((c) => c.id)));
     setCustomers((prev) =>
       prev.map((c) => {
         const targetBill = hasExplicitBill ? customBillAmount : c.customBillAmount;
@@ -960,6 +1048,8 @@ export default function App() {
           lcoHlawh: effectiveLcoHlawh,
           lcoSen: effectiveLcoSen,
           isModified: true,
+          userEdited: true,
+          editedAt: new Date().toISOString(),
         };
       })
     );
@@ -1054,6 +1144,12 @@ export default function App() {
       ? Number((customBillAmount! - pricing.lcoSen).toFixed(2))
       : pricing.lcoHlawh;
 
+    setEditedCustomerIds((prev) => {
+      const next = new Set(prev);
+      customerIds.forEach((id) => next.add(id));
+      return next;
+    });
+
     setCustomers((prev) =>
       prev.map((c) => {
         if (targetSet.has(c.id)) {
@@ -1066,6 +1162,8 @@ export default function App() {
             lcoHlawh: effectiveLcoHlawh,
             lcoSen: effectiveLcoSen,
             isModified: true,
+            userEdited: true,
+            editedAt: new Date().toISOString(),
           };
         }
         return c;
@@ -1425,6 +1523,7 @@ export default function App() {
         subscriptionSettings={subscriptionSettings}
         onExportSuccess={handleExportSuccess}
         onOpenDownloadGuide={() => setIsDownloadGuideOpen(true)}
+        editedCustomerIds={editedCustomerIds}
       />
 
       {/* LPS Bill Chhut Dan & Calculator Modal */}

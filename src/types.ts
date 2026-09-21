@@ -31,6 +31,8 @@ export interface CustomerSummary {
   lcoSen: number; // BST (154) + 90% alacarte
   customBillAmount?: number; // Customer hnen atanga bill khawn zat (e.g. ₹ 350, ₹ 400). If not set, defaults to channelPrice.
   isModified?: boolean;
+  userEdited?: boolean;
+  editedAt?: string;
   subscriptionPeriod?: string;
   subscriptionCount?: string | number;
   networkCapacityFee?: string | number;
@@ -79,5 +81,6 @@ export interface DocumentTab {
   rawRows: SubscriberRawRow[];
   customTotalDeposit?: number | null;
   selectedCustomerId?: string | null;
+  editedCustomerIds?: string[];
   createdAt: string;
 }

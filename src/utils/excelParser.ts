@@ -855,7 +855,8 @@ export function processRawRowsToCustomers(
       packageDiscount: item.packageDiscount,
       serviceType: item.serviceType,
       customBillAmount: item.customBillAmount,
-      isModified: hasCustomBill || item.channels.length > 0 || !item.hasLocalAddon,
+      isModified: false,
+      userEdited: false,
     });
   }
 
