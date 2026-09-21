@@ -32,14 +32,31 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
   const [hdPackageName, setHdPackageName] = useState<string>('LPS HD');
   const [includeLpsHd, setIncludeLpsHd] = useState<'none' | 'with-locals' | 'hd-only' | 'all'>('none');
   const [includeBillCollected, setIncludeBillCollected] = useState<boolean>(false);
+  const [editOnly, setEditOnly] = useState<boolean>(false);
+  const [noEditWarning, setNoEditWarning] = useState<boolean>(false);
+
+  // Filter customers to only those edited or with added packs / customized channels / bills
+  const isEditedCustomer = (c: CustomerSummary) => {
+    return Boolean(
+      c.isModified ||
+      (c.selectedChannels && c.selectedChannels.length > 0) ||
+      (c.customBillAmount !== undefined && c.customBillAmount > 0) ||
+      c.hasLocalAddon === false
+    );
+  };
+
+  const effectiveCustomers = useMemo(() => {
+    if (!editOnly) return customers;
+    return customers.filter(isEditedCustomer);
+  }, [customers, editOnly]);
 
   // Calculate statistics
   const stats = useMemo(() => {
-    const totalCustomers = customers.length;
+    const totalCustomers = effectiveCustomers.length;
     let totalLocalRows = 0;
     let totalHdRows = 0;
     let totalChannelRows = 0;
-    for (const c of customers) {
+    for (const c of effectiveCustomers) {
       const isLocal = c.hasLocalAddon !== false;
       if (isLocal) {
         totalLocalRows++;
@@ -65,7 +82,7 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
       totalChannelRows,
       totalRows,
     };
-  }, [customers, includeLpsHd]);
+  }, [effectiveCustomers, includeLpsHd]);
 
   // Preview the first rows that will be exported
   const previewRows = useMemo(() => {
@@ -85,7 +102,7 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
       billCollected?: string | number;
     }[] = [];
 
-    for (const c of customers) {
+    for (const c of effectiveCustomers) {
       const isLocalActive = c.hasLocalAddon !== false;
       const isHdActive =
         includeLpsHd === 'all' ||
@@ -174,17 +191,25 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
     }
 
     return rows.slice(0, 15);
-  }, [customers, basePackageName, localPackageName, hdPackageName, includeLpsHd]);
+  }, [effectiveCustomers, basePackageName, localPackageName, hdPackageName, includeLpsHd, subscriptionSettings]);
 
   if (!isOpen) return null;
 
   const handleDownload = async () => {
+    if (editOnly && effectiveCustomers.length === 0) {
+      setNoEditWarning(true);
+      setTimeout(() => setNoEditWarning(false), 4000);
+      return;
+    }
+
     const baseRawName = fileName
       ? fileName.replace(/\.[^/.]+$/, '')
       : 'PACK-1(BST)';
-    const defaultName = `BulkPackageRenew_${baseRawName}.xls`;
+    const defaultName = editOnly
+      ? `BulkPackageRenew_${baseRawName}_EditOnly.xls`
+      : `BulkPackageRenew_${baseRawName}.xls`;
 
-    const result = await exportBulkPackageRenewExcel(customers, defaultName, {
+    const result = await exportBulkPackageRenewExcel(effectiveCustomers, defaultName, {
       basePackageName,
       typeHeader: typeColHeader,
       packageChannelNameHeader: pkgColHeader,
@@ -239,9 +264,11 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
         <div className="flex-1 overflow-y-auto p-6 space-y-5">
           {/* Summary Badges */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5">
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-2.5">
-              <span className="text-[11px] text-gray-700 font-medium block">Subscribers</span>
-              <span className="text-lg font-bold text-gray-900">{stats.totalCustomers}</span>
+            <div className={`rounded-lg p-2.5 border transition-colors ${editOnly ? 'bg-emerald-50/70 border-emerald-300' : 'bg-gray-50 border-gray-200'}`}>
+              <span className="text-[11px] text-gray-700 font-medium block">
+                Subscribers {editOnly ? '(Edit Only)' : ''}
+              </span>
+              <span className={`text-lg font-bold ${editOnly ? 'text-emerald-900' : 'text-gray-900'}`}>{stats.totalCustomers}</span>
             </div>
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-2.5">
               <span className="text-[11px] text-blue-700 font-medium block">PACK-1 (BST) Rows</span>
@@ -522,38 +549,46 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white font-mono text-[11px] whitespace-nowrap">
-                  {previewRows.map((row, idx) => (
-                    <tr
-                      key={idx}
-                      className={row.type === 'Package' ? 'bg-blue-50/40 hover:bg-blue-50' : 'hover:bg-gray-50'}
-                    >
-                      <td className="px-3 py-1.5 font-sans font-medium text-gray-900 border-r border-gray-200">{row.name}</td>
-                      <td className="px-3 py-1.5 text-gray-700 border-r border-gray-200">{row.subscriberCode}</td>
-                      <td className="px-3 py-1.5 text-gray-700 border-r border-gray-200">{row.stbNo}</td>
-                      <td className="px-3 py-1.5 text-gray-700 border-r border-gray-200">{row.vcNo || '-'}</td>
-                      <td className="px-3 py-1.5 border-r border-gray-200 font-semibold">
-                        <span
-                          className={`inline-block px-1.5 py-0.5 rounded text-[10px] ${
-                            row.type === 'Package'
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-amber-100 text-amber-800'
-                          }`}
-                        >
-                          {row.type}
-                        </span>
+                  {previewRows.length === 0 ? (
+                    <tr>
+                      <td colSpan={includeBillCollected ? 13 : 12} className="px-4 py-8 text-center text-slate-500 font-sans">
+                        Ka edit / pack pek belh subscriber an la awm lo. Edit Only hi off la emaw, customer thlangin pack pe phawt rawh.
                       </td>
-                      <td className="px-3 py-1.5 font-bold text-gray-900 border-r border-gray-200">{row.packageChannelName}</td>
-                      <td className="px-3 py-1.5 text-blue-900 font-semibold border-r border-gray-200 bg-blue-50/20">{row.subType}</td>
-                      <td className="px-3 py-1.5 text-blue-900 font-semibold border-r border-gray-200 bg-blue-50/20">{row.subValue}</td>
-                      <td className="px-3 py-1.5 text-gray-600 border-r border-gray-200">{row.ncf}</td>
-                      <td className="px-3 py-1.5 text-gray-600 border-r border-gray-200">{row.discount}</td>
-                      <td className="px-3 py-1.5 text-gray-700 border-r border-gray-200">{row.serviceType}</td>
-                      <td className={`px-3 py-1.5 text-gray-700 ${includeBillCollected ? 'border-r border-gray-200' : ''}`}>{row.franchiseeName}</td>
-                      {includeBillCollected && (
-                        <td className="px-3 py-1.5 font-bold text-emerald-700 bg-emerald-50/50">{row.billCollected || '-'}</td>
-                      )}
                     </tr>
-                  ))}
+                  ) : (
+                    previewRows.map((row, idx) => (
+                      <tr
+                        key={idx}
+                        className={row.type === 'Package' ? 'bg-blue-50/40 hover:bg-blue-50' : 'hover:bg-gray-50'}
+                      >
+                        <td className="px-3 py-1.5 font-sans font-medium text-gray-900 border-r border-gray-200">{row.name}</td>
+                        <td className="px-3 py-1.5 text-gray-700 border-r border-gray-200">{row.subscriberCode}</td>
+                        <td className="px-3 py-1.5 text-gray-700 border-r border-gray-200">{row.stbNo}</td>
+                        <td className="px-3 py-1.5 text-gray-700 border-r border-gray-200">{row.vcNo || '-'}</td>
+                        <td className="px-3 py-1.5 border-r border-gray-200 font-semibold">
+                          <span
+                            className={`inline-block px-1.5 py-0.5 rounded text-[10px] ${
+                              row.type === 'Package'
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-amber-100 text-amber-800'
+                            }`}
+                          >
+                            {row.type}
+                          </span>
+                        </td>
+                        <td className="px-3 py-1.5 font-bold text-gray-900 border-r border-gray-200">{row.packageChannelName}</td>
+                        <td className="px-3 py-1.5 text-blue-900 font-semibold border-r border-gray-200 bg-blue-50/20">{row.subType}</td>
+                        <td className="px-3 py-1.5 text-blue-900 font-semibold border-r border-gray-200 bg-blue-50/20">{row.subValue}</td>
+                        <td className="px-3 py-1.5 text-gray-600 border-r border-gray-200">{row.ncf}</td>
+                        <td className="px-3 py-1.5 text-gray-600 border-r border-gray-200">{row.discount}</td>
+                        <td className="px-3 py-1.5 text-gray-700 border-r border-gray-200">{row.serviceType}</td>
+                        <td className={`px-3 py-1.5 text-gray-700 ${includeBillCollected ? 'border-r border-gray-200' : ''}`}>{row.franchiseeName}</td>
+                        {includeBillCollected && (
+                          <td className="px-3 py-1.5 font-bold text-emerald-700 bg-emerald-50/50">{row.billCollected || '-'}</td>
+                        )}
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -576,7 +611,7 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
 
         {/* Modal Footer */}
         <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
             <button
               type="button"
               id="cancel-bulk-renew-btn"
@@ -585,6 +620,47 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
             >
               Cancel
             </button>
+
+            {/* Edit Only toggle button right next to Cancel button */}
+            <button
+              type="button"
+              id="toggle-edit-only-btn"
+              role="switch"
+              aria-checked={editOnly}
+              onClick={() => {
+                setEditOnly(!editOnly);
+                setNoEditWarning(false);
+              }}
+              className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-xs sm:text-sm font-bold transition-all cursor-pointer select-none ${
+                editOnly
+                  ? 'bg-emerald-50 border-emerald-500 text-emerald-950 ring-2 ring-emerald-300 shadow-2xs'
+                  : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
+              title={
+                editOnly
+                  ? 'Edit Only: ON (Ka edit / pack ka pek belh chauh export a ni ang)'
+                  : 'Edit Only: OFF (Excel file chhunga awm zawng zawng download a ni ang)'
+              }
+            >
+              <span className="font-bold text-slate-800">Edit Only</span>
+              <span
+                className={`w-8 h-4.5 flex items-center rounded-full p-0.5 transition-colors duration-200 ease-in-out ${
+                  editOnly ? 'bg-emerald-600' : 'bg-slate-300'
+                }`}
+              >
+                <span
+                  className={`bg-white w-3.5 h-3.5 rounded-full shadow-xs transform transition-transform duration-200 ease-in-out ${
+                    editOnly ? 'translate-x-3.5' : 'translate-x-0'
+                  }`}
+                />
+              </span>
+              {editOnly && (
+                <span className="text-[11px] font-mono px-1.5 py-0.2 rounded bg-emerald-200 text-emerald-900 font-extrabold">
+                  {effectiveCustomers.length}
+                </span>
+              )}
+            </button>
+
             {onOpenDownloadGuide && (
               <button
                 type="button"
@@ -598,16 +674,35 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
             )}
           </div>
           
-          <button
-            type="button"
-            id="confirm-download-bulk-renew-btn"
-            onClick={handleDownload}
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-bold shadow-sm transition-all cursor-pointer"
-            title="Folder thlangin Bulk Renew Excel file save rawh"
-          >
-            <FolderDown className="w-4 h-4" />
-            <span>Download 12-Column Bulk Renew (.xls - LPS Portal)</span>
-          </button>
+          <div className="flex items-center gap-3">
+            {noEditWarning && (
+              <span className="text-xs font-bold text-red-600 animate-pulse">
+                Ka edit / pack pek belh an la awm lo!
+              </span>
+            )}
+            <button
+              type="button"
+              id="confirm-download-bulk-renew-btn"
+              onClick={handleDownload}
+              className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-all cursor-pointer ${
+                editOnly && effectiveCustomers.length === 0
+                  ? 'bg-red-400 text-white opacity-70 cursor-not-allowed'
+                  : 'bg-red-600 hover:bg-red-700 text-white'
+              }`}
+              title={
+                editOnly
+                  ? `Edit Only: Customer ${effectiveCustomers.length} chauh export rawh`
+                  : 'Folder thlangin Bulk Renew Excel file save rawh'
+              }
+            >
+              <FolderDown className="w-4 h-4" />
+              <span>
+                {editOnly
+                  ? `Download 12-Column Bulk Renew (Edit Only - ${effectiveCustomers.length})`
+                  : 'Download 12-Column Bulk Renew (.xls - LPS Portal)'}
+              </span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
