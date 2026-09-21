@@ -165,16 +165,6 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
     });
   }, [customers, filterMode, tableSearch, sortField, sortAsc]);
 
-  const periodRatio = useMemo(() => {
-    if (!subscriptionSettings) return 1;
-    if (subscriptionSettings.subscriptionType === 'Day') {
-      const days = Math.max(1, Number(subscriptionSettings.subscriptionValue) || 1);
-      return days / 30;
-    }
-    const months = Math.max(1, Number(subscriptionSettings.subscriptionValue) || 1);
-    return months;
-  }, [subscriptionSettings]);
-
   // Generate table rows based on viewMode
   // If viewMode === 'multi_line', when a customer has > 1 channel,
   // each channel gets its own row with customer name and that single channel
@@ -184,20 +174,10 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
     for (const c of filteredCustomers) {
       const hasExtra = c.selectedChannels.length > 0;
       const isLocalActive = c.hasLocalAddon !== false;
-      
-      const periodLabel = subscriptionSettings 
-        ? (subscriptionSettings.subscriptionType === 'Day'
-            ? `Ni ${subscriptionSettings.subscriptionValue}`
-            : subscriptionSettings.subscriptionValue === 1
-              ? '1 Month'
-              : `${subscriptionSettings.subscriptionValue} Months`)
-        : (c.subscriptionPeriod && c.subscriptionCount) 
-          ? `${c.subscriptionCount} ${c.subscriptionPeriod}`
-          : '1 Month';
 
       if (viewMode === 'consolidated') {
         const basePkgName = c.basePackage || 'PACK-1 (BST)';
-        const packageLabel = isLocalActive ? `${basePkgName}+Local (${periodLabel})` : `${basePkgName} chauh (${periodLabel})`;
+        const packageLabel = isLocalActive ? `${basePkgName}+Local` : `${basePkgName} chauh`;
         const channelDisplay = c.selectedChannels.length > 0
           ? `${packageLabel} • ${c.selectedChannels.join(', ')}`
           : packageLabel;
@@ -214,9 +194,9 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
           subscriberCode: c.subscriberCode,
           stbNo: c.stbNo,
           channelName: channelDisplay,
-          linePrice: Number((effectiveLinePrice * periodRatio).toFixed(2)),
-          lineHlawh: Number((c.lcoHlawh * periodRatio).toFixed(2)),
-          lineSen: Number((c.lcoSen * periodRatio).toFixed(2)),
+          linePrice: Number(effectiveLinePrice.toFixed(2)),
+          lineHlawh: Number(c.lcoHlawh.toFixed(2)),
+          lineSen: Number(c.lcoSen.toFixed(2)),
           franchiseeName: c.franchiseeName || '',
           isModified: c.isModified,
           hasExtraChannels: hasExtra,
@@ -227,9 +207,9 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
         
         // 1. Mandatory Base Package (PACK-1 (BST)) Row
         const basePkgName = c.basePackage || 'PACK-1 (BST)';
-        const bstLinePrice = Number((BST_PRICE * periodRatio).toFixed(2));
-        const bstLineHlawh = Number((BST_LCO_SHARE * periodRatio).toFixed(2));
-        const bstLineSen = Number(((BST_PRICE - BST_LCO_SHARE) * periodRatio).toFixed(2));
+        const bstLinePrice = BST_PRICE;
+        const bstLineHlawh = BST_LCO_SHARE;
+        const bstLineSen = Number((BST_PRICE - BST_LCO_SHARE).toFixed(2));
 
         rows.push({
           rowId: `${c.id}_bst`,
@@ -238,7 +218,7 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
           name: c.name,
           subscriberCode: c.subscriberCode,
           stbNo: c.stbNo,
-          channelName: `${basePkgName} (${periodLabel})`,
+          channelName: basePkgName,
           linePrice: bstLinePrice,
           lineHlawh: bstLineHlawh,
           lineSen: bstLineSen,
@@ -252,9 +232,9 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
 
         // 2. Optional LPS LOCALS Row
         if (isLocalActive) {
-          const localLinePrice = Number((LOCAL_PRICE * periodRatio).toFixed(2));
-          const localLineHlawh = Number((LOCAL_LCO_SHARE * periodRatio).toFixed(2));
-          const localLineSen = Number(((LOCAL_PRICE - LOCAL_LCO_SHARE) * periodRatio).toFixed(2));
+          const localLinePrice = LOCAL_PRICE;
+          const localLineHlawh = LOCAL_LCO_SHARE;
+          const localLineSen = Number((LOCAL_PRICE - LOCAL_LCO_SHARE).toFixed(2));
 
           rows.push({
             rowId: `${c.id}_local`,
@@ -263,7 +243,7 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
             name: c.name,
             subscriberCode: c.subscriberCode,
             stbNo: c.stbNo,
-            channelName: `LPS LOCALS (${periodLabel})`,
+            channelName: 'LPS LOCALS',
             linePrice: localLinePrice,
             lineHlawh: localLineHlawh,
             lineSen: localLineSen,
@@ -280,7 +260,7 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
         c.selectedChannels.forEach((chName, chIdx) => {
           const chClean = chName.toLowerCase().trim();
           const baseRate = priceMap.get(chClean) ?? priceMap.get(normalizeKey(chClean)) ?? 0;
-          const rate = Number((baseRate * periodRatio).toFixed(2));
+          const rate = Number(baseRate.toFixed(2));
           const lineHlawh = Number(((rate * (ALACARTE_LCO_COMMISSION_PERCENT / 100))).toFixed(2));
           const lineSen = Number((rate - lineHlawh).toFixed(2));
 
@@ -291,7 +271,7 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
             name: c.name,
             subscriberCode: c.subscriberCode,
             stbNo: c.stbNo,
-            channelName: periodRatio !== 1 ? `${chName} (${periodLabel})` : chName,
+            channelName: chName,
             linePrice: rate,
             lineHlawh,
             lineSen,
@@ -307,7 +287,7 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
     }
 
     return rows;
-  }, [filteredCustomers, viewMode, priceMap, basePrice, subscriptionSettings, periodRatio]);
+  }, [filteredCustomers, viewMode, priceMap]);
 
   // Pagination
   const totalPages = Math.max(1, Math.ceil(tableRows.length / pageSize));

@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { X, Download, FileSpreadsheet, CheckCircle2, Sliders, Table, Info, FolderDown, HelpCircle } from 'lucide-react';
 import { CustomerSummary, SubscriptionDateSettings } from '../types';
 import { exportBulkPackageRenewExcel, SaveFileResult } from '../utils/excelExporter';
+import { calculateCustomerPricing } from '../utils/excelParser';
 
 interface BulkRenewModalProps {
   isOpen: boolean;
@@ -90,6 +91,20 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
       totalRows,
     };
   }, [effectiveCustomers, includeLpsHd]);
+
+  // Pawisa In-cut zat tur belhkhawm (effective / edited customers tan)
+  const totalInCut = useMemo(() => {
+    let sumCut = 0;
+    for (const c of effectiveCustomers) {
+      let inCut = c.lcoSen;
+      if (inCut === undefined || inCut === null) {
+        const p = calculateCustomerPricing(c.selectedChannels || [], c.hasLocalAddon !== false);
+        inCut = p.lcoSen;
+      }
+      sumCut += (inCut || 0);
+    }
+    return Number(sumCut.toFixed(2));
+  }, [effectiveCustomers]);
 
   // Preview the first rows that will be exported
   const previewRows = useMemo(() => {
@@ -542,44 +557,95 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
                   effectiveCustomers.length > 0 ? 'text-emerald-600' : 'text-amber-600'
                 }`}
               />
-              <div className="space-y-1">
-                <div className="font-bold flex items-center gap-2">
-                  <span>Edit Only Mode:</span>
-                  <span
-                    className={`px-2 py-0.5 rounded text-xs font-mono font-bold ${
-                      effectiveCustomers.length > 0
-                        ? 'bg-emerald-200 text-emerald-900'
-                        : 'bg-amber-200 text-amber-900'
-                    }`}
-                  >
-                    {effectiveCustomers.length} Subscriber{effectiveCustomers.length > 1 ? 's' : ''}
-                  </span>
+              <div className="space-y-2 flex-1 min-w-0">
+                <div className="flex items-center justify-between flex-wrap gap-2.5">
+                  <div className="font-bold flex items-center gap-2">
+                    <span className="text-emerald-950 text-sm font-extrabold">Edit Only Mode:</span>
+                    <span
+                      className={`px-2 py-0.5 rounded text-xs font-mono font-bold ${
+                        effectiveCustomers.length > 0
+                          ? 'bg-emerald-200 text-emerald-900'
+                          : 'bg-amber-200 text-amber-900'
+                      }`}
+                    >
+                      {effectiveCustomers.length} Subscriber{effectiveCustomers.length > 1 ? 's' : ''}
+                    </span>
+                  </div>
+
+                  {/* Pawisa In-cut zat tur chauh (a pumpui bill in-cut zat) */}
+                  {effectiveCustomers.length > 0 && (
+                    <div
+                      id="edit-only-cut-summary"
+                      className="flex items-center gap-2 bg-white/95 border-2 border-emerald-400 rounded-lg px-3 py-1 shadow-xs"
+                      title="LPS Operator Portal / MSO atanga deposit pawisa in-cut zat tur"
+                    >
+                      <span className="text-[11px] sm:text-xs font-extrabold text-slate-700 uppercase tracking-tight">
+                        Pawisa In-cut zat tur:
+                      </span>
+                      <span className="text-xs sm:text-sm font-black font-mono text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded shadow-2xs">
+                        ₹ {totalInCut.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                  )}
                 </div>
+
                 {effectiveCustomers.length > 0 ? (
                   <div className="space-y-1.5">
                     <p className="text-xs text-emerald-800 leading-relaxed font-medium">
                       Vawiin a i edit / pack i thlak te chauh hi Excel file ah download a ni dawn e:
                     </p>
                     <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto pr-1">
-                      {effectiveCustomers.map((c) => (
-                        <span
-                          key={c.id}
-                          className="inline-flex items-center gap-1.5 bg-white border border-emerald-300 text-emerald-950 text-[11px] font-semibold px-2 py-0.5 rounded-md shadow-2xs"
-                        >
-                          <span className="font-bold">{c.name}</span>
-                          <span className="text-[10px] text-emerald-700 font-mono">({c.subscriberCode})</span>
-                          {c.customBillAmount !== undefined && c.customBillAmount > 0 ? (
-                            <span className="text-[10px] bg-emerald-100 text-emerald-900 px-1 rounded font-mono font-bold">
-                              ₹{c.customBillAmount}
+                      {effectiveCustomers.map((c) => {
+                        let inCut = c.lcoSen;
+                        let hlawh = c.lcoHlawh;
+                        if (inCut === undefined || inCut === null) {
+                          const p = calculateCustomerPricing(c.selectedChannels || [], c.hasLocalAddon !== false);
+                          inCut = p.lcoSen;
+                          hlawh = p.lcoHlawh;
+                        }
+                        const custBill =
+                          c.customBillAmount !== undefined && c.customBillAmount > 0
+                            ? c.customBillAmount
+                            : (c.channelPrice || (inCut + (hlawh || 0)));
+                        const custLcoShare =
+                          c.customBillAmount !== undefined && c.customBillAmount > 0
+                            ? c.customBillAmount - inCut
+                            : (hlawh || 0);
+
+                        return (
+                          <span
+                            key={c.id}
+                            className="inline-flex items-center gap-1.5 bg-white border border-emerald-300 text-emerald-950 text-[11px] font-semibold px-2 py-1 rounded-md shadow-2xs"
+                            title={`Bill: ₹${custBill} | In-cut: ₹${inCut.toFixed(2)} | LCO Share: ₹${custLcoShare.toFixed(2)}`}
+                          >
+                            <span className="font-bold">{c.name}</span>
+                            <span className="text-[10px] text-emerald-700 font-mono">({c.subscriberCode})</span>
+                            <span
+                              className="text-[10px] bg-blue-50 text-blue-900 border border-blue-200 px-1 py-0.5 rounded font-mono font-bold"
+                              title="Customer Bill zat"
+                            >
+                              ₹{custBill}
                             </span>
-                          ) : null}
-                          {c.selectedChannels.length > 0 ? (
-                            <span className="text-[10px] text-emerald-700">
-                              +{c.selectedChannels.length} ch
+                            <span
+                              className="text-[10px] bg-rose-50 text-rose-800 border border-rose-200 px-1 py-0.5 rounded font-mono font-bold"
+                              title="Pawisa in-cut zat tur"
+                            >
+                              Cut: ₹{inCut.toFixed(0)}
                             </span>
-                          ) : null}
-                        </span>
-                      ))}
+                            <span
+                              className="text-[10px] bg-emerald-50 text-emerald-900 border border-emerald-200 px-1 py-0.5 rounded font-mono font-bold"
+                              title="LCO Share (Hlawh)"
+                            >
+                              LCO: ₹{custLcoShare.toFixed(0)}
+                            </span>
+                            {c.selectedChannels.length > 0 ? (
+                              <span className="text-[10px] text-emerald-700 font-medium">
+                                +{c.selectedChannels.length} ch
+                              </span>
+                            ) : null}
+                          </span>
+                        );
+                      })}
                     </div>
                   </div>
                 ) : (

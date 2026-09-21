@@ -55,10 +55,10 @@ export async function exportSummaryExcel(
 
     const hasCustomBill = c.customBillAmount !== undefined && c.customBillAmount > 0;
     const baseBill = hasCustomBill ? c.customBillAmount! : pricing.price;
-    const billCollected = Number((baseBill * periodRatio).toFixed(2));
-    const totalStandardPrice = Number((pricing.price * periodRatio).toFixed(2));
-    const totalStandardHlawh = Number((pricing.lcoHlawh * periodRatio).toFixed(2));
-    const totalStandardSen = Number((pricing.lcoSen * periodRatio).toFixed(2));
+    const billCollected = Number(baseBill.toFixed(2));
+    const totalStandardPrice = Number(pricing.price.toFixed(2));
+    const totalStandardHlawh = Number(pricing.lcoHlawh.toFixed(2));
+    const totalStandardSen = Number(pricing.lcoSen.toFixed(2));
     const actualNetProfit = Number((billCollected - totalStandardSen).toFixed(2));
 
     // Deduplicate channels for export so double channels never appear twice
@@ -73,7 +73,7 @@ export async function exportSummaryExcel(
     }
 
     if (uniqueChannels.length === 0) {
-      const channelDisplay = isLocalActive ? `PACK-1 (BST) + Local (${periodLabel})` : `PACK-1 (BST) (${periodLabel})`;
+      const channelDisplay = isLocalActive ? 'PACK-1 (BST) + Local' : 'PACK-1 (BST)';
       const packageAddonDisplay = isLocalActive ? 'PACK-1 (BST) + Local' : 'PACK-1 (BST) chauh';
 
       dataRows.push({
@@ -96,7 +96,7 @@ export async function exportSummaryExcel(
       uniqueChannels.forEach((channelName, chIdx) => {
         const cleanName = channelName.toLowerCase().trim();
         const rawChRate = priceMap.get(cleanName) || 0;
-        const chRate = Number((rawChRate * periodRatio).toFixed(2));
+        const chRate = Number(rawChRate.toFixed(2));
 
         // Base components share for this specific line
         const chLcoHlawh = Number(((chRate * ALACARTE_LCO_COMMISSION_PERCENT) / 100).toFixed(2));
@@ -108,9 +108,9 @@ export async function exportSummaryExcel(
 
         if (chIdx === 0) {
           // First row carries the base package (BST + Local)
-          const baseLcoHlawh = Number((((pricing.bstLcoShare || 0) + (pricing.localLcoShare || 0)) * periodRatio).toFixed(2));
-          const baseLcoSen = Number((((pricing.bstMsoCut || 0) + (pricing.localMsoCut || 0)) * periodRatio).toFixed(2));
-          const basePkgPrice = Number(((bstPrice + (isLocalActive ? localAddonPrice : 0)) * periodRatio).toFixed(2));
+          const baseLcoHlawh = Number(((pricing.bstLcoShare || 0) + (pricing.localLcoShare || 0)).toFixed(2));
+          const baseLcoSen = Number(((pricing.bstMsoCut || 0) + (pricing.localMsoCut || 0)).toFixed(2));
+          const basePkgPrice = Number((bstPrice + (isLocalActive ? localAddonPrice : 0)).toFixed(2));
           
           linePrice = Number((basePkgPrice + chRate).toFixed(2));
           lineHlawh = Number((baseLcoHlawh + chLcoHlawh).toFixed(2));
@@ -128,7 +128,7 @@ export async function exportSummaryExcel(
           'SubscriberCode': c.subscriberCode,
           'STBNo': c.stbNo,
           'Package / Addon': packageAddonDisplay,
-          'Channel thlan': periodRatio !== 1 ? `${channelName} (${periodLabel})` : channelName,
+          'Channel thlan': channelName,
           'Standard Rate': linePrice,
           'LCO Hlawh (Standard)': lineHlawh,
           'LCO Sen (Cut)': lineSen,
@@ -140,7 +140,7 @@ export async function exportSummaryExcel(
     }
   }
 
-  // Calculate grand totals based on periodRatio
+  // Calculate grand totals based on standard monthly amounts
   const baseStandardPrice = customers.reduce((sum, c) => sum + c.channelPrice, 0);
   const baseStandardHlawh = customers.reduce((sum, c) => sum + c.lcoHlawh, 0);
   const baseStandardSen = customers.reduce((sum, c) => sum + c.lcoSen, 0);
@@ -149,10 +149,10 @@ export async function exportSummaryExcel(
     0
   );
 
-  const totalStandardPrice = Number((baseStandardPrice * periodRatio).toFixed(2));
-  const totalStandardHlawh = Number((baseStandardHlawh * periodRatio).toFixed(2));
-  const totalStandardSen = Number((baseStandardSen * periodRatio).toFixed(2));
-  const defaultActualCollection = Number((baseActualCollection * periodRatio).toFixed(2));
+  const totalStandardPrice = Number(baseStandardPrice.toFixed(2));
+  const totalStandardHlawh = Number(baseStandardHlawh.toFixed(2));
+  const totalStandardSen = Number(baseStandardSen.toFixed(2));
+  const defaultActualCollection = Number(baseActualCollection.toFixed(2));
   const totalActualCollection = customTotalDeposit !== null && customTotalDeposit !== undefined
     ? customTotalDeposit
     : defaultActualCollection;
@@ -165,7 +165,7 @@ export async function exportSummaryExcel(
     'SubscriberCode': '',
     'STBNo': '',
     'Package / Addon': '',
-    'Channel thlan': periodRatio !== 1 ? `GRAND TOTAL (${periodLabel})` : 'GRAND TOTAL',
+    'Channel thlan': 'GRAND TOTAL',
     'Standard Rate': totalStandardPrice,
     'LCO Hlawh (Standard)': totalStandardHlawh,
     'LCO Sen (Cut)': totalStandardSen,

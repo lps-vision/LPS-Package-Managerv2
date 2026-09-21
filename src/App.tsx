@@ -1247,40 +1247,25 @@ export default function App() {
     });
   };
 
-  // Grand totals computation based on active Subscription Settings (Month / Day)
+  // Grand totals computation across ALL subscribers in the uploaded Excel list (stays constant at full standard bill)
   const grandTotals: GrandTotals = useMemo(() => {
-    // 1. Base monthly standard amounts across all subscribers
+    // 1. Base monthly standard amounts across ALL subscribers in the Excel list
     const monthlyStandardPrice = customers.reduce((sum, c) => sum + c.channelPrice, 0);
     const monthlyLcoHlawh = customers.reduce((sum, c) => sum + c.lcoHlawh, 0);
     const monthlyLcoSen = customers.reduce((sum, c) => sum + c.lcoSen, 0);
     const localAddonCount = customers.filter((c) => Boolean(c.hasLocalAddon)).length;
     const bstOnlyCount = customers.filter((c) => !c.hasLocalAddon).length;
 
-    // Base monthly actual collection
+    // Base monthly actual collection across all subscribers in the Excel list
     const monthlyActualCollection = customers.reduce(
       (sum, c) => sum + (c.customBillAmount !== undefined && c.customBillAmount > 0 ? c.customBillAmount : c.channelPrice),
       0
     );
 
-    // 2. Period multiplier based on subscriptionSettings (e.g. 6 days = 6/30 = 0.20x)
-    let periodRatio = 1;
-    let periodLabel = '1 Month';
-    if (subscriptionSettings) {
-      if (subscriptionSettings.subscriptionType === 'Day') {
-        const days = Math.max(1, Number(subscriptionSettings.subscriptionValue) || 1);
-        periodRatio = days / 30;
-        periodLabel = `Ni ${days} (Day: ${days})`;
-      } else {
-        const months = Math.max(1, Number(subscriptionSettings.subscriptionValue) || 1);
-        periodRatio = months;
-        periodLabel = months === 1 ? 'Thlakhat (1 Month)' : `Thla ${months} (${months} Months)`;
-      }
-    }
-
-    const totalPrice = Number((monthlyStandardPrice * periodRatio).toFixed(2));
-    const totalLcoHlawh = Number((monthlyLcoHlawh * periodRatio).toFixed(2));
-    const totalLcoSen = Number((monthlyLcoSen * periodRatio).toFixed(2));
-    const defaultActualCollection = Number((monthlyActualCollection * periodRatio).toFixed(2));
+    const totalPrice = Number(monthlyStandardPrice.toFixed(2));
+    const totalLcoHlawh = Number(monthlyLcoHlawh.toFixed(2));
+    const totalLcoSen = Number(monthlyLcoSen.toFixed(2));
+    const defaultActualCollection = Number(monthlyActualCollection.toFixed(2));
     const totalActualCollection = customTotalDeposit !== null ? customTotalDeposit : defaultActualCollection;
     const totalActualNetProfit = Number((totalActualCollection - totalLcoSen).toFixed(2));
 
@@ -1293,8 +1278,8 @@ export default function App() {
       bstOnlyCount,
       totalActualCollection,
       totalActualNetProfit,
-      periodRatio,
-      periodLabel,
+      periodRatio: 1,
+      periodLabel: '1 Month',
       subscriptionType: subscriptionSettings?.subscriptionType || 'Month',
       subscriptionValue: subscriptionSettings?.subscriptionValue || 1,
       totalDays: subscriptionSettings?.totalDays || (subscriptionSettings?.subscriptionType === 'Day' ? subscriptionSettings.subscriptionValue : 30),
