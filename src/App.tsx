@@ -17,6 +17,7 @@ import {
 } from './utils/excelParser';
 import { exportSummaryExcel, SaveFileResult } from './utils/excelExporter';
 import { savePersistedData, loadPersistedData, clearPersistedData } from './utils/storage';
+import { openPrintView } from './utils/printView';
 import { Header } from './components/Header';
 import { ExcelUpload } from './components/ExcelUpload';
 import { CustomerChannelSelector } from './components/CustomerChannelSelector';
@@ -1341,6 +1342,18 @@ export default function App() {
     setIsBulkRenewModalOpen(true);
   };
 
+  const handlePrintView = (customList?: CustomerSummary[]) => {
+    const listToPrint = customList && customList.length > 0 ? customList : customers;
+    if (listToPrint.length === 0) return;
+    openPrintView({
+      customers: listToPrint,
+      totals: grandTotals,
+      franchiseeName: activeFranchiseeName,
+      fileName: currentFileName,
+      customTotalDeposit: customTotalDeposit,
+    });
+  };
+
   const activeFranchiseeName = useMemo(() => {
     return customers.find((c) => Boolean(c.franchiseeName && c.franchiseeName.trim()))?.franchiseeName?.trim() || null;
   }, [customers]);
@@ -1399,6 +1412,7 @@ export default function App() {
         onOpenChannelManager={() => setIsChannelManagerOpen(true)}
         onOpenBillCalculator={() => setIsBillCalculatorOpen(true)}
         onOpenTutorial={() => setIsTutorialOpen(true)}
+        onOpenPrintView={() => handlePrintView()}
         basePrice={basePrice}
         customerCount={customers.length}
         channelCount={availableChannels.length}
@@ -1478,6 +1492,7 @@ export default function App() {
               availableChannels={availableChannels}
               subscriptionSettings={subscriptionSettings}
               onChangeSubscriptionSettings={setSubscriptionSettings}
+              onPrintView={handlePrintView}
               onBatchApplyChannels={handleBatchApplyChannels}
             />
 
@@ -1486,6 +1501,7 @@ export default function App() {
               totals={grandTotals}
               onExportSummary={handleExportSummary}
               onExportBulkRenew={handleExportBulkRenew}
+              onPrintView={() => handlePrintView()}
               customTotalDeposit={customTotalDeposit}
               onUpdateDeposit={setCustomTotalDeposit}
               onOpenDownloadGuide={() => setIsDownloadGuideOpen(true)}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sliders, Calculator, User, BookOpen } from 'lucide-react';
+import { Sliders, Calculator, User, BookOpen, Printer } from 'lucide-react';
 import { CustomerSummary } from '../types';
 
 interface HeaderProps {
@@ -7,6 +7,7 @@ interface HeaderProps {
   onOpenChannelManager: () => void;
   onOpenBillCalculator: () => void;
   onOpenTutorial?: () => void;
+  onOpenPrintView?: () => void;
   basePrice: number;
   customerCount: number;
   channelCount?: number;
@@ -20,6 +21,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenChannelManager,
   onOpenBillCalculator,
   onOpenTutorial,
+  onOpenPrintView,
   basePrice,
   customerCount,
   channelCount,
@@ -117,6 +119,20 @@ export const Header: React.FC<HeaderProps> = ({
             <Calculator className="w-4 h-4" />
             <span>Bill Calculator</span>
           </button>
+
+          {/* Print View Button */}
+          {onOpenPrintView && customerCount > 0 && (
+            <button
+              type="button"
+              id="header-print-view-btn"
+              onClick={onOpenPrintView}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs sm:text-[13px] font-bold text-slate-800 bg-white hover:bg-slate-100 rounded-lg transition-colors shadow-2xs cursor-pointer"
+              title="Customer list leh bill totals print / PDF turin tab tharah hawng rawh"
+            >
+              <Printer className="w-4 h-4 text-slate-700" />
+              <span>Print View</span>
+            </button>
+          )}
 
           {/* Tutorial / Hman Dan Guide Button */}
           {onOpenTutorial && (

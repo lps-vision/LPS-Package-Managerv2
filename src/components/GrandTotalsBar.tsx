@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Download, FileSpreadsheet, Layers, RotateCcw, ArrowRight, FolderDown, HelpCircle } from 'lucide-react';
+import { Download, FileSpreadsheet, Layers, RotateCcw, ArrowRight, FolderDown, HelpCircle, Printer } from 'lucide-react';
 import { GrandTotals } from '../types';
 
 interface GrandTotalsBarProps {
   totals: GrandTotals;
   onExportSummary: () => void;
   onExportBulkRenew: () => void;
+  onPrintView?: () => void;
   customTotalDeposit?: number | null;
   onUpdateDeposit?: (val: number | null) => void;
   onOpenDownloadGuide?: () => void;
@@ -15,6 +16,7 @@ export const GrandTotalsBar: React.FC<GrandTotalsBarProps> = ({
   totals,
   onExportSummary,
   onExportBulkRenew,
+  onPrintView,
   customTotalDeposit,
   onUpdateDeposit,
   onOpenDownloadGuide,
@@ -282,6 +284,20 @@ export const GrandTotalsBar: React.FC<GrandTotalsBarProps> = ({
           <span>LPS Bulk Renew Format Export (12-Columns)</span>
           <Download className="w-4 h-4 ml-1" />
         </button>
+
+        {/* Print View Button */}
+        {onPrintView && (
+          <button
+            type="button"
+            id="grand-totals-print-view-btn"
+            onClick={onPrintView}
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-white border-2 border-slate-700 hover:bg-slate-100 text-slate-900 font-bold text-sm sm:text-base rounded-xl shadow-xs transition-all cursor-pointer"
+            title="Customer list leh bill totals print / PDF-a siam turin tab tharah hawng rawh"
+          >
+            <Printer className="w-5 h-5 text-slate-800 shrink-0" />
+            <span>Print View</span>
+          </button>
+        )}
 
         {/* Folder Selection (Save As) Help Button */}
         {onOpenDownloadGuide && (

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Edit3, Trash2, ArrowUpDown, Filter, X, List, Rows, RotateCcw, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Search, Edit3, Trash2, ArrowUpDown, Filter, X, List, Rows, RotateCcw, AlertTriangle, CheckCircle2, Printer } from 'lucide-react';
 import { CustomerSummary, ChannelItem, SubscriptionDateSettings } from '../types';
 import { SubscriptionCalendarPicker } from './SubscriptionCalendarPicker';
 import { getChannelPriceMap, normalizeKey } from '../utils/excelParser';
@@ -29,6 +29,7 @@ interface CustomerTableProps {
   availableChannels?: ChannelItem[];
   subscriptionSettings?: SubscriptionDateSettings;
   onChangeSubscriptionSettings?: (newSettings: SubscriptionDateSettings) => void;
+  onPrintView?: (customersToPrint?: CustomerSummary[]) => void;
   onBatchApplyChannels?: (
     customerIds: string[],
     newChannels: string[],
@@ -86,6 +87,7 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
   availableChannels = [],
   subscriptionSettings,
   onChangeSubscriptionSettings,
+  onPrintView,
   onBatchApplyChannels,
 }) => {
   const [tableSearch, setTableSearch] = useState('');
@@ -612,6 +614,20 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
             <option value={100}>100 / page</option>
             <option value={500}>All (500)</option>
           </select>
+
+          {/* Print View Button */}
+          {onPrintView && (
+            <button
+              type="button"
+              id="table-print-view-btn"
+              onClick={() => onPrintView(filteredCustomers)}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs sm:text-[13px] font-bold border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 transition-all cursor-pointer shadow-2xs"
+              title="Customer list leh bill totals print / PDF-a siam turin tab tharah hawng rawh"
+            >
+              <Printer className="w-3.5 h-3.5 text-slate-700" />
+              <span>Print View</span>
+            </button>
+          )}
         </div>
       </div>
 
