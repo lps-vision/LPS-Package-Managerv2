@@ -55,10 +55,10 @@ export async function exportSummaryExcel(
 
     const hasCustomBill = c.customBillAmount !== undefined && c.customBillAmount > 0;
     const baseBill = hasCustomBill ? c.customBillAmount! : pricing.price;
-    const billCollected = Number(baseBill.toFixed(2));
-    const totalStandardPrice = Number(pricing.price.toFixed(2));
-    const totalStandardHlawh = Number(pricing.lcoHlawh.toFixed(2));
-    const totalStandardSen = Number(pricing.lcoSen.toFixed(2));
+    const billCollected = Number((baseBill * periodRatio).toFixed(2));
+    const totalStandardPrice = Number((pricing.price * periodRatio).toFixed(2));
+    const totalStandardHlawh = Number((pricing.lcoHlawh * periodRatio).toFixed(2));
+    const totalStandardSen = Number((pricing.lcoSen * periodRatio).toFixed(2));
     const actualNetProfit = Number((billCollected - totalStandardSen).toFixed(2));
 
     // Deduplicate channels for export so double channels never appear twice
@@ -129,9 +129,9 @@ export async function exportSummaryExcel(
           'STBNo': c.stbNo,
           'Package / Addon': packageAddonDisplay,
           'Channel thlan': channelName,
-          'Standard Rate': linePrice,
-          'LCO Hlawh (Standard)': lineHlawh,
-          'LCO Sen (Cut)': lineSen,
+          'Standard Rate': Number((linePrice * periodRatio).toFixed(2)),
+          'LCO Hlawh (Standard)': Number((lineHlawh * periodRatio).toFixed(2)),
+          'LCO Sen (Cut)': Number((lineSen * periodRatio).toFixed(2)),
           'Bill Collected': chIdx === 0 ? billCollected : 0, // Only first row shows total collection for summary
           'Actual Profit (Net)': chIdx === 0 ? actualNetProfit : 0,
           'FranchiseeName': c.franchiseeName || '',
@@ -149,10 +149,10 @@ export async function exportSummaryExcel(
     0
   );
 
-  const totalStandardPrice = Number(baseStandardPrice.toFixed(2));
-  const totalStandardHlawh = Number(baseStandardHlawh.toFixed(2));
-  const totalStandardSen = Number(baseStandardSen.toFixed(2));
-  const defaultActualCollection = Number(baseActualCollection.toFixed(2));
+  const totalStandardPrice = Number((baseStandardPrice * periodRatio).toFixed(2));
+  const totalStandardHlawh = Number((baseStandardHlawh * periodRatio).toFixed(2));
+  const totalStandardSen = Number((baseStandardSen * periodRatio).toFixed(2));
+  const defaultActualCollection = Number((baseActualCollection * periodRatio).toFixed(2));
   const totalActualCollection = customTotalDeposit !== null && customTotalDeposit !== undefined
     ? customTotalDeposit
     : defaultActualCollection;
@@ -165,7 +165,7 @@ export async function exportSummaryExcel(
     'SubscriberCode': '',
     'STBNo': '',
     'Package / Addon': '',
-    'Channel thlan': 'GRAND TOTAL',
+    'Channel thlan': `GRAND TOTAL (${periodLabel})`,
     'Standard Rate': totalStandardPrice,
     'LCO Hlawh (Standard)': totalStandardHlawh,
     'LCO Sen (Cut)': totalStandardSen,
@@ -390,7 +390,18 @@ export async function exportBulkPackageRenewExcel(
     }
     if (isNaN(subVal) || subVal <= 0) subVal = 1;
 
-    const billCollectedVal = c.customBillAmount !== undefined && c.customBillAmount > 0 ? c.customBillAmount : '';
+    let periodRatio = 1;
+    if (options?.subscriptionSettings) {
+      if (options.subscriptionSettings.subscriptionType === 'Day') {
+        periodRatio = Math.max(1, Number(options.subscriptionSettings.subscriptionValue) || 1) / 30;
+      } else {
+        periodRatio = Math.max(1, Number(options.subscriptionSettings.subscriptionValue) || 1);
+      }
+    }
+
+    const billCollectedVal = c.customBillAmount !== undefined && c.customBillAmount > 0
+      ? Number((c.customBillAmount * periodRatio).toFixed(2))
+      : '';
 
     // 1. Base Package row (Default 'PACK-1 (BST)')
     const bstRowObj: Record<string, unknown> = {

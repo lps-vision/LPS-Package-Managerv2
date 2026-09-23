@@ -1263,10 +1263,25 @@ export default function App() {
       0
     );
 
-    const totalPrice = Number(monthlyStandardPrice.toFixed(2));
-    const totalLcoHlawh = Number(monthlyLcoHlawh.toFixed(2));
-    const totalLcoSen = Number(monthlyLcoSen.toFixed(2));
-    const defaultActualCollection = Number(monthlyActualCollection.toFixed(2));
+    // Calculate calculation ratio & labels based on subscriptionSettings
+    let periodRatio = 1;
+    let periodLabel = '1 Month';
+    if (subscriptionSettings) {
+      if (subscriptionSettings.subscriptionType === 'Day') {
+        const days = Math.max(1, Number(subscriptionSettings.subscriptionValue) || 1);
+        periodRatio = days / 30;
+        periodLabel = `Ni ${days} (${days} Days)`;
+      } else {
+        const months = Math.max(1, Number(subscriptionSettings.subscriptionValue) || 1);
+        periodRatio = months;
+        periodLabel = months === 1 ? 'Thla 1 (1 Month)' : `Thla ${months} (${months} Months)`;
+      }
+    }
+
+    const totalPrice = Number((monthlyStandardPrice * periodRatio).toFixed(2));
+    const totalLcoHlawh = Number((monthlyLcoHlawh * periodRatio).toFixed(2));
+    const totalLcoSen = Number((monthlyLcoSen * periodRatio).toFixed(2));
+    const defaultActualCollection = Number((monthlyActualCollection * periodRatio).toFixed(2));
     const totalActualCollection = customTotalDeposit !== null ? customTotalDeposit : defaultActualCollection;
     const totalActualNetProfit = Number((totalActualCollection - totalLcoSen).toFixed(2));
 
@@ -1279,8 +1294,8 @@ export default function App() {
       bstOnlyCount,
       totalActualCollection,
       totalActualNetProfit,
-      periodRatio: 1,
-      periodLabel: '1 Month',
+      periodRatio,
+      periodLabel,
       subscriptionType: subscriptionSettings?.subscriptionType || 'Month',
       subscriptionValue: subscriptionSettings?.subscriptionValue || 1,
       totalDays: subscriptionSettings?.totalDays || (subscriptionSettings?.subscriptionType === 'Day' ? subscriptionSettings.subscriptionValue : 30),

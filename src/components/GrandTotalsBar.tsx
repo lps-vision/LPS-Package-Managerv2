@@ -142,7 +142,7 @@ export const GrandTotalsBar: React.FC<GrandTotalsBarProps> = ({
         <div className="bg-emerald-50/80 border border-emerald-300 rounded-xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
           <div>
             <span className="block text-xs font-black tracking-wider text-emerald-900 uppercase mb-1.5">
-              GRAND TOTAL FOR LCO
+              GRAND TOTAL FOR LCO ({totals.periodLabel || '1 Month'})
             </span>
             <div className="text-2xl sm:text-3xl font-black text-emerald-800 tracking-tight flex items-baseline gap-1.5 font-mono">
               <span className="text-2xl sm:text-3xl font-black text-emerald-700 font-sans">₹</span>
@@ -154,12 +154,12 @@ export const GrandTotalsBar: React.FC<GrandTotalsBarProps> = ({
               </span>
             </div>
             <span className="text-xs text-emerald-800 mt-2 block font-semibold">
-              PACK-1 (BST) (₹ 78.60) + Local (₹ 36.20) + Alakarte 8.47%
+              PACK-1 (BST) (₹ {(78.60 * (totals.periodRatio || 1)).toFixed(2)}) + Local (₹ {(36.20 * (totals.periodRatio || 1)).toFixed(2)}) + Alakarte 8.47%
             </span>
           </div>
 
           <div className="mt-3 pt-2 border-t border-emerald-200/80 text-[11px] text-emerald-900 font-medium">
-            Standard rate zira LCO hlawh bi (100% Bill khawn a nihin)
+            Standard rate zira LCO hlawh bi ({totals.periodLabel || '1 Month'})
           </div>
         </div>
 
@@ -167,7 +167,7 @@ export const GrandTotalsBar: React.FC<GrandTotalsBarProps> = ({
         <div className="bg-slate-50 border border-slate-300 rounded-xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
           <div>
             <span className="block text-xs font-black tracking-wider text-slate-700 uppercase mb-1.5">
-              GRAND TOTAL PORTAL (MSO CUT)
+              GRAND TOTAL PORTAL (MSO CUT - {totals.periodLabel || '1 Month'})
             </span>
             <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight flex items-baseline gap-1.5 font-mono">
               <span className="text-2xl sm:text-3xl font-black text-slate-600 font-sans">₹</span>
@@ -179,12 +179,12 @@ export const GrandTotalsBar: React.FC<GrandTotalsBarProps> = ({
               </span>
             </div>
             <span className="text-xs text-slate-600 mt-2 block font-medium">
-              PACK-1 (BST) (₹ 75.40) + Local (₹ 34.80) + Alakarte 91.53%
+              PACK-1 (BST) (₹ {(75.40 * (totals.periodRatio || 1)).toFixed(2)}) + Local (₹ {(34.80 * (totals.periodRatio || 1)).toFixed(2)}) + Alakarte 91.53%
             </span>
           </div>
 
           <div className="mt-3 pt-2 border-t border-slate-200 text-[11px] text-slate-600 font-medium">
-            LPS / MSO hnena chhun luh ngei ngei tur bi
+            LPS / MSO hnena chhun luh ngei ngei tur bi ({totals.periodLabel || '1 Month'})
           </div>
         </div>
       </div>

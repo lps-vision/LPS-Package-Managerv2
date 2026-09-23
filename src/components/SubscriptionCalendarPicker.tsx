@@ -607,6 +607,9 @@ const formatDateDisplay = (isoStr: string): string => {
               const localScaled = Number((71 * ratio).toFixed(2));
               const localLco = Number((36.20 * ratio).toFixed(2));
               const localMso = Number((34.80 * ratio).toFixed(2));
+              const comboScaled = Number((225 * ratio).toFixed(2));
+              const comboLco = Number((114.80 * ratio).toFixed(2));
+              const comboMso = Number((110.20 * ratio).toFixed(2));
 
               return (
                 <div className="bg-white/95 border border-emerald-300/90 rounded-lg p-2.5 text-xs text-slate-800 space-y-1 shadow-2xs">
@@ -616,16 +619,21 @@ const formatDateDisplay = (isoStr: string): string => {
                       {ratio.toFixed(3)}x ratio
                     </span>
                   </div>
-                  <div className="text-[11px] leading-relaxed pt-0.5 space-y-0.5">
+                  <div className="text-[11px] leading-relaxed pt-0.5 space-y-1">
                     <div className="flex items-center justify-between">
                       <span>&bull; <strong>PACK-1 (BST):</strong> ₹ {bstScaled}</span>
                       <span className="font-mono text-emerald-800 font-bold">LCO Hlawh: ₹ {bstLco}</span>
-                      <span className="font-mono text-slate-700 font-bold">MSO Cut: ₹ {bstMso}</span>
+                      <span className="font-mono text-rose-700 font-bold">MSO Cut: ₹ {bstMso}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span>&bull; <strong>Local:</strong> ₹ {localScaled}</span>
                       <span className="font-mono text-emerald-800 font-bold">LCO Hlawh: ₹ {localLco}</span>
-                      <span className="font-mono text-slate-700 font-bold">MSO Cut: ₹ {localMso}</span>
+                      <span className="font-mono text-rose-700 font-bold">MSO Cut: ₹ {localMso}</span>
+                    </div>
+                    <div className="flex items-center justify-between font-semibold text-indigo-950 bg-indigo-50/50 px-1 py-0.5 rounded">
+                      <span>&bull; <strong>BST + Local Combo:</strong> ₹ {comboScaled}</span>
+                      <span className="font-mono text-emerald-800 font-black">LCO: ₹ {comboLco}</span>
+                      <span className="font-mono text-rose-700 font-black">MSO Cut: ₹ {comboMso}</span>
                     </div>
                     <div className="text-[10px] text-slate-500 italic pt-0.5">
                       * Alakarte channels: Commission 8.47% LCO hlawh, 91.53% MSO a chhun luh tur

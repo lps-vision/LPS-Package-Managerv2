@@ -92,6 +92,36 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
     };
   }, [effectiveCustomers, includeLpsHd]);
 
+  // Calculate calculation ratio & labels based on subscriptionSettings
+  const periodRatio = useMemo(() => {
+    if (!subscriptionSettings) return 1;
+    if (subscriptionSettings.subscriptionType === 'Day') {
+      const days = Math.max(1, Number(subscriptionSettings.subscriptionValue) || 1);
+      return days / 30;
+    }
+    const months = Math.max(1, Number(subscriptionSettings.subscriptionValue) || 1);
+    return months;
+  }, [subscriptionSettings]);
+
+  const periodLabel = useMemo(() => {
+    if (!subscriptionSettings) return 'Thlakhat (1 Month)';
+    if (subscriptionSettings.subscriptionType === 'Day') {
+      const d = subscriptionSettings.subscriptionValue || 1;
+      return `Ni ${d} (${d} Days)`;
+    }
+    const m = subscriptionSettings.subscriptionValue || 1;
+    return m === 1 ? 'Thlakhat (1 Month)' : `Thla ${m} (${m} Months)`;
+  }, [subscriptionSettings]);
+
+  const periodShortLabel = useMemo(() => {
+    if (!subscriptionSettings) return '1 Month';
+    if (subscriptionSettings.subscriptionType === 'Day') {
+      return `Ni ${subscriptionSettings.subscriptionValue || 1}`;
+    }
+    const m = subscriptionSettings.subscriptionValue || 1;
+    return m === 1 ? 'Thla 1' : `Thla ${m}`;
+  }, [subscriptionSettings]);
+
   // Pawisa In-cut zat tur belhkhawm (effective / edited customers tan)
   const totalInCut = useMemo(() => {
     let sumCut = 0;
@@ -103,8 +133,30 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
       }
       sumCut += (inCut || 0);
     }
-    return Number(sumCut.toFixed(2));
-  }, [effectiveCustomers]);
+    return Number((sumCut * periodRatio).toFixed(2));
+  }, [effectiveCustomers, periodRatio]);
+
+  const totalLcoShare = useMemo(() => {
+    let sumShare = 0;
+    for (const c of effectiveCustomers) {
+      let hlawh = c.lcoHlawh;
+      if (hlawh === undefined || hlawh === null) {
+        const p = calculateCustomerPricing(c.selectedChannels || [], c.hasLocalAddon !== false);
+        hlawh = p.lcoHlawh;
+      }
+      sumShare += (hlawh || 0);
+    }
+    return Number((sumShare * periodRatio).toFixed(2));
+  }, [effectiveCustomers, periodRatio]);
+
+  const totalBillPeriod = useMemo(() => {
+    let sumBill = 0;
+    for (const c of effectiveCustomers) {
+      const b = c.customBillAmount !== undefined && c.customBillAmount > 0 ? c.customBillAmount : c.channelPrice;
+      sumBill += (b || 0);
+    }
+    return Number((sumBill * periodRatio).toFixed(2));
+  }, [effectiveCustomers, periodRatio]);
 
   // Preview the first rows that will be exported
   const previewRows = useMemo(() => {
@@ -149,7 +201,7 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
         discount: c.packageDiscount ?? '0.00',
         serviceType: c.serviceType || 'PayTV',
         franchiseeName: c.franchiseeName || '',
-        billCollected: c.customBillAmount !== undefined && c.customBillAmount > 0 ? c.customBillAmount : '',
+        billCollected: c.customBillAmount !== undefined && c.customBillAmount > 0 ? Number((c.customBillAmount * periodRatio).toFixed(2)) : '',
       });
 
       // 2. Local Package row (default LPS LOCALS)
@@ -285,7 +337,7 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
         {/* Modal Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-5">
           {/* Summary Badges */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2.5">
             <div className={`rounded-lg p-2.5 border transition-colors ${editOnly ? 'bg-emerald-50/70 border-emerald-300' : 'bg-gray-50 border-gray-200'}`}>
               <span className="text-[11px] text-gray-700 font-medium block">
                 Subscribers {editOnly ? '(Edit Only)' : ''}
@@ -311,6 +363,14 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
             <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-2.5">
               <span className="text-[11px] text-emerald-700 font-medium block">Total Rows</span>
               <span className="text-lg font-bold text-emerald-900">{stats.totalRows}</span>
+            </div>
+            <div className="bg-rose-50 border-2 border-rose-300 rounded-lg p-2.5 shadow-2xs">
+              <span className="text-[11px] text-rose-700 font-black block">
+                MSO In-Cut ({periodShortLabel})
+              </span>
+              <span className="text-base sm:text-lg font-black font-mono text-rose-900">
+                ₹ {totalInCut.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
             </div>
           </div>
 
@@ -576,15 +636,28 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
                   {effectiveCustomers.length > 0 && (
                     <div
                       id="edit-only-cut-summary"
-                      className="flex items-center gap-2 bg-white/95 border-2 border-emerald-400 rounded-lg px-3 py-1 shadow-xs"
+                      className="flex items-center gap-2.5 bg-white/95 border-2 border-emerald-500 rounded-lg px-3.5 py-1.5 shadow-sm flex-wrap"
                       title="LPS Operator Portal / MSO atanga deposit pawisa in-cut zat tur"
                     >
-                      <span className="text-[11px] sm:text-xs font-extrabold text-slate-700 uppercase tracking-tight">
-                        Pawisa In-cut zat tur:
-                      </span>
-                      <span className="text-xs sm:text-sm font-black font-mono text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded shadow-2xs">
-                        ₹ {totalInCut.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[11px] sm:text-xs font-extrabold text-slate-800 uppercase tracking-tight">
+                          Pawisa In-cut zat tur ({periodLabel} chhung):
+                        </span>
+                        <span className="text-xs sm:text-sm font-black font-mono text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded shadow-2xs">
+                          ₹ {totalInCut.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className="text-slate-300">|</span>
+                        <span className="text-[11px] font-bold text-emerald-800">
+                          LCO Chan: <strong className="font-mono">₹ {totalLcoShare.toFixed(2)}</strong>
+                        </span>
+                        <span className="text-slate-300">|</span>
+                        <span className="text-[11px] font-bold text-blue-900">
+                          Total Bill: <strong className="font-mono">₹ {totalBillPeriod.toFixed(2)}</strong>
+                        </span>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -596,47 +669,47 @@ export const BulkRenewModal: React.FC<BulkRenewModalProps> = ({
                     </p>
                     <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto pr-1">
                       {effectiveCustomers.map((c) => {
-                        let inCut = c.lcoSen;
-                        let hlawh = c.lcoHlawh;
-                        if (inCut === undefined || inCut === null) {
+                        let rawCut = c.lcoSen;
+                        let rawHlawh = c.lcoHlawh;
+                        if (rawCut === undefined || rawCut === null) {
                           const p = calculateCustomerPricing(c.selectedChannels || [], c.hasLocalAddon !== false);
-                          inCut = p.lcoSen;
-                          hlawh = p.lcoHlawh;
+                          rawCut = p.lcoSen;
+                          rawHlawh = p.lcoHlawh;
                         }
-                        const custBill =
+                        const rawBill =
                           c.customBillAmount !== undefined && c.customBillAmount > 0
                             ? c.customBillAmount
-                            : (c.channelPrice || (inCut + (hlawh || 0)));
-                        const custLcoShare =
-                          c.customBillAmount !== undefined && c.customBillAmount > 0
-                            ? c.customBillAmount - inCut
-                            : (hlawh || 0);
+                            : (c.channelPrice || (rawCut + (rawHlawh || 0)));
+
+                        const periodCut = Number((rawCut * periodRatio).toFixed(2));
+                        const periodBill = Number((rawBill * periodRatio).toFixed(2));
+                        const periodHlawh = Number((periodBill - periodCut).toFixed(2));
 
                         return (
                           <span
                             key={c.id}
-                            className="inline-flex items-center gap-1.5 bg-white border border-emerald-300 text-emerald-950 text-[11px] font-semibold px-2 py-1 rounded-md shadow-2xs"
-                            title={`Bill: ₹${custBill} | In-cut: ₹${inCut.toFixed(2)} | LCO Share: ₹${custLcoShare.toFixed(2)}`}
+                            className="inline-flex items-center gap-1.5 bg-white border border-emerald-300 text-emerald-950 text-[11px] font-semibold px-2.5 py-1 rounded-md shadow-2xs"
+                            title={`Bill (${periodShortLabel}): ₹${periodBill.toFixed(2)} | In-cut (${periodShortLabel}): ₹${periodCut.toFixed(2)} | LCO Share: ₹${periodHlawh.toFixed(2)}`}
                           >
                             <span className="font-bold">{c.name}</span>
                             <span className="text-[10px] text-emerald-700 font-mono">({c.subscriberCode})</span>
                             <span
-                              className="text-[10px] bg-blue-50 text-blue-900 border border-blue-200 px-1 py-0.5 rounded font-mono font-bold"
-                              title="Customer Bill zat"
+                              className="text-[10px] bg-blue-50 text-blue-900 border border-blue-200 px-1.5 py-0.5 rounded font-mono font-bold"
+                              title={`Customer Bill (${periodShortLabel})`}
                             >
-                              ₹{custBill}
+                              ₹{periodBill.toFixed(2)}
                             </span>
                             <span
-                              className="text-[10px] bg-rose-50 text-rose-800 border border-rose-200 px-1 py-0.5 rounded font-mono font-bold"
-                              title="Pawisa in-cut zat tur"
+                              className="text-[10px] bg-rose-50 text-rose-800 border border-rose-200 px-1.5 py-0.5 rounded font-mono font-black"
+                              title={`Pawisa in-cut zat tur (${periodShortLabel})`}
                             >
-                              Cut: ₹{inCut.toFixed(0)}
+                              Cut: ₹{periodCut.toFixed(2)}
                             </span>
                             <span
-                              className="text-[10px] bg-emerald-50 text-emerald-900 border border-emerald-200 px-1 py-0.5 rounded font-mono font-bold"
-                              title="LCO Share (Hlawh)"
+                              className="text-[10px] bg-emerald-50 text-emerald-900 border border-emerald-200 px-1.5 py-0.5 rounded font-mono font-bold"
+                              title={`LCO Share / Hlawh (${periodShortLabel})`}
                             >
-                              LCO: ₹{custLcoShare.toFixed(0)}
+                              LCO: ₹{periodHlawh.toFixed(2)}
                             </span>
                             {c.selectedChannels.length > 0 ? (
                               <span className="text-[10px] text-emerald-700 font-medium">
